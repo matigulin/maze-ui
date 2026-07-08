@@ -36,11 +36,16 @@ npm run dev
 
 Сайт: `http://localhost:3000`
 
-## Vercel (только фронт)
+## Vercel (публичная ссылка)
 
-В настройках проекта Vercel укажи **Root Directory**: `maze`.
+1. [vercel.com/new](https://vercel.com/new) → Import `matigulin/maze-ui`
+2. **Root Directory** → нажми **Edit** → выбери папку **`maze`** → Continue
+3. Framework: Next.js (подтянется сам)
+4. **Deploy**
 
-Без отдельного бэкенда страницы с API не загрузят данные — нужен деплой `Server/` или `NEXT_PUBLIC_API_BASE_URL` на живой API.
+Без шага 2 деплой падает с `No Next.js version detected`.
+
+На Vercel без API сайт работает на моках (как demo-версия).
 
 ## Структура
 

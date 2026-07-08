@@ -1,7 +1,0 @@
-{
-  "$schema": "https://openapi.vercel.sh/vercel.json",
-  "framework": "nextjs",
-  "installCommand": "cd maze && npm install",
-  "buildCommand": "cd maze && npm run build",
-  "outputDirectory": "maze/.next"
-}
