@@ -7,23 +7,14 @@ import { Promo } from "@/components/home/Promo";
 import { SectionHeading } from "@/components/SectionHeading";
 import { ProductCard } from "@/components/ProductCard";
 import { Reveal } from "@/components/Reveal";
-import { apiGet } from "@/lib/api";
 import {
-  mapProductListItemToUiProduct,
-  type ProductListItemDto,
-} from "@/lib/mappers/catalog";
-
-type HomePayload = {
-  editorChoice: ProductListItemDto[];
-};
+  fetchEditorChoice,
+  fetchNewProducts,
+} from "@/lib/catalog-source";
 
 export default async function Home() {
-  const home = await apiGet<HomePayload>("/home");
-  const hits = home.editorChoice.slice(0, 8).map(mapProductListItemToUiProduct);
-  const fresh = home.editorChoice
-    .filter((p) => p.badges.map((b) => b.toLowerCase()).includes("new"))
-    .slice(0, 4)
-    .map(mapProductListItemToUiProduct);
+  const hits = await fetchEditorChoice();
+  const fresh = await fetchNewProducts();
 
   return (
     <div className="pb-8">

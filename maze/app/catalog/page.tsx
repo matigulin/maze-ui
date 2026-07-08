@@ -1,26 +1,5 @@
 import { CatalogClient } from "@/components/catalog/CatalogClient";
-import { apiGet } from "@/lib/api";
-import {
-  mapProductListItemToUiProduct,
-  type ProductListItemDto,
-} from "@/lib/mappers/catalog";
-
-// URL /catalog?cat=<slug> (как в моках) → параметры API /catalog/products
-const CAT_MAP: Record<string, { brand?: string; category?: string }> = {
-  // “бренды”
-  apple: { brand: "apple" },
-  samsung: { brand: "samsung" },
-  sony: { brand: "sony" },
-  marshall: { brand: "marshall" },
-  dyson: { brand: "dyson" },
-  harman: { brand: "harman" },
-  // “категории/направления”
-  console: { category: "gaming" },
-  accessories: { category: "accessories" },
-  used: { category: "used" },
-};
-
-type CatalogPagePayload = ProductListItemDto[];
+import { fetchCatalogProducts } from "@/lib/catalog-source";
 
 export default async function CatalogPage({
   searchParams,
@@ -28,16 +7,10 @@ export default async function CatalogPage({
   searchParams: Promise<{ q?: string; cat?: string }>;
 }) {
   const sp = await searchParams;
-  const mapped = sp.cat ? CAT_MAP[sp.cat] : undefined;
-
-  const q = sp.q ?? "";
-  const apiQuery: Record<string, unknown> = { limit: 48, page: 1 };
-  if (q) apiQuery.search = q;
-  if (mapped?.brand) apiQuery.brand = mapped.brand;
-  if (mapped?.category) apiQuery.category = mapped.category;
-
-  const items = await apiGet<CatalogPagePayload>("/catalog/products", apiQuery);
-  const products = items.map(mapProductListItemToUiProduct);
+  const products = await fetchCatalogProducts({
+    q: sp.q,
+    cat: sp.cat,
+  });
 
   return (
     <div className="container-x py-10 md:py-14">
@@ -52,10 +25,7 @@ export default async function CatalogPage({
         </p>
       </div>
 
-      <CatalogClient
-        products={products}
-        initialQuery={sp.q ?? ""}
-      />
+      <CatalogClient products={products} initialQuery={sp.q ?? ""} />
     </div>
   );
 }

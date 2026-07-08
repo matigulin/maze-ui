@@ -1,17 +1,14 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ChevronRight } from "lucide-react";
-import { apiGet, ApiError } from "@/lib/api";
 import { ProductDetail } from "@/components/product/ProductDetail";
 import { ProductCard } from "@/components/ProductCard";
 import { SectionHeading } from "@/components/SectionHeading";
 import { Reveal } from "@/components/Reveal";
 import {
-  mapProductDetailToUiProduct,
-  mapProductListItemToUiProduct,
-  type ProductDetailDto,
-  type ProductListItemDto,
-} from "@/lib/mappers/catalog";
+  fetchProductBySlug,
+  fetchRelatedProducts,
+} from "@/lib/catalog-source";
 
 export const dynamic = "force-dynamic";
 
@@ -21,28 +18,13 @@ export default async function ProductPage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  let dto: ProductDetailDto;
-  try {
-    dto = await apiGet<ProductDetailDto>(`/catalog/products/${slug}`);
-  } catch (e) {
-    if (e instanceof ApiError && e.status === 404) notFound();
-    throw e;
-  }
+  const product = await fetchProductBySlug(slug);
+  if (!product) notFound();
 
-  const product = mapProductDetailToUiProduct(dto);
-
-  const relatedItems = await apiGet<ProductListItemDto[]>("/catalog/products", {
-    brand: dto.brandSlug,
-    limit: 8,
-  });
-  const related = relatedItems
-    .filter((x) => x.slug !== dto.slug)
-    .slice(0, 4)
-    .map(mapProductListItemToUiProduct);
+  const related = await fetchRelatedProducts(slug, 4);
 
   return (
     <div className="container-x py-8 md:py-12">
-      {/* Хлебные крошки */}
       <nav className="mb-8 flex items-center gap-1.5 text-sm text-faint">
         <Link href="/" className="transition-colors hover:text-ink">
           Главная
