@@ -1,0 +1,90 @@
+[
+  {
+    "id": "order-1",
+    "date": "2026-06-20",
+    "status": "pending",
+    "customer": {
+      "firstName": "Иван",
+      "lastName": "Петров",
+      "phone": "+79991234567",
+      "email": "ivan@mail.ru"
+    },
+    "items": [
+      {
+        "productId": "prod-1",
+        "name": "Apple iPhone 15 Pro Max 256GB",
+        "price": 119990,
+        "quantity": 1,
+        "image": "https://images.unsplash.com/photo-1695048133142-1a20484d2569?w=200&q=80"
+      }
+    ],
+    "total": 119990,
+    "delivery": {
+      "method": "courier-spb",
+      "price": 500,
+      "address": "Невский проспект, 100, кв. 15",
+      "city": "Санкт-Петербург"
+    },
+    "payment": "cash"
+  },
+  {
+    "id": "order-2",
+    "date": "2026-06-19",
+    "status": "confirmed",
+    "customer": {
+      "firstName": "Мария",
+      "lastName": "Сидорова",
+      "phone": "+79997654321"
+    },
+    "items": [
+      {
+        "productId": "prod-4",
+        "name": "Dyson Airwrap Complete Long",
+        "price": 59990,
+        "quantity": 1,
+        "image": "https://images.unsplash.com/photo-1522338242992-e1a54906a8da?w=200&q=80"
+      }
+    ],
+    "total": 59990,
+    "delivery": {
+      "method": "pickup",
+      "price": 0
+    },
+    "payment": "card"
+  },
+  {
+    "id": "order-3",
+    "date": "2026-06-18",
+    "status": "shipping",
+    "customer": {
+      "firstName": "Алексей",
+      "lastName": "Козлов",
+      "phone": "+79995556677",
+      "email": "alex@yandex.ru"
+    },
+    "items": [
+      {
+        "productId": "prod-5",
+        "name": "Sony PlayStation 5 Slim 1TB",
+        "price": 54990,
+        "quantity": 1,
+        "image": "https://images.unsplash.com/photo-1606813907291-d86efa9b94db?w=200&q=80"
+      },
+      {
+        "productId": "prod-6",
+        "name": "Marshall Major V",
+        "price": 14990,
+        "quantity": 1,
+        "image": "https://images.unsplash.com/photo-1546435770-a3e426bf472b?w=200&q=80"
+      }
+    ],
+    "total": 69980,
+    "delivery": {
+      "method": "sdek",
+      "price": 1200,
+      "address": "Ленина, 25, кв. 8",
+      "city": "Москва"
+    },
+    "payment": "qr"
+  }
+]

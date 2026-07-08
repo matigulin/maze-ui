@@ -1,0 +1,54 @@
+{
+  "name": "maze-api",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "dev": "node ./node_modules/tsx/dist/cli.mjs watch src/server.ts",
+    "build": "node ./node_modules/typescript/bin/tsc",
+    "start": "node dist/server.js",
+    "lint": "node ./node_modules/eslint/bin/eslint.js src --max-warnings 0",
+    "test": "node ./node_modules/vitest/vitest.mjs run",
+    "test:watch": "node ./node_modules/vitest/vitest.mjs",
+    "db:migrate": "node ./node_modules/sequelize-cli/lib/sequelize db:migrate",
+    "db:migrate:undo": "node ./node_modules/sequelize-cli/lib/sequelize db:migrate:undo",
+    "db:seed": "node ./node_modules/sequelize-cli/lib/sequelize db:seed:all",
+    "db:seed:prod-bootstrap": "sequelize-cli db:seed --seed 20250624100001-references && sequelize-cli db:seed --seed 20250624100002-site-settings",
+    "infra:up": "docker compose up -d",
+    "infra:down": "docker compose down",
+    "infra:logs": "docker compose logs -f"
+  },
+  "dependencies": {
+    "@fastify/cookie": "^11.0.2",
+    "@fastify/cors": "^10.0.2",
+    "@fastify/helmet": "^13.0.1",
+    "@fastify/multipart": "^10.0.0",
+    "@fastify/rate-limit": "^10.2.2",
+    "@fastify/static": "^9.1.3",
+    "bcrypt": "^6.0.0",
+    "bullmq": "^5.34.10",
+    "dotenv": "^16.4.7",
+    "fastify": "^5.2.1",
+    "fastify-plugin": "^5.0.1",
+    "ioredis": "^5.4.2",
+    "jose": "^6.2.3",
+    "pg": "^8.13.1",
+    "pg-hstore": "^2.3.4",
+    "sequelize": "^6.37.5",
+    "zod": "^3.24.1"
+  },
+  "devDependencies": {
+    "@types/bcrypt": "^6.0.0",
+    "@types/node": "^20.17.10",
+    "@typescript-eslint/eslint-plugin": "^8.19.1",
+    "@typescript-eslint/parser": "^8.19.1",
+    "eslint": "^9.17.0",
+    "sequelize-cli": "^6.6.2",
+    "tsx": "^4.19.2",
+    "typescript": "^5.7.2",
+    "vitest": "^2.1.8"
+  }
+}

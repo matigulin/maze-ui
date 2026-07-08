@@ -1,0 +1,76 @@
+import Link from "next/link";
+import { notFound } from "next/navigation";
+import { ChevronRight } from "lucide-react";
+import { apiGet, ApiError } from "@/lib/api";
+import { ProductDetail } from "@/components/product/ProductDetail";
+import { ProductCard } from "@/components/ProductCard";
+import { SectionHeading } from "@/components/SectionHeading";
+import { Reveal } from "@/components/Reveal";
+import {
+  mapProductDetailToUiProduct,
+  mapProductListItemToUiProduct,
+  type ProductDetailDto,
+  type ProductListItemDto,
+} from "@/lib/mappers/catalog";
+
+export const dynamic = "force-dynamic";
+
+export default async function ProductPage({
+  params,
+}: {
+  params: Promise<{ slug: string }>;
+}) {
+  const { slug } = await params;
+  let dto: ProductDetailDto;
+  try {
+    dto = await apiGet<ProductDetailDto>(`/catalog/products/${slug}`);
+  } catch (e) {
+    if (e instanceof ApiError && e.status === 404) notFound();
+    throw e;
+  }
+
+  const product = mapProductDetailToUiProduct(dto);
+
+  const relatedItems = await apiGet<ProductListItemDto[]>("/catalog/products", {
+    brand: dto.brandSlug,
+    limit: 8,
+  });
+  const related = relatedItems
+    .filter((x) => x.slug !== dto.slug)
+    .slice(0, 4)
+    .map(mapProductListItemToUiProduct);
+
+  return (
+    <div className="container-x py-8 md:py-12">
+      {/* Хлебные крошки */}
+      <nav className="mb-8 flex items-center gap-1.5 text-sm text-faint">
+        <Link href="/" className="transition-colors hover:text-ink">
+          Главная
+        </Link>
+        <ChevronRight size={14} />
+        <Link href="/catalog" className="transition-colors hover:text-ink">
+          Каталог
+        </Link>
+        <ChevronRight size={14} />
+        <span className="truncate text-muted">{product.name}</span>
+      </nav>
+
+      <ProductDetail product={product} />
+
+      <section className="mt-24">
+        <SectionHeading
+          eyebrow="Вам подойдёт"
+          title="Похожие товары"
+          href="/catalog"
+        />
+        <div className="grid grid-cols-2 gap-4 sm:gap-5 lg:grid-cols-4">
+          {related.map((p, i) => (
+            <Reveal key={p.id} delay={(i % 4) * 0.06}>
+              <ProductCard product={p} />
+            </Reveal>
+          ))}
+        </div>
+      </section>
+    </div>
+  );
+}

@@ -1,0 +1,37 @@
+# dependencies
+node_modules/
+
+# next.js
+.next/
+out/
+build/
+next-env.d.ts
+*.tsbuildinfo
+
+# server
+Server/dist/
+Server/uploads/
+
+# misc
+.DS_Store
+*.pem
+npm-debug.log*
+yarn-error.log*
+
+# env
+.env
+.env*.local
+!.env.example
+!**/.env.example
+
+# python cache
+__pycache__/
+*.pyc
+
+# editor
+.vscode/
+.idea/
+.cursor/
+
+# vercel
+.vercel

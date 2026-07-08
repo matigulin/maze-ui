@@ -1,0 +1,367 @@
+@import "tailwindcss";
+
+/* ============================================================
+   MAZE — Liquid Glass · neon iridescent design system
+   ============================================================ */
+
+@theme {
+  /* — Surfaces — */
+  --color-bg: #05060e;
+  --color-bg-2: #0a0c1c;
+  --color-panel: #0e1126;
+  --color-panel-2: #131736;
+
+  /* — Text — */
+  --color-ink: #eaf1ff;
+  --color-muted: #9aa6c8;
+  --color-faint: #5a6488;
+  --color-line: #1a2044;
+
+  /* — Neon accents — */
+  --color-cyan: #35e4f0;
+  --color-blue: #3b82f6;
+  --color-violet: #8b5cf6;
+  --color-magenta: #ff3d8b;
+  --color-gold: #f5c451;
+
+  /* — Fonts — */
+  --font-sans: var(--font-exo);
+  --font-display: var(--font-orbitron);
+
+  /* — Motion easing — */
+  --ease-fluid: cubic-bezier(0.22, 1, 0.36, 1);
+
+  /* — Animations — */
+  --animate-marquee: marquee 40s linear infinite;
+  --animate-marquee-slow: marquee 70s linear infinite;
+  --animate-iri: iri 8s linear infinite;
+  --animate-float: float 7s var(--ease-fluid) infinite;
+  --animate-blob: blob 18s var(--ease-fluid) infinite;
+  --animate-shimmer: shimmer 2.5s linear infinite;
+}
+
+@keyframes marquee {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+@keyframes iri {
+  to {
+    background-position: 200% center;
+  }
+}
+@keyframes float {
+  0%,
+  100% {
+    transform: translateY(0) rotate(0deg);
+  }
+  50% {
+    transform: translateY(-16px) rotate(0.4deg);
+  }
+}
+@keyframes blob {
+  0%,
+  100% {
+    border-radius: 42% 58% 63% 37% / 42% 45% 55% 58%;
+    transform: translate(0, 0) scale(1);
+  }
+  33% {
+    border-radius: 58% 42% 38% 62% / 63% 55% 45% 37%;
+    transform: translate(3%, -4%) scale(1.06);
+  }
+  66% {
+    border-radius: 38% 62% 58% 42% / 48% 62% 38% 52%;
+    transform: translate(-3%, 3%) scale(0.96);
+  }
+}
+@keyframes shimmer {
+  from {
+    transform: translateX(-120%);
+  }
+  to {
+    transform: translateX(120%);
+  }
+}
+
+/* ---------------- Base ---------------- */
+
+html {
+  scroll-behavior: smooth;
+  -webkit-tap-highlight-color: transparent;
+}
+
+body {
+  background-color: var(--color-bg);
+  color: var(--color-ink);
+  background-image:
+    radial-gradient(60rem 60rem at 12% -10%, rgba(53, 228, 240, 0.1), transparent 60%),
+    radial-gradient(55rem 55rem at 100% 8%, rgba(139, 92, 246, 0.12), transparent 55%),
+    radial-gradient(50rem 40rem at 50% 120%, rgba(59, 130, 246, 0.1), transparent 60%);
+  background-attachment: fixed;
+}
+
+::selection {
+  background: rgba(53, 228, 240, 0.28);
+  color: #fff;
+}
+
+/* Custom scrollbar */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #232a52 transparent;
+}
+*::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+*::-webkit-scrollbar-thumb {
+  background: linear-gradient(var(--color-violet), var(--color-cyan));
+  border-radius: 999px;
+  border: 3px solid var(--color-bg);
+}
+
+/* Focus ring — visible for a11y */
+:focus-visible {
+  outline: 2px solid var(--color-cyan);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* ---------------- Components / utilities ---------------- */
+
+@layer components {
+  /* Frosted glass surface */
+  .glass {
+    background: rgba(255, 255, 255, 0.04);
+    backdrop-filter: blur(16px) saturate(140%);
+    -webkit-backdrop-filter: blur(16px) saturate(140%);
+    border: 1px solid rgba(150, 170, 255, 0.1);
+  }
+  .glass-strong {
+    background: rgba(14, 17, 38, 0.72);
+    backdrop-filter: blur(22px) saturate(150%);
+    -webkit-backdrop-filter: blur(22px) saturate(150%);
+    border: 1px solid rgba(150, 170, 255, 0.12);
+  }
+
+  /* Iridescent gradient text (animated sweep) */
+  .text-iri {
+    background: linear-gradient(
+      100deg,
+      var(--color-cyan),
+      var(--color-blue),
+      var(--color-violet),
+      var(--color-magenta),
+      var(--color-cyan)
+    );
+    background-size: 200% auto;
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    animation: var(--animate-iri);
+  }
+
+  /* Iridescent border via double-background trick */
+  .iri-border {
+    border: 1px solid transparent;
+    background:
+      linear-gradient(var(--color-panel), var(--color-panel)) padding-box,
+      linear-gradient(
+          120deg,
+          var(--color-cyan),
+          var(--color-violet),
+          var(--color-magenta)
+        )
+        border-box;
+  }
+  /* Iridescent glowing ring for glass elements (uses ::before) */
+  .iri-ring {
+    position: relative;
+    isolation: isolate;
+  }
+  .iri-ring::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    padding: 1px;
+    background: linear-gradient(
+      130deg,
+      rgba(53, 228, 240, 0.9),
+      rgba(139, 92, 246, 0.35) 40%,
+      rgba(255, 61, 139, 0.7)
+    );
+    -webkit-mask:
+      linear-gradient(#000 0 0) content-box,
+      linear-gradient(#000 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    pointer-events: none;
+  }
+
+  /* Neon glows */
+  .glow-cyan {
+    box-shadow:
+      0 0 40px -8px rgba(53, 228, 240, 0.55),
+      0 0 0 1px rgba(53, 228, 240, 0.15) inset;
+  }
+  .glow-violet {
+    box-shadow: 0 0 48px -10px rgba(139, 92, 246, 0.55);
+  }
+
+  /* Primary CTA — liquid cyan pill */
+  .btn-primary {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    border-radius: 999px;
+    padding: 0.85rem 1.6rem;
+    font-weight: 600;
+    color: #041016;
+    background: linear-gradient(120deg, #6ff2fb, var(--color-cyan) 55%, #22b8ff);
+    box-shadow:
+      0 8px 30px -8px rgba(53, 228, 240, 0.6),
+      0 1px 0 0 rgba(255, 255, 255, 0.4) inset;
+    transition:
+      transform 0.25s var(--ease-fluid),
+      box-shadow 0.25s var(--ease-fluid),
+      filter 0.25s var(--ease-fluid);
+    cursor: pointer;
+  }
+  .btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow:
+      0 14px 40px -8px rgba(53, 228, 240, 0.8),
+      0 1px 0 0 rgba(255, 255, 255, 0.5) inset;
+    filter: saturate(1.1);
+  }
+  .btn-primary:active {
+    transform: translateY(0);
+  }
+
+  /* Secondary — glass outline pill */
+  .btn-ghost {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    border-radius: 999px;
+    padding: 0.85rem 1.6rem;
+    font-weight: 600;
+    color: var(--color-ink);
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(150, 170, 255, 0.22);
+    backdrop-filter: blur(8px);
+    transition:
+      transform 0.25s var(--ease-fluid),
+      border-color 0.25s var(--ease-fluid),
+      background 0.25s var(--ease-fluid);
+    cursor: pointer;
+  }
+  .btn-ghost:hover {
+    transform: translateY(-2px);
+    border-color: rgba(53, 228, 240, 0.6);
+    background: rgba(53, 228, 240, 0.08);
+  }
+
+  /* Eyebrow label — mono-ish spaced caption */
+  .eyebrow {
+    font-family: var(--font-display);
+    font-size: 0.72rem;
+    letter-spacing: 0.28em;
+    text-transform: uppercase;
+    color: var(--color-cyan);
+  }
+
+  /* Fades on marquee edges */
+  .edge-fade {
+    -webkit-mask-image: linear-gradient(
+      90deg,
+      transparent,
+      #000 8%,
+      #000 92%,
+      transparent
+    );
+    mask-image: linear-gradient(
+      90deg,
+      transparent,
+      #000 8%,
+      #000 92%,
+      transparent
+    );
+  }
+}
+
+/* Section container helper */
+.container-x {
+  width: 100%;
+  max-width: 80rem;
+  margin-inline: auto;
+  padding-inline: 1.25rem;
+}
+@media (min-width: 768px) {
+  .container-x {
+    padding-inline: 2rem;
+  }
+}
+
+/* Checkbox с фирменным акцентом */
+.maze-check {
+  width: 16px;
+  height: 16px;
+  accent-color: var(--color-cyan);
+  cursor: pointer;
+}
+
+/* Range slider (фильтр цены) */
+.maze-range {
+  -webkit-appearance: none;
+  appearance: none;
+  height: 6px;
+  border-radius: 999px;
+  background: linear-gradient(
+    90deg,
+    var(--color-cyan),
+    var(--color-violet)
+  );
+  outline: none;
+  cursor: pointer;
+}
+.maze-range::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: #fff;
+  border: 3px solid var(--color-cyan);
+  box-shadow: 0 0 12px rgba(53, 228, 240, 0.7);
+  cursor: pointer;
+}
+.maze-range::-moz-range-thumb {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: #fff;
+  border: 3px solid var(--color-cyan);
+  box-shadow: 0 0 12px rgba(53, 228, 240, 0.7);
+  cursor: pointer;
+}
+
+/* ---------------- Reduced motion ---------------- */
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+}

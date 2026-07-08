@@ -1,0 +1,23 @@
+{
+  "phone": "+79959114984",
+  "address": "г. Санкт-Петербург, Чайковского 56",
+  "metro": "Чернышевская",
+  "hours": "11:30 – 20:30",
+  "social": {
+    "telegram": "https://t.me/maze_spb",
+    "vk": "https://vk.com/maze_spb",
+    "youtube": "https://youtube.com/@maze_spb",
+    "telegramUsed": "https://t.me/applespbiphone"
+  },
+  "delivery": {
+    "spbFrom": 500,
+    "spbFreeFrom": 5000,
+    "russiaFrom": 1000
+  },
+  "payment": {
+    "cardFee": 7,
+    "qrFee": 4,
+    "installmentFee": 5000
+  },
+  "mapCenter": [59.946528, 30.365317]
+}

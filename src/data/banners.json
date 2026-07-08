@@ -1,0 +1,18 @@
+[
+  {
+    "id": "banner-1",
+    "title": "Трейд-ин до 30%",
+    "subtitle": "Обменяй старый гаджет на новый",
+    "image": "https://images.unsplash.com/photo-1556656793-08538906a9f8?w=1200&q=80",
+    "link": "/catalog",
+    "size": "large"
+  },
+  {
+    "id": "banner-2",
+    "title": "Рассрочка 0%",
+    "subtitle": "На любую технику в MAZE",
+    "image": "https://images.unsplash.com/photo-1563013547-7bce1e9600b3?w=1200&q=80",
+    "link": "/credit",
+    "size": "large"
+  }
+]

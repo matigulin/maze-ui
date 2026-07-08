@@ -1,0 +1,108 @@
+[
+  {
+    "id": "apple",
+    "slug": "apple",
+    "name": "Apple",
+    "icon": "🍎",
+    "image": "https://images.unsplash.com/photo-1611186874428-7e0d67a3ae52?w=800&q=80",
+    "count": 124,
+    "description": "iPhone, iPad, MacBook, Apple Watch и AirPods",
+    "children": [
+      { "id": "iphone", "slug": "iphone", "name": "iPhone", "icon": "📱", "image": "https://images.unsplash.com/photo-1695048133142-1a20484d2569?w=800&q=80", "count": 48, "parentId": "apple" },
+      { "id": "watch", "slug": "watch", "name": "Apple Watch", "icon": "⌚", "image": "https://images.unsplash.com/photo-1434493789847-2f02dc6ca35d?w=800&q=80", "count": 22, "parentId": "apple" },
+      { "id": "ipad", "slug": "ipad", "name": "iPad", "icon": "📲", "image": "https://images.unsplash.com/photo-1544244015-0df4b3ffc6b0?w=800&q=80", "count": 18, "parentId": "apple" },
+      { "id": "macbook", "slug": "macbook", "name": "MacBook", "icon": "💻", "image": "https://images.unsplash.com/photo-1517336714731-489689fd1ca8?w=800&q=80", "count": 16, "parentId": "apple" },
+      { "id": "airpods", "slug": "airpods", "name": "AirPods", "icon": "🎧", "image": "https://images.unsplash.com/photo-1606220945770-b5b6c2c55bf1?w=800&q=80", "count": 12, "parentId": "apple" },
+      { "id": "apple-accessories", "slug": "apple-accessories", "name": "Аксессуары", "icon": "🔌", "image": "https://images.unsplash.com/photo-1625729140840-8409b47db261?w=800&q=80", "count": 8, "parentId": "apple" }
+    ]
+  },
+  {
+    "id": "samsung",
+    "slug": "samsung",
+    "name": "Samsung",
+    "icon": "📱",
+    "image": "https://images.unsplash.com/photo-1610945265064-0e34e55182fa?w=800&q=80",
+    "count": 86,
+    "description": "Galaxy Phone, Watch и Buds",
+    "children": [
+      { "id": "galaxy-phone", "slug": "galaxy-phone", "name": "Galaxy Phone", "icon": "📱", "image": "https://images.unsplash.com/photo-1610945265064-0e34e55182fa?w=800&q=80", "count": 42, "parentId": "samsung" },
+      { "id": "galaxy-watch", "slug": "galaxy-watch", "name": "Galaxy Watch", "icon": "⌚", "image": "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=800&q=80", "count": 24, "parentId": "samsung" },
+      { "id": "galaxy-buds", "slug": "galaxy-buds", "name": "Galaxy Buds", "icon": "🎧", "image": "https://images.unsplash.com/photo-1590658268037-6bf12165a8df?w=800&q=80", "count": 20, "parentId": "samsung" }
+    ]
+  },
+  {
+    "id": "dyson",
+    "slug": "dyson",
+    "name": "Dyson",
+    "icon": "💨",
+    "image": "https://images.unsplash.com/photo-1558317374-067fb5f30001?w=800&q=80",
+    "count": 42,
+    "description": "Фены, стайлеры, пылесосы и очистители",
+    "children": [
+      { "id": "dyson-hair", "slug": "dyson-hair", "name": "Фены", "icon": "💇", "image": "https://images.unsplash.com/photo-1522338242992-e1a54906a8da?w=800&q=80", "count": 12, "parentId": "dyson" },
+      { "id": "dyson-styler", "slug": "dyson-styler", "name": "Стайлеры", "icon": "✨", "image": "https://images.unsplash.com/photo-1560066984-138dadb4c035?w=800&q=80", "count": 8, "parentId": "dyson" },
+      { "id": "dyson-vacuum", "slug": "dyson-vacuum", "name": "Пылесосы", "icon": "🧹", "image": "https://images.unsplash.com/photo-1558317374-067fb5f30001?w=800&q=80", "count": 14, "parentId": "dyson" },
+      { "id": "dyson-purifier", "slug": "dyson-purifier", "name": "Очистители", "icon": "🌬️", "image": "https://images.unsplash.com/photo-1585771724684-a3825d39b710?w=800&q=80", "count": 8, "parentId": "dyson" }
+    ]
+  },
+  {
+    "id": "gaming",
+    "slug": "gaming",
+    "name": "Игровые приставки",
+    "icon": "🎮",
+    "image": "https://images.unsplash.com/photo-1606144042614-b2417e99c4e3?w=800&q=80",
+    "count": 28,
+    "description": "PlayStation, Nintendo Switch, SteamDeck",
+    "children": [
+      { "id": "ps5-slim", "slug": "ps5-slim", "name": "PlayStation 5 Slim", "icon": "🎮", "image": "https://images.unsplash.com/photo-1606813907291-d86efa9b94db?w=800&q=80", "count": 8, "parentId": "gaming" },
+      { "id": "ps5-pro", "slug": "ps5-pro", "name": "PlayStation 5 Pro", "icon": "🎮", "image": "https://images.unsplash.com/photo-1606144042614-b2417e99c4e3?w=800&q=80", "count": 6, "parentId": "gaming" },
+      { "id": "nintendo-switch", "slug": "nintendo-switch", "name": "Nintendo Switch", "icon": "🕹️", "image": "https://images.unsplash.com/photo-1578303512597-81e6cc155b3e?w=800&q=80", "count": 6, "parentId": "gaming" },
+      { "id": "steamdeck", "slug": "steamdeck", "name": "SteamDeck", "icon": "🎯", "image": "https://images.unsplash.com/photo-1621259182978-fbf93132d53d?w=800&q=80", "count": 4, "parentId": "gaming" }
+    ]
+  },
+  {
+    "id": "marshall",
+    "slug": "marshall",
+    "name": "Marshall",
+    "icon": "🎸",
+    "image": "https://images.unsplash.com/photo-1545454675-3531b543be6d?w=800&q=80",
+    "count": 24,
+    "description": "Наушники и колонки Marshall",
+    "children": [
+      { "id": "marshall-headphones", "slug": "marshall-headphones", "name": "Наушники", "icon": "🎧", "image": "https://images.unsplash.com/photo-1546435770-a3e426bf472b?w=800&q=80", "count": 14, "parentId": "marshall" },
+      { "id": "marshall-speakers", "slug": "marshall-speakers", "name": "Колонки", "icon": "🔊", "image": "https://images.unsplash.com/photo-1545454675-3531b543be6d?w=800&q=80", "count": 10, "parentId": "marshall" }
+    ]
+  },
+  {
+    "id": "harman",
+    "slug": "harman",
+    "name": "Harman Kardon",
+    "icon": "🔊",
+    "image": "https://images.unsplash.com/photo-1608043152269-423dbba4e7e1?w=800&q=80",
+    "count": 18,
+    "description": "Наушники и колонки Harman Kardon",
+    "children": [
+      { "id": "harman-headphones", "slug": "harman-headphones", "name": "Наушники", "icon": "🎧", "image": "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=800&q=80", "count": 10, "parentId": "harman" },
+      { "id": "harman-speakers", "slug": "harman-speakers", "name": "Колонки", "icon": "🔊", "image": "https://images.unsplash.com/photo-1608043152269-423dbba4e7e1?w=800&q=80", "count": 8, "parentId": "harman" }
+    ]
+  },
+  {
+    "id": "accessories",
+    "slug": "accessories",
+    "name": "Аксессуары",
+    "icon": "🔌",
+    "image": "https://images.unsplash.com/photo-1625729140840-8409b47db261?w=800&q=80",
+    "count": 56,
+    "description": "Чехлы, стёкла, зарядки и другое"
+  },
+  {
+    "id": "used",
+    "slug": "used",
+    "name": "Б/У техника",
+    "icon": "♻️",
+    "image": "https://images.unsplash.com/photo-1556656793-08538906a9f8?w=800&q=80",
+    "count": 0,
+    "description": "Переход в Telegram-канал",
+    "externalLink": "https://t.me/applespbiphone"
+  }
+]

@@ -1,0 +1,26 @@
+[
+  {
+    "id": "user-1",
+    "firstName": "Демо",
+    "lastName": "Пользователь",
+    "middleName": "Тестович",
+    "gender": "male",
+    "phone": "+79991234567",
+    "email": "demo@maze.ru",
+    "birthDate": "1990-05-15",
+    "subscribeEmail": true,
+    "subscribeSMS": false,
+    "addresses": [
+      {
+        "id": "addr-1",
+        "type": "home",
+        "city": "Санкт-Петербург",
+        "street": "Невский проспект",
+        "house": "100",
+        "apartment": "15",
+        "floor": "5"
+      }
+    ],
+    "companies": []
+  }
+]

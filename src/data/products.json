@@ -1,0 +1,379 @@
+[
+  {
+    "id": "prod-1",
+    "slug": "iphone-15-pro-max",
+    "name": "Apple iPhone 15 Pro Max 256GB",
+    "category": "apple",
+    "subcategory": "iphone",
+    "price": 119990,
+    "oldPrice": 134990,
+    "images": [
+      "https://images.unsplash.com/photo-1695048133142-1a20484d2569?w=800&q=80",
+      "https://images.unsplash.com/photo-1695048133142-1a20484d2569?w=800&q=80&sat=-100",
+      "https://images.unsplash.com/photo-1592286927505-c0223a9e4b36?w=800&q=80"
+    ],
+    "badge": { "type": "sale", "text": "-11%" },
+    "inStock": true,
+    "stock": 8,
+    "colors": [
+      { "name": "Natural Titanium", "hex": "#9A9A9D" },
+      { "name": "Blue Titanium", "hex": "#394E5C" },
+      { "name": "White Titanium", "hex": "#F5F5F0" },
+      { "name": "Black Titanium", "hex": "#3C3C3C" }
+    ],
+    "memory": ["256GB", "512GB", "1TB"],
+    "deviceType": "smartphone",
+    "features": [
+      { "title": "A17 Pro", "description": "Самый мощный чип в iPhone", "icon": "cpu" },
+      { "title": "Titanium", "description": "Прочный и лёгкий корпус", "icon": "shield" },
+      { "title": "Action Button", "description": "Настраиваемая кнопка действий", "icon": "zap" },
+      { "title": "USB-C", "description": "Универсальный разъём", "icon": "usb" }
+    ],
+    "specifications": {
+      "Основные": { "Модель": "iPhone 15 Pro Max", "Память": "256 GB", "Цвет": "Natural Titanium", "SIM-карта": "Nano-SIM + eSIM" },
+      "Процессор": { "Процессор": "Apple A17 Pro" },
+      "Дисплей": { "Диагональ": "6.7\"", "Разрешение": "2796×1290", "Тип дисплея": "Super Retina XDR OLED", "Частота обновления": "120 Гц" },
+      "Камера": { "Разрешение камеры": "48 Мп", "Разрешение фронтальной камеры": "12 Мп" },
+      "Питание": { "Ёмкость аккумулятора": "4441 мА·ч", "Зарядка": "USB-C, MagSafe, Qi" }
+    },
+    "rating": 4.9,
+    "reviews": 128,
+    "variants": [
+      { "color": "Natural Titanium", "colorName": "Natural Titanium", "memory": "256GB", "stock": 3, "price": 119990 },
+      { "color": "Blue Titanium", "colorName": "Blue Titanium", "memory": "256GB", "stock": 2, "price": 119990 },
+      { "color": "Black Titanium", "colorName": "Black Titanium", "memory": "512GB", "stock": 3, "price": 139990 }
+    ],
+    "description": "iPhone 15 Pro Max — флагман Apple с чипом A17 Pro, титановым корпусом и продвинутой системой камер."
+  },
+  {
+    "id": "prod-2",
+    "slug": "samsung-s24-ultra",
+    "name": "Samsung Galaxy S24 Ultra 256GB",
+    "category": "samsung",
+    "subcategory": "galaxy-phone",
+    "price": 109990,
+    "images": [
+      "https://images.unsplash.com/photo-1610945265064-0e34e55182fa?w=800&q=80",
+      "https://images.unsplash.com/photo-1610945415295-d9bbf067e59c?w=800&q=80"
+    ],
+    "badge": { "type": "new", "text": "NEW" },
+    "inStock": true,
+    "stock": 6,
+    "colors": [
+      { "name": "Titanium Gray", "hex": "#8B8B8B" },
+      { "name": "Titanium Black", "hex": "#2C2C2C" },
+      { "name": "Titanium Violet", "hex": "#6B5B7B" }
+    ],
+    "memory": ["256GB", "512GB", "1TB"],
+    "deviceType": "smartphone",
+    "features": [
+      { "title": "Galaxy AI", "description": "Искусственный интеллект Samsung", "icon": "sparkles" },
+      { "title": "S Pen", "description": "Встроенный стилус", "icon": "pen" },
+      { "title": "200 Мп", "description": "Камера нового поколения", "icon": "camera" }
+    ],
+    "specifications": {
+      "Основные": { "Модель": "Galaxy S24 Ultra", "Память": "256 GB", "Цвет": "Titanium Gray" },
+      "Процессор": { "Процессор": "Snapdragon 8 Gen 3" },
+      "Дисплей": { "Диагональ": "6.8\"", "Разрешение": "3120×1440", "Тип дисплея": "Dynamic AMOLED 2X" }
+    },
+    "rating": 4.8,
+    "reviews": 94,
+    "variants": [
+      { "color": "Titanium Gray", "colorName": "Titanium Gray", "memory": "256GB", "stock": 4, "price": 109990 }
+    ],
+    "description": "Galaxy S24 Ultra — топовый смартфон Samsung с S Pen и Galaxy AI."
+  },
+  {
+    "id": "prod-3",
+    "slug": "macbook-air-m3",
+    "name": "Apple MacBook Air 13\" M3 256GB",
+    "category": "apple",
+    "subcategory": "macbook",
+    "price": 114990,
+    "images": [
+      "https://images.unsplash.com/photo-1517336714731-489689fd1ca8?w=800&q=80",
+      "https://images.unsplash.com/photo-1611186874428-7e0d67a3ae52?w=800&q=80"
+    ],
+    "inStock": true,
+    "stock": 5,
+    "colors": [
+      { "name": "Midnight", "hex": "#2E3642" },
+      { "name": "Starlight", "hex": "#F0E6D3" },
+      { "name": "Space Gray", "hex": "#7D7E80" }
+    ],
+    "memory": ["256GB", "512GB"],
+    "deviceType": "macbook",
+    "features": [
+      { "title": "M3", "description": "Чип Apple M3 — мощь и эффективность", "icon": "cpu" },
+      { "title": "18 часов", "description": "Автономность до 18 часов", "icon": "battery" },
+      { "title": "Liquid Retina", "description": "Яркий дисплей 13.6\"", "icon": "monitor" }
+    ],
+    "specifications": {
+      "Основные": { "Модель": "MacBook Air 13\"", "Процессор": "Apple M3", "Память": "256 GB", "ОЗУ": "8 GB" },
+      "Дисплей": { "Диагональ": "13.6\"", "Разрешение": "2560×1664", "Тип дисплея": "Liquid Retina" }
+    },
+    "rating": 4.9,
+    "reviews": 67,
+    "variants": [{ "color": "Midnight", "colorName": "Midnight", "memory": "256GB", "stock": 5, "price": 114990 }],
+    "description": "MacBook Air с чипом M3 — ультратонкий ноутбук для работы и творчества."
+  },
+  {
+    "id": "prod-4",
+    "slug": "dyson-airwrap",
+    "name": "Dyson Airwrap Complete Long",
+    "category": "dyson",
+    "subcategory": "dyson-styler",
+    "price": 59990,
+    "oldPrice": 64990,
+    "images": [
+      "https://images.unsplash.com/photo-1522338242992-e1a54906a8da?w=800&q=80"
+    ],
+    "badge": { "type": "sale", "text": "SALE" },
+    "inStock": true,
+    "stock": 4,
+    "colors": [{ "name": "Nickel/Copper", "hex": "#B87333" }],
+    "memory": [],
+    "deviceType": "other",
+    "features": [
+      { "title": "Coanda", "description": "Технология укладки без экстремального нагрева", "icon": "wind" },
+      { "title": "6 насадок", "description": "Полный набор для любой укладки", "icon": "package" }
+    ],
+    "specifications": {
+      "Основные": { "Модель": "Airwrap Complete Long", "Мощность": "1300 Вт" }
+    },
+    "rating": 4.9,
+    "reviews": 45,
+    "variants": [{ "color": "Nickel/Copper", "colorName": "Nickel/Copper", "stock": 4, "price": 59990 }],
+    "description": "Dyson Airwrap — стайлер для укладки без повреждения волос."
+  },
+  {
+    "id": "prod-5",
+    "slug": "ps5-slim",
+    "name": "Sony PlayStation 5 Slim 1TB",
+    "category": "gaming",
+    "subcategory": "ps5-slim",
+    "price": 54990,
+    "images": [
+      "https://images.unsplash.com/photo-1606813907291-d86efa9b94db?w=800&q=80"
+    ],
+    "inStock": true,
+    "stock": 7,
+    "colors": [{ "name": "White", "hex": "#F5F5F5" }],
+    "memory": ["1TB"],
+    "deviceType": "other",
+    "features": [
+      { "title": "4K 120fps", "description": "Игры в 4K с частотой до 120 кадров", "icon": "gamepad" },
+      { "title": "SSD 1TB", "description": "Молниеносная загрузка игр", "icon": "hard-drive" }
+    ],
+    "specifications": {
+      "Основные": { "Модель": "PlayStation 5 Slim", "Накопитель": "1 TB SSD" }
+    },
+    "rating": 4.9,
+    "reviews": 112,
+    "variants": [{ "color": "White", "colorName": "White", "memory": "1TB", "stock": 7, "price": 54990 }],
+    "description": "PlayStation 5 Slim — компактная версия легендарной консоли."
+  },
+  {
+    "id": "prod-6",
+    "slug": "marshall-major-v",
+    "name": "Marshall Major V",
+    "category": "marshall",
+    "subcategory": "marshall-headphones",
+    "price": 14990,
+    "images": [
+      "https://images.unsplash.com/photo-1546435770-a3e426bf472b?w=800&q=80"
+    ],
+    "inStock": true,
+    "stock": 12,
+    "colors": [
+      { "name": "Black", "hex": "#1A1A1A" },
+      { "name": "Brown", "hex": "#8B4513" }
+    ],
+    "memory": [],
+    "deviceType": "accessory",
+    "features": [
+      { "title": "100+ часов", "description": "Автономность свыше 100 часов", "icon": "battery" },
+      { "title": "Bluetooth 5.3", "description": "Стабильное беспроводное соединение", "icon": "bluetooth" }
+    ],
+    "specifications": {
+      "Основные": { "Модель": "Major V", "Тип": "Накладные наушники" }
+    },
+    "rating": 4.8,
+    "reviews": 38,
+    "variants": [{ "color": "Black", "colorName": "Black", "stock": 8, "price": 14990 }],
+    "description": "Marshall Major V — беспроводные наушники с фирменным звуком."
+  },
+  {
+    "id": "prod-7",
+    "slug": "apple-watch-ultra-2",
+    "name": "Apple Watch Ultra 2 49mm",
+    "category": "apple",
+    "subcategory": "watch",
+    "price": 89990,
+    "images": [
+      "https://images.unsplash.com/photo-1434493789847-2f02dc6ca35d?w=800&q=80"
+    ],
+    "badge": { "type": "new", "text": "NEW" },
+    "inStock": true,
+    "stock": 5,
+    "colors": [
+      { "name": "Natural Titanium", "hex": "#9A9A9D" }
+    ],
+    "memory": [],
+    "deviceType": "watch",
+    "features": [
+      { "title": "S9 SiP", "description": "Самый мощный чип в Apple Watch", "icon": "cpu" },
+      { "title": "100м воды", "description": "Защита для дайвинга", "icon": "droplets" }
+    ],
+    "specifications": {
+      "Основные": { "Модель": "Apple Watch Ultra 2", "Размер": "49 мм" },
+      "Дисплей": { "Тип дисплея": "Always-On Retina", "Яркость": "3000 нит" }
+    },
+    "rating": 4.9,
+    "reviews": 56,
+    "variants": [{ "color": "Natural Titanium", "colorName": "Natural Titanium", "stock": 5, "price": 89990 }],
+    "description": "Apple Watch Ultra 2 — часы для экстремальных условий."
+  },
+  {
+    "id": "prod-8",
+    "slug": "airpods-pro-2",
+    "name": "Apple AirPods Pro 2 USB-C",
+    "category": "apple",
+    "subcategory": "airpods",
+    "price": 24990,
+    "images": [
+      "https://images.unsplash.com/photo-1606220945770-b5b6c2c55bf1?w=800&q=80"
+    ],
+    "inStock": true,
+    "stock": 15,
+    "colors": [{ "name": "White", "hex": "#F5F5F5" }],
+    "memory": [],
+    "deviceType": "accessory",
+    "features": [
+      { "title": "ANC 2x", "description": "Активное шумоподавление в 2 раза мощнее", "icon": "volume-x" },
+      { "title": "Adaptive Audio", "description": "Адаптивный звук", "icon": "headphones" }
+    ],
+    "specifications": {
+      "Основные": { "Модель": "AirPods Pro 2", "Разъём": "USB-C" }
+    },
+    "rating": 4.9,
+    "reviews": 203,
+    "variants": [{ "color": "White", "colorName": "White", "stock": 15, "price": 24990 }],
+    "description": "AirPods Pro 2 — лучшие беспроводные наушники Apple."
+  },
+  {
+    "id": "prod-9",
+    "slug": "ipad-pro-m4",
+    "name": "Apple iPad Pro 13\" M4 256GB",
+    "category": "apple",
+    "subcategory": "ipad",
+    "price": 129990,
+    "images": [
+      "https://images.unsplash.com/photo-1544244015-0df4b3ffc6b0?w=800&q=80"
+    ],
+    "inStock": true,
+    "stock": 4,
+    "colors": [
+      { "name": "Space Black", "hex": "#1C1C1E" },
+      { "name": "Silver", "hex": "#E3E4E5" }
+    ],
+    "memory": ["256GB", "512GB", "1TB", "2TB"],
+    "deviceType": "tablet",
+    "features": [
+      { "title": "M4", "description": "Чип Apple M4", "icon": "cpu" },
+      { "title": "Tandem OLED", "description": "Ультратонкий дисплей", "icon": "monitor" }
+    ],
+    "specifications": {
+      "Основные": { "Модель": "iPad Pro 13\"", "Память": "256 GB", "Процессор": "Apple M4" },
+      "Дисплей": { "Диагональ": "13\"", "Тип дисплея": "Ultra Retina XDR" }
+    },
+    "rating": 4.9,
+    "reviews": 41,
+    "variants": [{ "color": "Space Black", "colorName": "Space Black", "memory": "256GB", "stock": 4, "price": 129990 }],
+    "description": "iPad Pro 13\" с M4 — самый тонкий продукт Apple."
+  },
+  {
+    "id": "prod-10",
+    "slug": "harman-aura-studio-4",
+    "name": "Harman Kardon Aura Studio 4",
+    "category": "harman",
+    "subcategory": "harman-speakers",
+    "price": 34990,
+    "images": [
+      "https://images.unsplash.com/photo-1608043152269-423dbba4e7e1?w=800&q=80"
+    ],
+    "inStock": true,
+    "stock": 6,
+    "colors": [{ "name": "Black", "hex": "#1A1A1A" }],
+    "memory": [],
+    "deviceType": "accessory",
+    "features": [
+      { "title": "360° звук", "description": "Объёмное звучание", "icon": "volume-2" },
+      { "title": "Подсветка", "description": "Амбиентная LED-подсветка", "icon": "lightbulb" }
+    ],
+    "specifications": {
+      "Основные": { "Модель": "Aura Studio 4", "Мощность": "100 Вт" }
+    },
+    "rating": 4.8,
+    "reviews": 29,
+    "variants": [{ "color": "Black", "colorName": "Black", "stock": 6, "price": 34990 }],
+    "description": "Harman Kardon Aura Studio 4 — колонка с уникальным дизайном."
+  },
+  {
+    "id": "prod-11",
+    "slug": "galaxy-watch-7",
+    "name": "Samsung Galaxy Watch 7 44mm",
+    "category": "samsung",
+    "subcategory": "galaxy-watch",
+    "price": 29990,
+    "images": [
+      "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=800&q=80"
+    ],
+    "inStock": true,
+    "stock": 8,
+    "colors": [
+      { "name": "Green", "hex": "#4A6741" },
+      { "name": "Silver", "hex": "#C0C0C0" }
+    ],
+    "memory": [],
+    "deviceType": "watch",
+    "features": [
+      { "title": "Galaxy AI", "description": "Умные функции на запястье", "icon": "sparkles" },
+      { "title": "BioActive", "description": "Датчик здоровья нового поколения", "icon": "heart" }
+    ],
+    "specifications": {
+      "Основные": { "Модель": "Galaxy Watch 7", "Размер": "44 мм" }
+    },
+    "rating": 4.7,
+    "reviews": 33,
+    "variants": [{ "color": "Green", "colorName": "Green", "stock": 8, "price": 29990 }],
+    "description": "Galaxy Watch 7 — умные часы Samsung с Galaxy AI."
+  },
+  {
+    "id": "prod-12",
+    "slug": "dyson-v15",
+    "name": "Dyson V15 Detect Absolute",
+    "category": "dyson",
+    "subcategory": "dyson-vacuum",
+    "price": 69990,
+    "images": [
+      "https://images.unsplash.com/photo-1558317374-067fb5f30001?w=800&q=80"
+    ],
+    "inStock": true,
+    "stock": 3,
+    "colors": [{ "name": "Yellow/Nickel", "hex": "#D4AF37" }],
+    "memory": [],
+    "deviceType": "other",
+    "features": [
+      { "title": "Лазер", "description": "Подсветка пыли лазером", "icon": "scan" },
+      { "title": "240 AW", "description": "Мощность всасывания 240 аэроватт", "icon": "wind" }
+    ],
+    "specifications": {
+      "Основные": { "Модель": "V15 Detect Absolute", "Мощность": "240 AW" }
+    },
+    "rating": 4.9,
+    "reviews": 52,
+    "variants": [{ "color": "Yellow/Nickel", "colorName": "Yellow/Nickel", "stock": 3, "price": 69990 }],
+    "description": "Dyson V15 Detect — беспроводной пылесос с лазерной подсветкой."
+  }
+]
