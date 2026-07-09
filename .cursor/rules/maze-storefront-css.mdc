@@ -1,0 +1,13 @@
+---
+description: Storefront UI — CSS Modules + Motion, not Tailwind isolation
+globs: Client/src/components/{home,layout,sections,tradein}/**
+alwaysApply: false
+---
+
+# MAZE storefront styling
+
+- Home shell and sections use **CSS Modules** (`*.module.css`) + brand tokens in `Client/src/styles/tokens.css`.
+- Do **not** style new home UI with Tailwind utility class isolation.
+- Animations: `motion/react` (`import { motion, AnimatePresence } from "motion/react"`).
+- Shared typography helpers: `.maze-overline`, `.maze-display-xl`, `.maze-display-lg`, `.maze-heading-1`, `.maze-heading-2`, `.maze-wordmark`.
+- Catalog / product / cart / admin may still use Tailwind until a later pass.

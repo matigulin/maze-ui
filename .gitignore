@@ -32,7 +32,6 @@ __pycache__/
 # editor
 .vscode/
 .idea/
-.cursor/
 
 # vercel
 .vercel
