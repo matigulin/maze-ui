@@ -1,5 +1,6 @@
 # dependencies
 node_modules/
+Server/node_modules/
 
 # next.js
 .next/
@@ -22,7 +23,7 @@ yarn-error.log*
 .env
 .env*.local
 !.env.example
-!**/.env.example
+!Server/.env.example
 
 # python cache
 __pycache__/

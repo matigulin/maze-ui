@@ -1,14 +1,12 @@
 # MAZE — интернет-магазин техники
 
-Тренировочный проект MAZE: Next.js фронтенд + Fastify API бэкенд.
+Next.js фронтенд + Fastify API бэкенд в одном репозитории.
 
-- Фронт: `maze/` — Next.js 16, Liquid Glass UI
-- Бэк: `Server/` — Fastify 5, PostgreSQL, Redis
-- Документация: `docs/`
+- Фронт — корень репо (Next.js 16)
+- Бэк — `Server/` (Fastify 5, PostgreSQL, Redis)
+- Документация — `docs/`
 
-Демо фронта (только моки): [test-ui-aw6f.vercel.app](https://test-ui-aw6f.vercel.app/)
-
-## Быстрый старт
+## Локальный запуск
 
 ### Сервер (API)
 
@@ -23,12 +21,9 @@ npm run dev
 
 API: `http://localhost:4000/api/v1`
 
-PostgreSQL и Redis должны быть запущены (локально или `npm run infra:up` с Docker).
-
 ### Клиент (сайт)
 
 ```bash
-cd maze
 npm install
 cp .env.example .env.local
 npm run dev
@@ -36,24 +31,19 @@ npm run dev
 
 Сайт: `http://localhost:3000`
 
-## Vercel (публичная ссылка)
+## Vercel
 
-1. [vercel.com/new](https://vercel.com/new) → Import `matigulin/maze-ui`
-2. **Root Directory** → нажми **Edit** → выбери папку **`maze`** → Continue
-3. Framework: Next.js (подтянется сам)
-4. **Deploy**
+Импортируй репозиторий на [vercel.com](https://vercel.com/new) — **Root Directory оставь пустым** (корень репо).
 
-Без шага 2 деплой падает с `No Next.js version detected`.
+В **Settings → Deployment Protection** выключи **Vercel Authentication** для Production, иначе сайт будет закрыт.
 
-На Vercel без API сайт работает на моках (как demo-версия).
+На Vercel без API сайт работает на моках.
 
 ## Структура
 
 ```
-maze/           # Next.js приложение
-Server/         # Fastify API
-docs/           # контракты и архитектура
-design-system/  # дизайн-система
+app/ components/ lib/   # Next.js
+Server/                 # API
+docs/                   # контракты
+design-system/          # дизайн-система
 ```
-
-Учебный проект. Товары и цены — демо-данные.
