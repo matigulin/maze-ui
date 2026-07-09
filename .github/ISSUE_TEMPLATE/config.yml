@@ -1,0 +1,5 @@
+blank_issues_enabled: false
+contact_links:
+  - name: MAZE dev-ветка
+    url: https://github.com/matigulin/maze-ui/tree/dev
+    about: Актуальный код — ветка dev

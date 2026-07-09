@@ -1,0 +1,43 @@
+name: Задача
+description: Новая фича, доработка или техдолг
+title: "[Task] "
+labels: ["task"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Коротко опиши задачу. После создания можно перетащить в **Projects** на доску.
+  - type: textarea
+    id: goal
+    attributes:
+      label: Что нужно сделать
+      placeholder: "Например: подключить избранное к API /me/favorites"
+    validations:
+      required: true
+  - type: dropdown
+    id: area
+    attributes:
+      label: Область
+      options:
+        - maze (фронт)
+        - Server (API)
+        - infra / devops
+        - docs
+        - другое
+    validations:
+      required: true
+  - type: dropdown
+    id: priority
+    attributes:
+      label: Приоритет
+      options:
+        - низкий
+        - средний
+        - высокий
+    validations:
+      required: true
+  - type: textarea
+    id: notes
+    attributes:
+      label: Детали / критерии готовности
+      placeholder: "Как проверить, что задача выполнена"
