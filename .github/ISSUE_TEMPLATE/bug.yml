@@ -1,32 +1,42 @@
 name: Баг
-description: Что-то сломалось
-title: "[Bug] "
-labels: ["bug"]
+description: Что-то сломалось или работает не так
+title: "[Баг] "
+labels: ["баг"]
 body:
+  - type: markdown
+    attributes:
+      value: |
+        Опиши проблему так, чтобы другой человек мог воспроизвести баг без уточнений.
   - type: textarea
     id: what
     attributes:
       label: Что происходит
+      placeholder: "Например: корзина пустая после перезагрузки страницы"
     validations:
       required: true
   - type: textarea
     id: expected
     attributes:
-      label: Ожидалось
+      label: Как должно быть
+      placeholder: "Например: товары остаются в корзине"
     validations:
       required: true
   - type: dropdown
     id: where
     attributes:
-      label: Где
+      label: Где воспроизводится
       options:
-        - localhost (dev)
-        - Vercel
-        - оба
+        - Локально (localhost)
+        - Vercel (прод)
+        - И там, и там
     validations:
       required: true
   - type: textarea
     id: steps
     attributes:
       label: Шаги воспроизведения
-      placeholder: "1. cd Server && npm run dev\n2. ..."
+      placeholder: |
+        1. Запустить Server и maze
+        2. Открыть каталог
+        3. Добавить товар в корзину
+        4. Обновить страницу

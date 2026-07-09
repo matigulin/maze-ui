@@ -1,12 +1,12 @@
 name: Задача
 description: Новая фича, доработка или техдолг
-title: "[Task] "
-labels: ["task"]
+title: "[Задача] "
+labels: ["задача"]
 body:
   - type: markdown
     attributes:
       value: |
-        Коротко опиши задачу. После создания можно перетащить в **Projects** на доску.
+        Опиши задачу коротко и по делу. После создания перетащи карточку на доску **Projects**.
   - type: textarea
     id: goal
     attributes:
@@ -19,11 +19,11 @@ body:
     attributes:
       label: Область
       options:
-        - maze (фронт)
-        - Server (API)
-        - infra / devops
-        - docs
-        - другое
+        - Фронт (maze)
+        - Бэкенд (Server)
+        - Инфра / DevOps
+        - Документация
+        - Другое
     validations:
       required: true
   - type: dropdown
@@ -31,13 +31,13 @@ body:
     attributes:
       label: Приоритет
       options:
-        - низкий
-        - средний
-        - высокий
+        - Низкий
+        - Средний
+        - Высокий
     validations:
       required: true
   - type: textarea
     id: notes
     attributes:
-      label: Детали / критерии готовности
-      placeholder: "Как проверить, что задача выполнена"
+      label: Детали и критерии готовности
+      placeholder: "Как понять, что задача выполнена? Что проверить?"
