@@ -5,7 +5,8 @@ import { dirname } from "node:path";
 const projectRoot = dirname(fileURLToPath(import.meta.url));
 
 const nextConfig: NextConfig = {
-  // Фиксируем корень проекта (в системе несколько lockfile)
+  // Доступ с телефона в той же Wi‑Fi (dev HMR)
+  allowedDevOrigins: ["192.168.0.63"],
   turbopack: {
     root: projectRoot,
   },
