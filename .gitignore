@@ -18,6 +18,9 @@ Server/uploads/
 *.pem
 npm-debug.log*
 yarn-error.log*
+.ref/
+* copy*
+*copy.md
 
 # env
 .env
