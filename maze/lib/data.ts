@@ -7,6 +7,15 @@ export type Badge = "NEW" | "SALE" | "HIT" | null;
 export type ColorOption = { name: string; hex: string };
 export type Spec = { label: string; value: string };
 
+export type ProductVariant = {
+  id: string;
+  color: string;
+  memory?: string;
+  price: number;
+  oldPrice?: number;
+  inStock: boolean;
+};
+
 export type Product = {
   id: string;
   slug: string;
@@ -20,6 +29,10 @@ export type Product = {
   reviews: number;
   tint: [string, string]; // цвета градиента-плейсхолдера
   glyph: string; // короткая подпись поверх картинки
+  imageUrl?: string | null;
+  images?: string[];
+  defaultVariantId?: string;
+  variants?: ProductVariant[];
   colors: ColorOption[];
   memory?: string[];
   specs: Spec[];

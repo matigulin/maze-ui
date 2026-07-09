@@ -90,7 +90,7 @@ export function MiniCart() {
                           <div className="flex items-center gap-1 rounded-full border border-line">
                             <button
                               aria-label="Меньше"
-                              onClick={() => updateQty(it.key, it.qty - 1)}
+                              onClick={() => void updateQty(it.key, it.qty - 1)}
                               className="grid h-7 w-7 place-items-center rounded-full text-muted hover:text-ink cursor-pointer"
                             >
                               <Minus size={13} />
@@ -100,7 +100,7 @@ export function MiniCart() {
                             </span>
                             <button
                               aria-label="Больше"
-                              onClick={() => updateQty(it.key, it.qty + 1)}
+                              onClick={() => void updateQty(it.key, it.qty + 1)}
                               className="grid h-7 w-7 place-items-center rounded-full text-muted hover:text-ink cursor-pointer"
                             >
                               <Plus size={13} />
@@ -113,7 +113,7 @@ export function MiniCart() {
                       </div>
                       <button
                         aria-label="Удалить"
-                        onClick={() => removeItem(it.key)}
+                        onClick={() => void removeItem(it.key)}
                         className="self-start text-faint transition-colors hover:text-magenta cursor-pointer"
                       >
                         <Trash2 size={16} />

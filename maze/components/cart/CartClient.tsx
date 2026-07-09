@@ -87,7 +87,7 @@ export function CartClient() {
             {count} {plural(count, ["товар", "товара", "товаров"])}
           </span>
           <button
-            onClick={clearCart}
+            onClick={() => void clearCart()}
             className="text-xs text-faint transition-colors hover:text-magenta cursor-pointer"
           >
             Очистить корзину
@@ -124,7 +124,7 @@ export function CartClient() {
                 <div className="mt-auto flex items-center justify-between pt-2">
                   <div className="flex items-center gap-1 rounded-full border border-line p-0.5">
                     <button
-                      onClick={() => updateQty(it.key, it.qty - 1)}
+                      onClick={() => void updateQty(it.key, it.qty - 1)}
                       aria-label="Меньше"
                       className="grid h-8 w-8 place-items-center rounded-full text-muted transition-colors hover:bg-white/5 hover:text-ink cursor-pointer"
                     >
@@ -134,7 +134,7 @@ export function CartClient() {
                       {it.qty}
                     </span>
                     <button
-                      onClick={() => updateQty(it.key, it.qty + 1)}
+                      onClick={() => void updateQty(it.key, it.qty + 1)}
                       aria-label="Больше"
                       className="grid h-8 w-8 place-items-center rounded-full text-muted transition-colors hover:bg-white/5 hover:text-ink cursor-pointer"
                     >
@@ -147,7 +147,7 @@ export function CartClient() {
                 </div>
               </div>
               <button
-                onClick={() => removeItem(it.key)}
+                onClick={() => void removeItem(it.key)}
                 aria-label="Удалить"
                 className="self-start text-faint transition-colors hover:text-magenta cursor-pointer"
               >
@@ -172,7 +172,7 @@ export function CartClient() {
           onSubmit={(e) => {
             e.preventDefault();
             setDone(true);
-            setTimeout(clearCart, 300);
+            setTimeout(() => void clearCart(), 300);
           }}
           className="glass space-y-5 rounded-3xl p-6"
         >

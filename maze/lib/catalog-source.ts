@@ -1,4 +1,5 @@
 import { apiGet, ApiError } from "@/lib/api";
+import { shouldUseMocks } from "@/lib/mocks";
 import {
   getProduct,
   products,
@@ -23,14 +24,6 @@ const CAT_MAP: Record<string, { brand?: string; category?: string }> = {
   accessories: { category: "accessories" },
   used: { category: "used" },
 };
-
-/** На Vercel без внешнего API — моки (как у test-ui-aw6f.vercel.app). */
-function shouldUseMocks(): boolean {
-  if (process.env.NEXT_PUBLIC_USE_MOCKS === "true") return true;
-  const api =
-    process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:4000/api/v1";
-  return Boolean(process.env.VERCEL && api.includes("localhost"));
-}
 
 function filterMockProducts(opts: {
   q?: string;

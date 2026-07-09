@@ -11,21 +11,34 @@ import {
   fetchEditorChoice,
   fetchNewProducts,
 } from "@/lib/catalog-source";
+import {
+  fetchHomeFeatures,
+  fetchPartnerBrands,
+  fetchReviews,
+  fetchSiteChrome,
+} from "@/lib/site-source";
 
 export default async function Home() {
-  const hits = await fetchEditorChoice();
-  const fresh = await fetchNewProducts();
+  const [hits, fresh, features, reviews, brands, { categories }] =
+    await Promise.all([
+      fetchEditorChoice(),
+      fetchNewProducts(),
+      fetchHomeFeatures(),
+      fetchReviews(),
+      fetchPartnerBrands(),
+      fetchSiteChrome(),
+    ]);
 
   return (
     <div className="pb-8">
       <Hero />
 
       <div className="my-6">
-        <Marquee />
+        <Marquee brands={brands} />
       </div>
 
       <section className="container-x mt-20">
-        <Features />
+        <Features features={features} />
       </section>
 
       <section className="container-x mt-24">
@@ -36,7 +49,7 @@ export default async function Home() {
           href="/catalog"
           linkLabel="Весь каталог"
         />
-        <CategoryGrid />
+        <CategoryGrid categories={categories} />
       </section>
 
       <section className="container-x mt-24">
@@ -77,7 +90,7 @@ export default async function Home() {
       )}
 
       <section className="container-x mt-24">
-        <Testimonials />
+        <Testimonials reviews={reviews} />
       </section>
     </div>
   );

@@ -2,13 +2,13 @@ import Link from "next/link";
 import { ArrowUpRight } from "lucide-react";
 import { Reveal } from "@/components/Reveal";
 import { Icon } from "@/components/Icon";
-import { CATEGORIES } from "@/lib/data";
+import type { NavCategory } from "@/lib/site-source";
 import { cn } from "@/lib/utils";
 
-export function CategoryGrid() {
+export function CategoryGrid({ categories }: { categories: NavCategory[] }) {
   return (
     <div className="grid auto-rows-[8.5rem] grid-cols-2 gap-4 md:grid-cols-4">
-      {CATEGORIES.map((c, i) => {
+      {categories.map((c, i) => {
         const big = i === 0;
         return (
           <Reveal
@@ -23,7 +23,6 @@ export function CategoryGrid() {
                 background: `linear-gradient(140deg, ${c.tint[0]}22, ${c.tint[1]}14)`,
               }}
             >
-              {/* свечение при наведении */}
               <div
                 className="pointer-events-none absolute -right-10 -top-10 h-32 w-32 rounded-full opacity-0 blur-2xl transition-opacity duration-500 group-hover:opacity-70"
                 style={{ background: c.tint[0] }}

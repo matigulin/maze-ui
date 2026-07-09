@@ -18,13 +18,14 @@ import { Logo } from "./Logo";
 import { Icon } from "./Icon";
 import { useCart } from "./store";
 import { useModal } from "./modals";
-import { CATEGORIES, STORE } from "@/lib/data";
+import { useSiteData } from "./site-data";
 import { cn } from "@/lib/utils";
 
 export function Header() {
   const router = useRouter();
   const { count, wishlist, setMiniOpen } = useCart();
   const { open } = useModal();
+  const { categories, store: STORE } = useSiteData();
   const [scrolled, setScrolled] = useState(false);
   const [catOpen, setCatOpen] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -87,7 +88,7 @@ export function Header() {
                 transition={{ duration: 0.18 }}
                 className="glass-strong absolute left-0 top-full mt-2 grid w-[30rem] grid-cols-2 gap-1 rounded-2xl border border-line p-2"
               >
-                {CATEGORIES.map((c) => (
+                {categories.map((c) => (
                   <Link
                     key={c.slug}
                     href={`/catalog?cat=${c.slug}`}
@@ -215,7 +216,7 @@ export function Header() {
                 />
               </form>
               <nav className="space-y-1">
-                {CATEGORIES.map((c) => (
+                {categories.map((c) => (
                   <Link
                     key={c.slug}
                     href={`/catalog?cat=${c.slug}`}

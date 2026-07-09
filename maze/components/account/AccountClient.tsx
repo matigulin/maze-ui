@@ -1,13 +1,19 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { motion } from "motion/react";
 import { LogOut, MapPin, Package, Plus, Building2, Heart } from "lucide-react";
 import { useCart } from "@/components/store";
 import { ProductCard } from "@/components/ProductCard";
 import { Field, fieldCls } from "@/components/Field";
-import { products } from "@/lib/data";
+import { products, type Product } from "@/lib/data";
+import { apiGet } from "@/lib/api";
+import { shouldUseMocks } from "@/lib/mocks";
+import {
+  mapProductListItemToUiProduct,
+  type ProductListItemDto,
+} from "@/lib/mappers/catalog";
 import { formatPrice, cn } from "@/lib/utils";
 
 type Tab = "profile" | "orders" | "wishlist" | "addresses" | "company";
@@ -23,7 +29,40 @@ const TABS: { id: Tab; label: string }[] = [
 export function AccountClient({ initialTab = "profile" }: { initialTab?: Tab }) {
   const [tab, setTab] = useState<Tab>(initialTab);
   const { wishlist } = useCart();
-  const wished = products.filter((p) => wishlist.includes(p.id));
+  const [wished, setWished] = useState<Product[]>([]);
+
+  useEffect(() => {
+    if (wishlist.length === 0) {
+      setWished([]);
+      return;
+    }
+
+    if (shouldUseMocks()) {
+      setWished(products.filter((p) => wishlist.includes(p.id)));
+      return;
+    }
+
+    let cancelled = false;
+    void (async () => {
+      try {
+        const items = await apiGet<ProductListItemDto[]>("/catalog/products", {
+          limit: 48,
+          page: 1,
+        });
+        if (cancelled) return;
+        const mapped = items
+          .map(mapProductListItemToUiProduct)
+          .filter((p) => wishlist.includes(p.id));
+        setWished(mapped);
+      } catch {
+        if (!cancelled) setWished([]);
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [wishlist]);
 
   return (
     <div>

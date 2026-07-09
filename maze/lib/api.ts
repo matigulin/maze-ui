@@ -41,9 +41,13 @@ function buildUrl(endpoint: string, query?: Record<string, unknown>) {
 export async function apiGet<T>(
   endpoint: string,
   query?: Record<string, unknown>,
+  opts?: { credentials?: RequestCredentials },
 ): Promise<T> {
   const url = buildUrl(endpoint, query);
-  const res = await fetch(url, { method: "GET" });
+  const res = await fetch(url, {
+    method: "GET",
+    credentials: opts?.credentials,
+  });
   const json = await res.json().catch(() => null);
 
   if (!res.ok) {
@@ -60,6 +64,47 @@ export async function apiGet<T>(
 
   const envelope = json as ApiEnvelope<T>;
   return (envelope?.data ?? json) as T;
+}
+
+async function apiMutate<T>(
+  method: "POST" | "PUT" | "DELETE",
+  endpoint: string,
+  body?: unknown,
+): Promise<T> {
+  const url = buildUrl(endpoint);
+  const res = await fetch(url, {
+    method,
+    headers: {
+      "Content-Type": "application/json",
+      "X-Requested-With": "maze-web",
+    },
+    credentials: "include",
+    body: body !== undefined ? JSON.stringify(body) : undefined,
+  });
+
+  const json = await res.json().catch(() => null);
+  if (!res.ok) {
+    const message =
+      json?.error?.message ??
+      `Request failed: ${res.status} ${res.statusText}`;
+    throw new ApiError({
+      message,
+      status: res.status,
+      code: json?.error?.code,
+      requestId: json?.requestId ?? json?.error?.requestId,
+    });
+  }
+
+  const envelope = json as ApiEnvelope<T>;
+  return (envelope?.data ?? json) as T;
+}
+
+export async function apiPutJson<T>(endpoint: string, body: unknown): Promise<T> {
+  return apiMutate<T>("PUT", endpoint, body);
+}
+
+export async function apiDelete<T>(endpoint: string): Promise<T> {
+  return apiMutate<T>("DELETE", endpoint);
 }
 
 export async function apiPostJson<T>(

@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { useState } from "react";
 import { motion } from "motion/react";
 import {
@@ -27,6 +28,10 @@ export function ProductDetail({ product }: { product: Product }) {
   const [memory, setMemory] = useState(product.memory?.[0]);
   const [qty, setQty] = useState(1);
   const wished = isWished(product.id);
+  const gallery =
+    product.images && product.images.length > 0
+      ? product.images
+      : [null, null, null, null];
 
   const discount = product.oldPrice
     ? Math.round((1 - product.price / product.oldPrice) * 100)
@@ -44,12 +49,25 @@ export function ProductDetail({ product }: { product: Product }) {
             transition={{ duration: 0.4 }}
             className="iri-ring relative"
           >
-            <ProductThumb
-              product={product}
-              angle={ANGLES[view]}
-              className="aspect-square w-full"
-              glyphClassName="text-3xl"
-            />
+            {gallery[view] ? (
+              <div className="relative aspect-square w-full overflow-hidden rounded-2xl">
+                <Image
+                  src={gallery[view]!}
+                  alt={product.name}
+                  fill
+                  className="object-cover"
+                  sizes="(max-width: 1024px) 100vw, 50vw"
+                  priority
+                />
+              </div>
+            ) : (
+              <ProductThumb
+                product={product}
+                angle={ANGLES[view]}
+                className="aspect-square w-full"
+                glyphClassName="text-3xl"
+              />
+            )}
             {product.badge && (
               <span className="absolute left-4 top-4 rounded-full border border-white/20 bg-black/30 px-3 py-1 text-xs font-semibold backdrop-blur-md">
                 {product.badge}
@@ -57,7 +75,7 @@ export function ProductDetail({ product }: { product: Product }) {
             )}
           </motion.div>
           <div className="mt-4 grid grid-cols-4 gap-3">
-            {ANGLES.map((a, i) => (
+            {gallery.map((img, i) => (
               <button
                 key={i}
                 onClick={() => setView(i)}
@@ -67,12 +85,24 @@ export function ProductDetail({ product }: { product: Product }) {
                   view === i ? "border-cyan" : "border-transparent",
                 )}
               >
-                <ProductThumb
-                  product={product}
-                  angle={a}
-                  className="aspect-square w-full"
-                  glyphClassName="text-[0.6rem]"
-                />
+                {img ? (
+                  <div className="relative aspect-square w-full">
+                    <Image
+                      src={img}
+                      alt=""
+                      fill
+                      className="object-cover"
+                      sizes="80px"
+                    />
+                  </div>
+                ) : (
+                  <ProductThumb
+                    product={product}
+                    angle={ANGLES[i]}
+                    className="aspect-square w-full"
+                    glyphClassName="text-[0.6rem]"
+                  />
+                )}
               </button>
             ))}
           </div>
@@ -203,7 +233,7 @@ export function ProductDetail({ product }: { product: Product }) {
             </div>
 
             <button
-              onClick={() => addItem(product, { color, memory, qty })}
+              onClick={() => void addItem(product, { color, memory, qty })}
               className="btn-primary flex-1"
             >
               В корзину · {formatPrice(product.price * qty)}

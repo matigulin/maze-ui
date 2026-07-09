@@ -1,9 +1,16 @@
+"use client";
+
+import Image from "next/image";
 import { cn } from "@/lib/utils";
 import type { Product } from "@/lib/data";
 
+type ThumbProduct = Pick<
+  Product,
+  "tint" | "glyph" | "brand" | "imageUrl" | "name"
+>;
+
 /**
- * Премиальный градиентный плейсхолдер вместо фото товара (моки, без бэка).
- * Мешевый градиент + световой блик + «спек»-подпись в Orbitron.
+ * Фото с API или градиентный плейсхолдер (моки / нет картинки).
  */
 export function ProductThumb({
   product,
@@ -11,24 +18,34 @@ export function ProductThumb({
   glyphClassName,
   angle = 135,
 }: {
-  product: Pick<Product, "tint" | "glyph" | "brand">;
+  product: ThumbProduct;
   className?: string;
   glyphClassName?: string;
   angle?: number;
 }) {
+  if (product.imageUrl) {
+    return (
+      <div className={cn("relative overflow-hidden rounded-2xl bg-white/5", className)}>
+        <Image
+          src={product.imageUrl}
+          alt={product.name ?? product.glyph}
+          fill
+          className="object-cover"
+          sizes="(max-width: 768px) 50vw, 25vw"
+        />
+      </div>
+    );
+  }
+
   const [c1, c2] = product.tint;
   return (
     <div
-      className={cn(
-        "relative overflow-hidden rounded-2xl",
-        className,
-      )}
+      className={cn("relative overflow-hidden rounded-2xl", className)}
       style={{
         background: `linear-gradient(${angle}deg, ${c1} -10%, ${c2} 115%)`,
       }}
       aria-hidden
     >
-      {/* мягкие световые пятна */}
       <div
         className="absolute -left-8 -top-10 h-2/3 w-2/3 rounded-full opacity-60 blur-2xl"
         style={{ background: `radial-gradient(circle, ${c1}, transparent 70%)` }}
@@ -37,9 +54,7 @@ export function ProductThumb({
         className="absolute -bottom-12 -right-6 h-2/3 w-2/3 rounded-full opacity-50 blur-2xl"
         style={{ background: `radial-gradient(circle, ${c2}, transparent 70%)` }}
       />
-      {/* глянцевый блик */}
       <div className="absolute inset-0 bg-gradient-to-b from-white/15 via-transparent to-black/25" />
-      {/* тонкая сетка */}
       <div
         className="absolute inset-0 opacity-[0.12] mix-blend-overlay"
         style={{
@@ -48,7 +63,6 @@ export function ProductThumb({
           backgroundSize: "26px 26px",
         }}
       />
-      {/* подпись */}
       <div className="absolute inset-0 flex flex-col items-center justify-center gap-1 p-4 text-center">
         <span className="font-display text-[0.62rem] uppercase tracking-[0.3em] text-white/55">
           {product.brand}

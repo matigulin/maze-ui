@@ -1,7 +1,5 @@
-import { BRANDS } from "@/lib/data";
-
-export function Marquee() {
-  const row = [...BRANDS, ...BRANDS];
+export function Marquee({ brands }: { brands: string[] }) {
+  const row = [...brands, ...brands];
   return (
     <div className="edge-fade relative overflow-hidden border-y border-line py-6">
       <div className="flex w-max animate-marquee items-center gap-14 pr-14">

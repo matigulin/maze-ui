@@ -1,7 +1,9 @@
+"use client";
+
 import Link from "next/link";
 import { Heart, MapPin, Phone, Clock, Train } from "lucide-react";
 import { Logo } from "./Logo";
-import { BRANDS, STORE } from "@/lib/data";
+import { useSiteData } from "./site-data";
 
 const COLS = [
   {
@@ -16,6 +18,8 @@ const COLS = [
 ];
 
 export function Footer() {
+  const { store: STORE, partnerBrands } = useSiteData();
+
   return (
     <footer className="relative mt-24 border-t border-line">
       <div className="container-x py-14">
@@ -91,11 +95,10 @@ export function Footer() {
           </div>
         </div>
 
-        {/* Партнёры */}
         <div className="mt-12 border-t border-line pt-8">
           <p className="eyebrow mb-4 text-center">Партнёры</p>
           <div className="flex flex-wrap items-center justify-center gap-x-8 gap-y-3">
-            {BRANDS.slice(0, 6).map((b) => (
+            {partnerBrands.slice(0, 6).map((b) => (
               <span
                 key={b}
                 className="font-display text-sm tracking-widest text-faint transition-colors hover:text-muted"

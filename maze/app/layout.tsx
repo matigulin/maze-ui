@@ -5,6 +5,7 @@ import { Background } from "@/components/Background";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { Providers } from "@/components/Providers";
+import { fetchSiteChrome } from "@/lib/site-source";
 
 // Русский текст + body — Exo 2 (полная кириллица, футуристичный характер)
 const exo = Exo_2({
@@ -26,18 +27,20 @@ export const metadata: Metadata = {
     "MAZE — премиальный магазин техники. Apple, Samsung, Sony, Marshall, Dyson, Harman Kardon. Трейд-ин, рассрочка, доставка по РФ.",
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const siteData = await fetchSiteChrome();
+
   return (
     <html
       lang="ru"
       className={`${exo.variable} ${orbitron.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col bg-bg text-ink font-sans selection:bg-cyan/25 selection:text-white">
-        <Providers>
+        <Providers siteData={siteData}>
           <Background />
           <Header />
           <main className="flex-1">{children}</main>

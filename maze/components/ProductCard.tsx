@@ -126,7 +126,7 @@ export function ProductCard({ product }: { product: Product }) {
               aria-label="В корзину"
               onClick={(e) => {
                 e.preventDefault();
-                addItem(product);
+                void addItem(product);
               }}
               className="grid h-10 w-10 place-items-center rounded-full bg-gradient-to-br from-cyan to-blue text-[#04121a] shadow-[0_8px_24px_-8px_rgba(53,228,240,0.7)] transition-transform hover:scale-105 active:scale-95 cursor-pointer"
             >
