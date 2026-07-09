@@ -1,49 +1,37 @@
 # MAZE — интернет-магазин техники
 
-Next.js фронтенд + Fastify API бэкенд в одном репозитории.
+Next.js фронтенд + Fastify API в одном репозитории.
 
-- Фронт — корень репо (Next.js 16)
-- Бэк — `Server/` (Fastify 5, PostgreSQL, Redis)
-- Документация — `docs/`
+| Часть | Папка |
+|-------|-------|
+| Сайт (Next.js) | `maze/` |
+| API (Fastify) | `Server/` |
+| Документация | `docs/` |
 
 ## Локальный запуск
 
-### Сервер (API)
-
+**Сервер:**
 ```bash
-cd Server
-npm install
-cp .env.example .env
-npm run db:migrate
-npm run db:seed
-npm run dev
+cd Server && npm install && npm run dev
 ```
 
-API: `http://localhost:4000/api/v1`
-
-### Клиент (сайт)
-
+**Клиент:**
 ```bash
-npm install
-cp .env.example .env.local
-npm run dev
+cd maze && npm install && cp .env.example .env.local && npm run dev
 ```
 
-Сайт: `http://localhost:3000`
+- Сайт: http://localhost:3000
+- API: http://localhost:4000/api/v1
 
-## Vercel
+## Vercel (публичная ссылка)
 
-Импортируй репозиторий на [vercel.com](https://vercel.com/new) — **Root Directory оставь пустым** (корень репо).
+1. Import `matigulin/maze-ui` на vercel.com
+2. **Root Directory → `maze`**
+3. **Settings → Deployment Protection** → выключи **Vercel Authentication** для Production
+4. Deploy
 
-В **Settings → Deployment Protection** выключи **Vercel Authentication** для Production, иначе сайт будет закрыт.
+Ссылка: https://maze-ui.vercel.app
 
-На Vercel без API сайт работает на моках.
+## GitHub
 
-## Структура
-
-```
-app/ components/ lib/   # Next.js
-Server/                 # API
-docs/                   # контракты
-design-system/          # дизайн-система
-```
+https://github.com/matigulin/maze-ui
