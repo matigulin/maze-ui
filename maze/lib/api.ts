@@ -1,10 +1,16 @@
 const API_BASE_URL =
   process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:4000/api/v1";
 
+export type PaginationMeta = {
+  page: number;
+  limit: number;
+  total: number;
+};
+
 type ApiEnvelope<T> = {
   data: T;
   requestId?: string;
-  meta?: unknown;
+  meta?: PaginationMeta;
 };
 
 export class ApiError extends Error {
@@ -38,16 +44,13 @@ function buildUrl(endpoint: string, query?: Record<string, unknown>) {
   return url.toString();
 }
 
-export async function apiGet<T>(
-  endpoint: string,
-  query?: Record<string, unknown>,
-  opts?: { credentials?: RequestCredentials },
-): Promise<T> {
-  const url = buildUrl(endpoint, query);
-  const res = await fetch(url, {
-    method: "GET",
-    credentials: opts?.credentials,
-  });
+function authHeaders(accessToken?: string | null): HeadersInit {
+  return accessToken ? { Authorization: `Bearer ${accessToken}` } : {};
+}
+
+async function parseEnvelope<T>(
+  res: Response,
+): Promise<{ data: T; meta?: PaginationMeta }> {
   const json = await res.json().catch(() => null);
 
   if (!res.ok) {
@@ -63,13 +66,50 @@ export async function apiGet<T>(
   }
 
   const envelope = json as ApiEnvelope<T>;
-  return (envelope?.data ?? json) as T;
+  return {
+    data: (envelope?.data ?? json) as T,
+    meta: envelope?.meta,
+  };
+}
+
+export async function apiGet<T>(
+  endpoint: string,
+  query?: Record<string, unknown>,
+  opts?: { credentials?: RequestCredentials; accessToken?: string | null },
+): Promise<T> {
+  const url = buildUrl(endpoint, query);
+  const res = await fetch(url, {
+    method: "GET",
+    credentials: opts?.credentials,
+    headers: {
+      ...authHeaders(opts?.accessToken),
+    },
+  });
+  const parsed = await parseEnvelope<T>(res);
+  return parsed.data;
+}
+
+export async function apiGetWithMeta<T>(
+  endpoint: string,
+  query?: Record<string, unknown>,
+  opts?: { credentials?: RequestCredentials; accessToken?: string | null },
+): Promise<{ data: T; meta?: PaginationMeta }> {
+  const url = buildUrl(endpoint, query);
+  const res = await fetch(url, {
+    method: "GET",
+    credentials: opts?.credentials,
+    headers: {
+      ...authHeaders(opts?.accessToken),
+    },
+  });
+  return parseEnvelope<T>(res);
 }
 
 async function apiMutate<T>(
-  method: "POST" | "PUT" | "DELETE",
+  method: "POST" | "PUT" | "PATCH" | "DELETE",
   endpoint: string,
   body?: unknown,
+  opts?: { accessToken?: string | null },
 ): Promise<T> {
   const url = buildUrl(endpoint);
   const res = await fetch(url, {
@@ -77,40 +117,45 @@ async function apiMutate<T>(
     headers: {
       "Content-Type": "application/json",
       "X-Requested-With": "maze-web",
+      ...authHeaders(opts?.accessToken),
     },
     credentials: "include",
     body: body !== undefined ? JSON.stringify(body) : undefined,
   });
-
-  const json = await res.json().catch(() => null);
-  if (!res.ok) {
-    const message =
-      json?.error?.message ??
-      `Request failed: ${res.status} ${res.statusText}`;
-    throw new ApiError({
-      message,
-      status: res.status,
-      code: json?.error?.code,
-      requestId: json?.requestId ?? json?.error?.requestId,
-    });
-  }
-
-  const envelope = json as ApiEnvelope<T>;
-  return (envelope?.data ?? json) as T;
+  const parsed = await parseEnvelope<T>(res);
+  return parsed.data;
 }
 
-export async function apiPutJson<T>(endpoint: string, body: unknown): Promise<T> {
-  return apiMutate<T>("PUT", endpoint, body);
+export async function apiPutJson<T>(
+  endpoint: string,
+  body: unknown,
+  opts?: { accessToken?: string | null },
+): Promise<T> {
+  return apiMutate<T>("PUT", endpoint, body, opts);
 }
 
-export async function apiDelete<T>(endpoint: string): Promise<T> {
-  return apiMutate<T>("DELETE", endpoint);
+export async function apiPatchJson<T>(
+  endpoint: string,
+  body: unknown,
+  opts?: { accessToken?: string | null },
+): Promise<T> {
+  return apiMutate<T>("PATCH", endpoint, body, opts);
+}
+
+export async function apiDelete<T>(
+  endpoint: string,
+  opts?: { accessToken?: string | null },
+): Promise<T> {
+  return apiMutate<T>("DELETE", endpoint, undefined, opts);
 }
 
 export async function apiPostJson<T>(
   endpoint: string,
-  body: unknown,
-  opts?: { csrfHeader?: { name: string; value: string } },
+  body?: unknown,
+  opts?: {
+    csrfHeader?: { name: string; value: string };
+    accessToken?: string | null;
+  },
 ): Promise<T> {
   const url = buildUrl(endpoint);
   const res = await fetch(url, {
@@ -118,28 +163,36 @@ export async function apiPostJson<T>(
     headers: {
       "Content-Type": "application/json",
       "X-Requested-With": "maze-web",
+      ...authHeaders(opts?.accessToken),
       ...(opts?.csrfHeader
         ? { [opts.csrfHeader.name]: opts.csrfHeader.value }
         : null),
     },
     credentials: "include",
-    body: JSON.stringify(body),
+    body: body !== undefined ? JSON.stringify(body) : undefined,
   });
-
-  const json = await res.json().catch(() => null);
-  if (!res.ok) {
-    const message =
-      json?.error?.message ??
-      `Request failed: ${res.status} ${res.statusText}`;
-    throw new ApiError({
-      message,
-      status: res.status,
-      code: json?.error?.code,
-      requestId: json?.requestId,
-    });
-  }
-
-  const envelope = json as ApiEnvelope<T>;
-  return (envelope?.data ?? json) as T;
+  const parsed = await parseEnvelope<T>(res);
+  return parsed.data;
 }
 
+export async function apiUpload<T>(
+  endpoint: string,
+  file: File,
+  opts?: { accessToken?: string | null; fieldName?: string },
+): Promise<T> {
+  const url = buildUrl(endpoint);
+  const form = new FormData();
+  form.append(opts?.fieldName ?? "file", file);
+
+  const res = await fetch(url, {
+    method: "POST",
+    headers: {
+      "X-Requested-With": "maze-web",
+      ...authHeaders(opts?.accessToken),
+    },
+    credentials: "include",
+    body: form,
+  });
+  const parsed = await parseEnvelope<T>(res);
+  return parsed.data;
+}

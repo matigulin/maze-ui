@@ -2,6 +2,7 @@ import { randomUUID } from 'node:crypto';
 import { Op } from 'sequelize';
 import { toNumber } from '../lib/decimal.js';
 import { ConflictError, NotFoundError, ValidationError } from '../lib/errors.js';
+import { isoTimestamp, intAttr } from '../lib/model-attrs.js';
 import { paginationOffset, parsePagination } from '../lib/pagination.js';
 import {
   Category,
@@ -31,8 +32,8 @@ function mapAdminProductSummary(product: Product) {
     inStock: product.in_stock,
     ratingAvg: toNumber(product.rating_avg),
     reviewsCount: product.reviews_count,
-    createdAt: (product.get('created_at') as Date).toISOString(),
-    updatedAt: (product.get('updated_at') as Date).toISOString(),
+    createdAt: isoTimestamp(product, 'createdAt'),
+    updatedAt: isoTimestamp(product, 'updatedAt'),
   };
 }
 

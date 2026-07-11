@@ -158,28 +158,28 @@ const adminRoutes: FastifyPluginAsync = async (fastify) => {
   });
 
   fastify.patch('/site-settings', async (request) => {
-    await fastify.authenticateAdmin(request);
+    await fastify.authenticateStaff(request);
     const body = siteSettingsSchema.parse(request.body);
     const data = await updateSiteSettings(body);
     return success(data, request.requestId);
   });
 
   fastify.put('/editor-choice', async (request) => {
-    await fastify.authenticateAdmin(request);
+    await fastify.authenticateStaff(request);
     const body = editorChoiceSchema.parse(request.body);
     const data = await setEditorChoice(body.productIds);
     return success(data, request.requestId);
   });
 
   fastify.get('/categories', async (request) => {
-    await fastify.authenticateAdmin(request);
+    await fastify.authenticateStaff(request);
     const includeDeleted = (request.query as { includeDeleted?: string }).includeDeleted === 'true';
     const data = await listAdminCategories(includeDeleted);
     return success(data, request.requestId);
   });
 
   fastify.get('/categories/:id', async (request) => {
-    await fastify.authenticateAdmin(request);
+    await fastify.authenticateStaff(request);
     const { id } = request.params as { id: string };
     z.string().uuid().parse(id);
     const includeDeleted = (request.query as { includeDeleted?: string }).includeDeleted === 'true';
@@ -188,14 +188,14 @@ const adminRoutes: FastifyPluginAsync = async (fastify) => {
   });
 
   fastify.post('/categories', async (request) => {
-    await fastify.authenticateAdmin(request);
+    await fastify.authenticateStaff(request);
     const body = categoryBodySchema.parse(request.body);
     const data = await createAdminCategory(body);
     return success(data, request.requestId);
   });
 
   fastify.patch('/categories/:id', async (request) => {
-    await fastify.authenticateAdmin(request);
+    await fastify.authenticateStaff(request);
     const { id } = request.params as { id: string };
     z.string().uuid().parse(id);
     const body = categoryBodySchema.partial().parse(request.body);
@@ -204,7 +204,7 @@ const adminRoutes: FastifyPluginAsync = async (fastify) => {
   });
 
   fastify.delete('/categories/:id', async (request) => {
-    await fastify.authenticateAdmin(request);
+    await fastify.authenticateStaff(request);
     const { id } = request.params as { id: string };
     z.string().uuid().parse(id);
     await deleteAdminCategory(id);
@@ -212,7 +212,7 @@ const adminRoutes: FastifyPluginAsync = async (fastify) => {
   });
 
   fastify.post('/categories/:id/restore', async (request) => {
-    await fastify.authenticateAdmin(request);
+    await fastify.authenticateStaff(request);
     const { id } = request.params as { id: string };
     z.string().uuid().parse(id);
     const data = await restoreAdminCategory(id);
@@ -220,13 +220,13 @@ const adminRoutes: FastifyPluginAsync = async (fastify) => {
   });
 
   fastify.get('/products', async (request) => {
-    await fastify.authenticateAdmin(request);
+    await fastify.authenticateStaff(request);
     const result = await listAdminProducts(request.query as Record<string, unknown>);
     return success(result.items, request.requestId, result.meta);
   });
 
   fastify.get('/products/:id', async (request) => {
-    await fastify.authenticateAdmin(request);
+    await fastify.authenticateStaff(request);
     const { id } = request.params as { id: string };
     z.string().uuid().parse(id);
     const includeDeleted = (request.query as { includeDeleted?: string }).includeDeleted === 'true';
@@ -235,14 +235,14 @@ const adminRoutes: FastifyPluginAsync = async (fastify) => {
   });
 
   fastify.post('/products', async (request) => {
-    await fastify.authenticateAdmin(request);
+    await fastify.authenticateStaff(request);
     const body = productBodySchema.parse(request.body);
     const data = await createAdminProduct(body);
     return success(data, request.requestId);
   });
 
   fastify.patch('/products/:id', async (request) => {
-    await fastify.authenticateAdmin(request);
+    await fastify.authenticateStaff(request);
     const { id } = request.params as { id: string };
     z.string().uuid().parse(id);
     const body = productBodySchema.partial().parse(request.body);
@@ -251,7 +251,7 @@ const adminRoutes: FastifyPluginAsync = async (fastify) => {
   });
 
   fastify.delete('/products/:id', async (request) => {
-    await fastify.authenticateAdmin(request);
+    await fastify.authenticateStaff(request);
     const { id } = request.params as { id: string };
     z.string().uuid().parse(id);
     await deleteAdminProduct(id);
@@ -259,7 +259,7 @@ const adminRoutes: FastifyPluginAsync = async (fastify) => {
   });
 
   fastify.post('/products/:id/restore', async (request) => {
-    await fastify.authenticateAdmin(request);
+    await fastify.authenticateStaff(request);
     const { id } = request.params as { id: string };
     z.string().uuid().parse(id);
     const data = await restoreAdminProduct(id);
@@ -267,7 +267,7 @@ const adminRoutes: FastifyPluginAsync = async (fastify) => {
   });
 
   fastify.patch('/products/:id/stock', async (request) => {
-    await fastify.authenticateAdmin(request);
+    await fastify.authenticateStaff(request);
     const { id } = request.params as { id: string };
     z.string().uuid().parse(id);
     const body = stockSchema.parse(request.body);
@@ -276,7 +276,7 @@ const adminRoutes: FastifyPluginAsync = async (fastify) => {
   });
 
   fastify.get('/products/:productId/variants', async (request) => {
-    await fastify.authenticateAdmin(request);
+    await fastify.authenticateStaff(request);
     const { productId } = request.params as { productId: string };
     z.string().uuid().parse(productId);
     const data = await listAdminVariants(productId);
@@ -284,7 +284,7 @@ const adminRoutes: FastifyPluginAsync = async (fastify) => {
   });
 
   fastify.post('/products/:productId/variants', async (request) => {
-    await fastify.authenticateAdmin(request);
+    await fastify.authenticateStaff(request);
     const { productId } = request.params as { productId: string };
     z.string().uuid().parse(productId);
     const body = variantBodySchema.parse(request.body);
@@ -293,7 +293,7 @@ const adminRoutes: FastifyPluginAsync = async (fastify) => {
   });
 
   fastify.patch('/products/:productId/variants/:variantId', async (request) => {
-    await fastify.authenticateAdmin(request);
+    await fastify.authenticateStaff(request);
     const { productId, variantId } = request.params as { productId: string; variantId: string };
     z.string().uuid().parse(productId);
     z.string().uuid().parse(variantId);
@@ -303,7 +303,7 @@ const adminRoutes: FastifyPluginAsync = async (fastify) => {
   });
 
   fastify.delete('/products/:productId/variants/:variantId', async (request) => {
-    await fastify.authenticateAdmin(request);
+    await fastify.authenticateStaff(request);
     const { productId, variantId } = request.params as { productId: string; variantId: string };
     z.string().uuid().parse(productId);
     z.string().uuid().parse(variantId);
@@ -312,7 +312,7 @@ const adminRoutes: FastifyPluginAsync = async (fastify) => {
   });
 
   fastify.post('/products/:productId/variants/:variantId/restore', async (request) => {
-    await fastify.authenticateAdmin(request);
+    await fastify.authenticateStaff(request);
     const { productId, variantId } = request.params as { productId: string; variantId: string };
     z.string().uuid().parse(productId);
     z.string().uuid().parse(variantId);
@@ -321,7 +321,7 @@ const adminRoutes: FastifyPluginAsync = async (fastify) => {
   });
 
   fastify.get('/spec-fields', async (request) => {
-    await fastify.authenticateAdmin(request);
+    await fastify.authenticateStaff(request);
     const deviceType = (request.query as { deviceType?: string }).deviceType;
     if (!deviceType) throw new ValidationError('deviceType is required');
     const data = await listAdminSpecFields(deviceType);
@@ -329,7 +329,7 @@ const adminRoutes: FastifyPluginAsync = async (fastify) => {
   });
 
   fastify.post('/products/:productId/images', async (request) => {
-    await fastify.authenticateAdmin(request);
+    await fastify.authenticateStaff(request);
     const { productId } = request.params as { productId: string };
     z.string().uuid().parse(productId);
     const body = imageBodySchema.parse(request.body);
@@ -338,7 +338,7 @@ const adminRoutes: FastifyPluginAsync = async (fastify) => {
   });
 
   fastify.patch('/products/:productId/images/:imageId', async (request) => {
-    await fastify.authenticateAdmin(request);
+    await fastify.authenticateStaff(request);
     const { productId, imageId } = request.params as { productId: string; imageId: string };
     z.string().uuid().parse(productId);
     z.string().uuid().parse(imageId);
@@ -348,7 +348,7 @@ const adminRoutes: FastifyPluginAsync = async (fastify) => {
   });
 
   fastify.delete('/products/:productId/images/:imageId', async (request) => {
-    await fastify.authenticateAdmin(request);
+    await fastify.authenticateStaff(request);
     const { productId, imageId } = request.params as { productId: string; imageId: string };
     z.string().uuid().parse(productId);
     z.string().uuid().parse(imageId);
@@ -357,7 +357,7 @@ const adminRoutes: FastifyPluginAsync = async (fastify) => {
   });
 
   fastify.post('/products/:productId/features', async (request) => {
-    await fastify.authenticateAdmin(request);
+    await fastify.authenticateStaff(request);
     const { productId } = request.params as { productId: string };
     z.string().uuid().parse(productId);
     const body = featureBodySchema.parse(request.body);
@@ -366,7 +366,7 @@ const adminRoutes: FastifyPluginAsync = async (fastify) => {
   });
 
   fastify.patch('/products/:productId/features/:featureId', async (request) => {
-    await fastify.authenticateAdmin(request);
+    await fastify.authenticateStaff(request);
     const { productId, featureId } = request.params as { productId: string; featureId: string };
     z.string().uuid().parse(productId);
     z.string().uuid().parse(featureId);
@@ -376,7 +376,7 @@ const adminRoutes: FastifyPluginAsync = async (fastify) => {
   });
 
   fastify.delete('/products/:productId/features/:featureId', async (request) => {
-    await fastify.authenticateAdmin(request);
+    await fastify.authenticateStaff(request);
     const { productId, featureId } = request.params as { productId: string; featureId: string };
     z.string().uuid().parse(productId);
     z.string().uuid().parse(featureId);
@@ -385,7 +385,7 @@ const adminRoutes: FastifyPluginAsync = async (fastify) => {
   });
 
   fastify.put('/products/:productId/specifications', async (request) => {
-    await fastify.authenticateAdmin(request);
+    await fastify.authenticateStaff(request);
     const { productId } = request.params as { productId: string };
     z.string().uuid().parse(productId);
     const body = specsBodySchema.parse(request.body);
@@ -394,13 +394,13 @@ const adminRoutes: FastifyPluginAsync = async (fastify) => {
   });
 
   fastify.get('/banners', async (request) => {
-    await fastify.authenticateAdmin(request);
+    await fastify.authenticateStaff(request);
     const data = await listAdminBanners();
     return success(data, request.requestId);
   });
 
   fastify.get('/banners/:id', async (request) => {
-    await fastify.authenticateAdmin(request);
+    await fastify.authenticateStaff(request);
     const { id } = request.params as { id: string };
     z.string().uuid().parse(id);
     const data = await getAdminBanner(id);
@@ -408,14 +408,14 @@ const adminRoutes: FastifyPluginAsync = async (fastify) => {
   });
 
   fastify.post('/banners', async (request) => {
-    await fastify.authenticateAdmin(request);
+    await fastify.authenticateStaff(request);
     const body = bannerBodySchema.parse(request.body);
     const data = await createAdminBanner(body);
     return success(data, request.requestId);
   });
 
   fastify.patch('/banners/:id', async (request) => {
-    await fastify.authenticateAdmin(request);
+    await fastify.authenticateStaff(request);
     const { id } = request.params as { id: string };
     z.string().uuid().parse(id);
     const body = bannerBodySchema.partial().parse(request.body);
@@ -424,7 +424,7 @@ const adminRoutes: FastifyPluginAsync = async (fastify) => {
   });
 
   fastify.delete('/banners/:id', async (request) => {
-    await fastify.authenticateAdmin(request);
+    await fastify.authenticateStaff(request);
     const { id } = request.params as { id: string };
     z.string().uuid().parse(id);
     await deleteAdminBanner(id);
@@ -432,13 +432,13 @@ const adminRoutes: FastifyPluginAsync = async (fastify) => {
   });
 
   fastify.get('/info-slides', async (request) => {
-    await fastify.authenticateAdmin(request);
+    await fastify.authenticateStaff(request);
     const data = await listAdminInfoSlides();
     return success(data, request.requestId);
   });
 
   fastify.get('/info-slides/:id', async (request) => {
-    await fastify.authenticateAdmin(request);
+    await fastify.authenticateStaff(request);
     const { id } = request.params as { id: string };
     z.string().uuid().parse(id);
     const data = await getAdminInfoSlide(id);
@@ -446,14 +446,14 @@ const adminRoutes: FastifyPluginAsync = async (fastify) => {
   });
 
   fastify.post('/info-slides', async (request) => {
-    await fastify.authenticateAdmin(request);
+    await fastify.authenticateStaff(request);
     const body = infoSlideBodySchema.parse(request.body);
     const data = await createAdminInfoSlide(body);
     return success(data, request.requestId);
   });
 
   fastify.patch('/info-slides/:id', async (request) => {
-    await fastify.authenticateAdmin(request);
+    await fastify.authenticateStaff(request);
     const { id } = request.params as { id: string };
     z.string().uuid().parse(id);
     const body = infoSlideBodySchema.partial().parse(request.body);
@@ -462,7 +462,7 @@ const adminRoutes: FastifyPluginAsync = async (fastify) => {
   });
 
   fastify.delete('/info-slides/:id', async (request) => {
-    await fastify.authenticateAdmin(request);
+    await fastify.authenticateStaff(request);
     const { id } = request.params as { id: string };
     z.string().uuid().parse(id);
     await deleteAdminInfoSlide(id);
@@ -470,13 +470,13 @@ const adminRoutes: FastifyPluginAsync = async (fastify) => {
   });
 
   fastify.get('/cms-pages', async (request) => {
-    await fastify.authenticateAdmin(request);
+    await fastify.authenticateStaff(request);
     const data = await listAdminCmsPages();
     return success(data, request.requestId);
   });
 
   fastify.get('/cms-pages/:id', async (request) => {
-    await fastify.authenticateAdmin(request);
+    await fastify.authenticateStaff(request);
     const { id } = request.params as { id: string };
     z.string().uuid().parse(id);
     const data = await getAdminCmsPage(id);
@@ -484,14 +484,14 @@ const adminRoutes: FastifyPluginAsync = async (fastify) => {
   });
 
   fastify.post('/cms-pages', async (request) => {
-    await fastify.authenticateAdmin(request);
+    await fastify.authenticateStaff(request);
     const body = cmsPageBodySchema.parse(request.body);
     const data = await createAdminCmsPage(body);
     return success(data, request.requestId);
   });
 
   fastify.patch('/cms-pages/:id', async (request) => {
-    await fastify.authenticateAdmin(request);
+    await fastify.authenticateStaff(request);
     const { id } = request.params as { id: string };
     z.string().uuid().parse(id);
     const body = cmsPageBodySchema.partial().parse(request.body);
@@ -500,7 +500,7 @@ const adminRoutes: FastifyPluginAsync = async (fastify) => {
   });
 
   fastify.delete('/cms-pages/:id', async (request) => {
-    await fastify.authenticateAdmin(request);
+    await fastify.authenticateStaff(request);
     const { id } = request.params as { id: string };
     z.string().uuid().parse(id);
     await deleteAdminCmsPage(id);
@@ -508,7 +508,7 @@ const adminRoutes: FastifyPluginAsync = async (fastify) => {
   });
 
   fastify.post('/uploads', async (request) => {
-    await fastify.authenticateAdmin(request);
+    await fastify.authenticateStaff(request);
     const file = await request.file();
     if (!file) {
       throw new ValidationError('File is required');

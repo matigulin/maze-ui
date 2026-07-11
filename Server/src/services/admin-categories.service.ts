@@ -1,10 +1,12 @@
 import { randomUUID } from 'node:crypto';
 import { Op } from 'sequelize';
 import { ConflictError, NotFoundError, ValidationError } from '../lib/errors.js';
+import { isoTimestamp, intAttr } from '../lib/model-attrs.js';
 import { Category } from '../models/catalog.js';
 import { invalidateCatalogAndHomeCache } from './cache-invalidation.service.js';
 
 function mapCategory(row: Category) {
+  const deletedAt = row.get('deletedAt') ?? row.get('deleted_at');
   return {
     id: row.id,
     slug: row.slug,
@@ -16,10 +18,15 @@ function mapCategory(row: Category) {
     image: row.image,
     description: row.description,
     externalLink: row.external_link,
-    sortOrder: row.get('sort_order') as number,
+    sortOrder: intAttr(row, 'sort_order'),
     isActive: row.is_active,
-    createdAt: (row.get('created_at') as Date).toISOString(),
-    updatedAt: (row.get('updated_at') as Date).toISOString(),
+    deletedAt: deletedAt
+      ? deletedAt instanceof Date
+        ? deletedAt.toISOString()
+        : String(deletedAt)
+      : null,
+    createdAt: isoTimestamp(row, 'createdAt'),
+    updatedAt: isoTimestamp(row, 'updatedAt'),
   };
 }
 

@@ -1,6 +1,7 @@
 import { randomUUID } from 'node:crypto';
 import { Op } from 'sequelize';
 import { ConflictError, NotFoundError } from '../lib/errors.js';
+import { isoTimestamp } from '../lib/model-attrs.js';
 import { Banner, CmsPage, InfoSlide } from '../models/content.js';
 import { invalidateCatalogAndHomeCache } from './cache-invalidation.service.js';
 
@@ -14,8 +15,8 @@ function mapBanner(row: Banner) {
     size: row.size,
     sortOrder: row.sort_order,
     isActive: row.is_active,
-    createdAt: (row.get('created_at') as Date).toISOString(),
-    updatedAt: (row.get('updated_at') as Date).toISOString(),
+    createdAt: isoTimestamp(row, 'createdAt'),
+    updatedAt: isoTimestamp(row, 'updatedAt'),
   };
 }
 
@@ -27,8 +28,8 @@ function mapInfoSlide(row: InfoSlide) {
     description: row.description,
     sortOrder: row.sort_order,
     isActive: row.is_active,
-    createdAt: (row.get('created_at') as Date).toISOString(),
-    updatedAt: (row.get('updated_at') as Date).toISOString(),
+    createdAt: isoTimestamp(row, 'createdAt'),
+    updatedAt: isoTimestamp(row, 'updatedAt'),
   };
 }
 
@@ -40,8 +41,8 @@ function mapCmsPage(row: CmsPage) {
     content: row.content,
     metaDescription: row.meta_description,
     isPublished: row.is_published,
-    createdAt: (row.get('created_at') as Date).toISOString(),
-    updatedAt: (row.get('updated_at') as Date).toISOString(),
+    createdAt: isoTimestamp(row, 'createdAt'),
+    updatedAt: isoTimestamp(row, 'updatedAt'),
   };
 }
 

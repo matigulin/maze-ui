@@ -4,7 +4,8 @@ import { cache } from './cache.service.js';
 const CACHE_KEY = 'site:settings';
 const CACHE_TTL = 30 * 60;
 
-interface SiteConfigValue {
+export interface SiteConfigValue {
+  storeName?: string;
   phone?: string;
   address?: string;
   metro?: string;
@@ -17,6 +18,8 @@ interface SiteConfigValue {
     telegramUsed?: string;
   };
   mapCenter?: [number, number];
+  delivery?: Record<string, unknown>;
+  payment?: Record<string, unknown>;
 }
 
 export interface PublicSettings {
@@ -39,7 +42,7 @@ export function mapPublicSettings(raw: SiteConfigValue): PublicSettings {
   const [lat = 59.94, lng = 30.33] = raw.mapCenter ?? [];
 
   return {
-    storeName: 'MAZE',
+    storeName: raw.storeName ?? 'MAZE',
     address: raw.address ?? '',
     phone: raw.phone ?? '',
     email: raw.email ?? 'info@maze.ru',
