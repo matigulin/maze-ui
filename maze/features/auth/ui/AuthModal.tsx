@@ -6,7 +6,12 @@ import { Modal } from "@/components/modals";
 import { Field } from "@/components/Field";
 import { sendSmsCode } from "@/entities/user";
 import { ApiError } from "@/lib/api";
-import { formatPhoneDisplay, normalizePhone } from "@/lib/phone";
+import {
+  e164ToNationalDisplay,
+  formatPhoneDisplay,
+  maskNationalPhoneInput,
+  nationalPhoneToE164,
+} from "@/lib/phone";
 import { useUserAuth } from "../model/user-auth-provider";
 
 type Step = "phone" | "code";
@@ -20,7 +25,7 @@ export function AuthModal({
 }) {
   const { loginWithSms, isAuthenticated, ready } = useUserAuth();
   const [step, setStep] = useState<Step>("phone");
-  const [phoneRaw, setPhoneRaw] = useState("");
+  const [phoneNational, setPhoneNational] = useState("");
   const [phone, setPhone] = useState("");
   const [code, setCode] = useState("");
   const [devCode, setDevCode] = useState<string | null>(null);
@@ -34,7 +39,7 @@ export function AuthModal({
 
   function reset() {
     setStep("phone");
-    setPhoneRaw("");
+    setPhoneNational("");
     setPhone("");
     setCode("");
     setDevCode(null);
@@ -51,7 +56,7 @@ export function AuthModal({
     setError(null);
     setCode("");
     setStep("phone");
-    setPhoneRaw(phone ? formatPhoneDisplay(phone) : "");
+    setPhoneNational(phone ? e164ToNationalDisplay(phone) : "");
   }
 
   async function onSendCode(e: FormEvent) {
@@ -60,9 +65,9 @@ export function AuthModal({
 
     let normalized: string;
     try {
-      normalized = normalizePhone(phoneRaw);
+      normalized = nationalPhoneToE164(phoneNational);
     } catch {
-      setError("Введите номер в формате +7 (999) 123-45-67");
+      setError("Введите номер полностью: (999) 123-45-67");
       return;
     }
 
@@ -143,18 +148,32 @@ export function AuthModal({
           <p className="text-sm text-muted">
             Введите номер телефона — отправим SMS-код для входа в MAZE ID.
           </p>
-          <Field
-            label="Телефон"
-            type="tel"
-            inputMode="tel"
-            autoComplete="tel"
-            required
-            autoFocus={open}
-            placeholder="+7 (999) 123-45-67"
-            value={phoneRaw}
-            onChange={(e) => setPhoneRaw(e.target.value)}
-            disabled={pending}
-          />
+          <div className="space-y-1.5">
+            <label
+              htmlFor="auth-phone"
+              className="block text-xs font-medium uppercase tracking-wider text-muted"
+            >
+              Телефон
+            </label>
+            <div className="flex w-full items-center gap-1.5 rounded-xl border border-line bg-bg-2/60 px-4 transition-colors outline-none focus-within:border-cyan/70 focus-within:outline-none">
+              <span className="shrink-0 text-[15px] text-ink">+7</span>
+              <input
+                id="auth-phone"
+                type="tel"
+                inputMode="tel"
+                autoComplete="tel-national"
+                required
+                autoFocus={open}
+                placeholder="(999) 123-45-67"
+                value={phoneNational}
+                onChange={(e) =>
+                  setPhoneNational(maskNationalPhoneInput(e.target.value))
+                }
+                disabled={pending}
+                className="input-inset min-w-0 flex-1 border-0 bg-transparent py-3 text-[15px] text-ink placeholder:text-faint shadow-none outline-none"
+              />
+            </div>
+          </div>
           {error && (
             <p
               role="alert"
