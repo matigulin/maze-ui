@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { motion } from "motion/react";
-import { LogOut, MapPin, Package, Plus, Building2, Heart } from "lucide-react";
+import { MapPin, Package, Plus, Building2, Heart } from "lucide-react";
 import { useCart } from "@/components/store";
 import { ProductCard } from "@/components/ProductCard";
 import { Field, fieldCls } from "@/components/Field";
@@ -73,10 +73,6 @@ export function AccountClient({ initialTab = "profile" }: { initialTab?: Tab }) 
             Личный кабинет
           </h1>
         </div>
-        <button className="flex items-center gap-2 rounded-full border border-line px-4 py-2 text-sm text-muted transition-colors hover:border-magenta/50 hover:text-magenta cursor-pointer">
-          <LogOut size={15} />
-          Выйти
-        </button>
       </div>
 
       {/* Табы */}

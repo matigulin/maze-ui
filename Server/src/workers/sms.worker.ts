@@ -1,7 +1,6 @@
 import { Worker, type Job } from 'bullmq';
 import { loadEnv } from '../config/env.js';
 import { RETRY } from '../config/retry.js';
-import { maskPhone } from '../lib/phone.js';
 import { QUEUE_NAMES } from '../queues/index.js';
 
 function getConnectionOptions() {
@@ -27,7 +26,9 @@ async function processSmsJob(job: Job<SmsJobData>) {
     return;
   }
 
-  job.log(`[dev] OTP for ${maskPhone(phone)}: ${code}`);
+  const line = `[dev][sms] OTP for ${phone}: ${code}`;
+  job.log(line);
+  console.info(line);
 }
 
 export function startSmsWorker(): Worker<SmsJobData> {

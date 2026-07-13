@@ -5,6 +5,7 @@ import { CartProvider } from "./store";
 import { ModalProvider } from "./modals";
 import { SiteDataProvider } from "./site-data";
 import { StaffAuthProvider } from "./staff/StaffAuthProvider";
+import { UserAuthProvider } from "@/features/auth";
 import type { SiteChrome } from "@/lib/site-source";
 
 export function Providers({
@@ -17,9 +18,11 @@ export function Providers({
   return (
     <SiteDataProvider value={siteData}>
       <StaffAuthProvider>
-        <CartProvider>
-          <ModalProvider>{children}</ModalProvider>
-        </CartProvider>
+        <UserAuthProvider>
+          <CartProvider>
+            <ModalProvider>{children}</ModalProvider>
+          </CartProvider>
+        </UserAuthProvider>
       </StaffAuthProvider>
     </SiteDataProvider>
   );

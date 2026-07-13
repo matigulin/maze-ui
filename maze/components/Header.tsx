@@ -11,20 +11,18 @@ import {
   Phone,
   Search,
   ShoppingCart,
-  User,
   X,
 } from "lucide-react";
+import { HeaderAuthActions, MobileAuthActions } from "@/features/auth";
 import { Logo } from "./Logo";
 import { Icon } from "./Icon";
 import { useCart } from "./store";
-import { useModal } from "./modals";
 import { useSiteData } from "./site-data";
 import { cn } from "@/lib/utils";
 
 export function Header() {
   const router = useRouter();
   const { count, wishlist, setMiniOpen } = useCart();
-  const { open } = useModal();
   const { categories, store: STORE } = useSiteData();
   const [scrolled, setScrolled] = useState(false);
   const [catOpen, setCatOpen] = useState(false);
@@ -63,7 +61,7 @@ export function Header() {
           : "border-b border-transparent",
       )}
     >
-      <div className="container-x flex h-16 items-center gap-3 md:h-[4.5rem] md:gap-5">
+      <div className="container-x flex h-16 shrink-0 flex-nowrap items-center gap-3 md:h-[4.5rem] md:gap-5">
         <Logo />
 
         {/* Каталог dropdown */}
@@ -136,7 +134,7 @@ export function Header() {
           />
         </form>
 
-        <div className="ml-auto flex items-center gap-1 md:gap-1.5">
+        <div className="ml-auto flex shrink-0 flex-nowrap items-center gap-1 md:gap-1.5">
           <IconButton
             label="Избранное"
             badge={wishlist.length}
@@ -151,9 +149,7 @@ export function Header() {
           >
             <ShoppingCart size={19} />
           </IconButton>
-          <IconButton label="Личный кабинет" onClick={() => open("auth")}>
-            <User size={19} />
-          </IconButton>
+          <HeaderAuthActions />
           <a
             href={`tel:${STORE.phone.replace(/[^+\d]/g, "")}`}
             className="ml-1 hidden items-center gap-2 rounded-full border border-line px-3 py-2 text-sm text-muted transition-colors hover:border-cyan/50 hover:text-ink xl:flex"
@@ -235,6 +231,7 @@ export function Header() {
                   </Link>
                 ))}
               </nav>
+              <MobileAuthActions onNavigate={() => setMobileOpen(false)} />
             </motion.div>
           </motion.div>
         )}
