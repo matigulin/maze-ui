@@ -1,1 +1,2 @@
-export const ACCOUNT_TAB_EVENT = "maze:account-tab";
+/** @deprecated Импортируй из `@/features/account` */
+export { ACCOUNT_TAB_EVENT } from "@/features/account";

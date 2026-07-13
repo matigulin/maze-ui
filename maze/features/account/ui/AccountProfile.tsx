@@ -8,7 +8,6 @@ import {
   type UserGender,
   type UserProfile,
 } from "@/entities/user";
-import { useUserAuth } from "@/features/auth";
 import { ApiError } from "@/lib/api";
 import { formatPhoneDisplay } from "@/lib/phone";
 import {
@@ -19,8 +18,15 @@ import {
 
 type Gender = "" | UserGender;
 
-export function AccountProfile() {
-  const { ensureAccessToken, isAuthenticated } = useUserAuth();
+export type AccountProfileProps = {
+  ensureAccessToken: () => Promise<string | null>;
+  isAuthenticated: boolean;
+};
+
+export function AccountProfile({
+  ensureAccessToken,
+  isAuthenticated,
+}: AccountProfileProps) {
   const [loading, setLoading] = useState(isAuthenticated);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);

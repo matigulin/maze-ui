@@ -1,4 +1,3 @@
-/** @deprecated Импортируй из `@/features/checkout` */
 export {
   checkoutCart,
   createOrder,
@@ -7,10 +6,10 @@ export {
   waitForQuoteReady,
   mapUiDeliveryProvider,
   mapUiPaymentMethod,
-} from "@/features/checkout";
+} from "./api/checkout-api";
 export type {
   DeliveryProvider,
   CheckoutPaymentMethod,
   DeliveryQuoteDto,
   CreateOrderResponse,
-} from "@/features/checkout";
+} from "./api/checkout-api";

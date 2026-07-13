@@ -14,7 +14,7 @@ import {
   X,
 } from "lucide-react";
 import { HeaderAuthActions, MobileAuthActions } from "@/features/auth";
-import { ACCOUNT_TAB_EVENT } from "@/lib/account-tab";
+import { ACCOUNT_TAB_EVENT } from "@/features/account";
 import { Logo } from "./Logo";
 import { Icon } from "./Icon";
 import { useCart } from "./store";

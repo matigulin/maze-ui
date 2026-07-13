@@ -1,5 +1,5 @@
 import { Suspense } from "react";
-import { AccountClient } from "@/components/account/AccountClient";
+import { AccountCabinet } from "@/widgets/account-cabinet";
 
 type Tab = "profile" | "orders" | "wishlist" | "addresses" | "company";
 const VALID: Tab[] = ["profile", "orders", "wishlist", "addresses", "company"];
@@ -21,7 +21,7 @@ export default async function AccountPage({
           </div>
         }
       >
-        <AccountClient initialTab={tab} />
+        <AccountCabinet initialTab={tab} />
       </Suspense>
     </div>
   );

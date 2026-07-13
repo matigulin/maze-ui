@@ -1,1 +1,1 @@
-export { CartProvider, useCart, type CartItem } from "@/features/cart";
+export { useCart, type CartItem } from "@/features/cart";

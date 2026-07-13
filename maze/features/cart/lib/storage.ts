@@ -1,4 +1,4 @@
-import type { CartItem } from "@/lib/cart-types";
+import type { CartItem } from "../model/types";
 
 const LS_WISH = "maze:wishlist";
 

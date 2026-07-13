@@ -10,7 +10,7 @@ import {
   type ReactNode,
 } from "react";
 import type { Product } from "@/lib/data";
-import type { CartItem } from "@/lib/cart-types";
+import type { CartItem } from "./types";
 import { shouldUseMocks } from "@/lib/mocks";
 import { apiGet } from "@/lib/api";
 import {
@@ -20,13 +20,11 @@ import {
   removeCartLine,
   replaceCartLines,
   resolveVariantId,
-} from "@/lib/cart-client";
+} from "../api/cart-api";
 import {
   mapProductDetailToUiProduct,
   type ProductDetailDto,
 } from "@/lib/mappers/catalog";
-import { useUserAuth } from "@/features/auth";
-import { useModal } from "@/components/modals";
 import {
   readCachedCart,
   readWishlist,
@@ -34,7 +32,16 @@ import {
   writeWishlist,
 } from "../lib/storage";
 
-export type { CartItem } from "@/lib/cart-types";
+export type { CartItem } from "./types";
+
+/** Auth dependency injected from app/widgets — feature не импортирует features/auth. */
+export type CartAuthAdapter = {
+  ready: boolean;
+  isAuthenticated: boolean;
+  userId: string | null;
+  ensureAccessToken: () => Promise<string | null>;
+  onRequireAuth: () => void;
+};
 
 type Store = {
   items: CartItem[];
@@ -43,6 +50,7 @@ type Store = {
   count: number;
   subtotal: number;
   cartLoading: boolean;
+  ensureAccessToken: () => Promise<string | null>;
   addItem: (
     product: Product,
     opts?: {
@@ -75,10 +83,16 @@ async function loadVariantId(
   return resolveVariantId(mapped, opts);
 }
 
-export function CartProvider({ children }: { children: ReactNode }) {
+export function CartProvider({
+  children,
+  auth,
+}: {
+  children: ReactNode;
+  auth: CartAuthAdapter;
+}) {
   const useApi = !shouldUseMocks();
-  const { ready, isAuthenticated, user, ensureAccessToken } = useUserAuth();
-  const { open } = useModal();
+  const { ready, isAuthenticated, userId, ensureAccessToken, onRequireAuth } =
+    auth;
   const [items, setItems] = useState<CartItem[]>([]);
   const [wishlist, setWishlist] = useState<string[]>([]);
   const [miniOpen, setMiniOpen] = useState(false);
@@ -91,8 +105,6 @@ export function CartProvider({ children }: { children: ReactNode }) {
   }, [ensureAccessToken]);
 
   const refreshApiCart = useCallback(async () => {
-    const userId = user?.id;
-
     if (!useApi || !isAuthenticated || !userId) {
       setItems([]);
       return;
@@ -114,16 +126,15 @@ export function CartProvider({ children }: { children: ReactNode }) {
     } finally {
       setCartLoading(false);
     }
-  }, [useApi, isAuthenticated, user?.id, ensureAccessToken]);
+  }, [useApi, isAuthenticated, userId, ensureAccessToken]);
 
   const loadLocalCart = useCallback(() => {
-    const userId = user?.id;
     if (!userId) {
       setItems([]);
       return;
     }
     setItems(readCachedCart(userId) ?? []);
-  }, [user?.id]);
+  }, [userId]);
 
   useEffect(() => {
     if (!ready) return;
@@ -132,7 +143,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
       try {
         setWishlist(readWishlist());
 
-        if (isAuthenticated && user?.id) {
+        if (isAuthenticated && userId) {
           if (useApi) {
             await refreshApiCart();
           } else {
@@ -148,13 +159,13 @@ export function CartProvider({ children }: { children: ReactNode }) {
     }
 
     void hydrate();
-  }, [useApi, ready, isAuthenticated, user?.id, refreshApiCart, loadLocalCart]);
+  }, [useApi, ready, isAuthenticated, userId, refreshApiCart, loadLocalCart]);
 
   useEffect(() => {
-    if (hydrated && isAuthenticated && user?.id) {
-      writeCachedCart(user.id, items);
+    if (hydrated && isAuthenticated && userId) {
+      writeCachedCart(userId, items);
     }
-  }, [items, hydrated, isAuthenticated, user?.id]);
+  }, [items, hydrated, isAuthenticated, userId]);
 
   useEffect(() => {
     if (hydrated) writeWishlist(wishlist);
@@ -163,9 +174,9 @@ export function CartProvider({ children }: { children: ReactNode }) {
   const requireAuthForCart = useCallback(() => {
     if (!ready) return false;
     if (isAuthenticated) return true;
-    open("auth");
+    onRequireAuth();
     return false;
-  }, [ready, isAuthenticated, open]);
+  }, [ready, isAuthenticated, onRequireAuth]);
 
   const store = useMemo<Store>(() => {
     const count = items.reduce((s, i) => s + i.qty, 0);
@@ -178,6 +189,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
       count,
       subtotal,
       cartLoading,
+      ensureAccessToken,
       setMiniOpen,
       addItem: async (product, opts = {}) => {
         if (!requireAuthForCart()) return;
@@ -284,6 +296,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
     useApi,
     requireAuthForCart,
     cartAuth,
+    ensureAccessToken,
   ]);
 
   return <CartContext.Provider value={store}>{children}</CartContext.Provider>;
