@@ -1,20 +1,55 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useId, useRef, useState } from "react";
 import { AnimatePresence, motion } from "motion/react";
-import { Minus, Plus, Trash2, ShoppingBag, Check, ArrowLeft } from "lucide-react";
+import {
+  Minus,
+  Plus,
+  Trash2,
+  ShoppingBag,
+  Check,
+  ArrowLeft,
+  ChevronDown,
+  MapPin,
+  Truck,
+  Package,
+} from "lucide-react";
 import { useCart } from "@/components/store";
 import { ProductThumb } from "@/components/ProductThumb";
-import { Field, fieldCls } from "@/components/Field";
+import { Field } from "@/components/Field";
 import { formatPrice, plural, cn } from "@/lib/utils";
 
 const DELIVERY = [
-  { id: "pickup", label: "Самовывоз (Чайковского, 56)", price: 0 },
-  { id: "courier", label: "Курьер по СПб", price: 500 },
-  { id: "yandex", label: "Яндекс Доставка (СПб)", price: 400 },
-  { id: "cdek", label: "СДЭК по РФ", price: 450 },
-];
+  {
+    id: "pickup",
+    label: "Самовывоз",
+    detail: "Чайковского, 56",
+    price: 0,
+    Icon: MapPin,
+  },
+  {
+    id: "courier",
+    label: "Курьер по СПб",
+    detail: "Сегодня–завтра",
+    price: 500,
+    Icon: Truck,
+  },
+  {
+    id: "yandex",
+    label: "Яндекс Доставка",
+    detail: "По Санкт-Петербургу",
+    price: 400,
+    Icon: Package,
+  },
+  {
+    id: "cdek",
+    label: "СДЭК по РФ",
+    detail: "3–7 дней",
+    price: 450,
+    Icon: Truck,
+  },
+] as const;
 
 const PAYMENT = [
   { id: "cash", label: "Наличные", surcharge: 0, note: "" },
@@ -22,9 +57,11 @@ const PAYMENT = [
   { id: "credit", label: "Рассрочка 0%", surcharge: 0, note: "6 мес." },
 ];
 
+type DeliveryId = (typeof DELIVERY)[number]["id"];
+
 export function CartClient() {
   const { items, subtotal, count, updateQty, removeItem, clearCart } = useCart();
-  const [delivery, setDelivery] = useState(DELIVERY[0].id);
+  const [delivery, setDelivery] = useState<DeliveryId>(DELIVERY[0].id);
   const [payment, setPayment] = useState(PAYMENT[0].id);
   const [done, setDone] = useState(false);
 
@@ -49,7 +86,7 @@ export function CartClient() {
         </motion.div>
         <h2 className="font-display text-2xl font-bold">Заказ оформлен!</h2>
         <p className="mt-2 text-muted">
-          Заказ <span className="text-cyan">#MAZE-{Math.floor(1000 + Math.random() * 9000)}</span>{" "}
+          Заказ <span className="text-cyan">#MAZE-{Math.floor(1000 + Math.random() * 9000)}</span>{" "} {/* eslint-disable-line */}
           принят. Менеджер свяжется с вами в ближайшее время.
         </p>
         <Link href="/catalog" className="btn-primary mt-8 inline-flex">
@@ -178,24 +215,7 @@ export function CartClient() {
         >
           <h2 className="font-display text-lg font-semibold">Оформление</h2>
 
-          {/* Доставка */}
-          <div className="space-y-1.5">
-            <label className="text-xs font-medium uppercase tracking-wider text-faint">
-              Способ доставки
-            </label>
-            <select
-              value={delivery}
-              onChange={(e) => setDelivery(e.target.value)}
-              className={`${fieldCls} cursor-pointer appearance-none`}
-            >
-              {DELIVERY.map((d) => (
-                <option key={d.id} value={d.id} className="bg-panel">
-                  {d.label}
-                  {d.price ? ` · ${formatPrice(d.price)}` : " · бесплатно"}
-                </option>
-              ))}
-            </select>
-          </div>
+          <DeliverySelect value={delivery} onChange={setDelivery} />
 
           {/* Оплата */}
           <div className="space-y-2">
@@ -263,6 +283,162 @@ export function CartClient() {
             Нажимая кнопку, вы соглашаетесь с условиями обработки данных
           </p>
         </form>
+      </div>
+    </div>
+  );
+}
+
+function DeliverySelect({
+  value,
+  onChange,
+}: {
+  value: DeliveryId;
+  onChange: (id: DeliveryId) => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const rootRef = useRef<HTMLDivElement>(null);
+  const listId = useId();
+  const selected = DELIVERY.find((d) => d.id === value) ?? DELIVERY[0];
+  const SelectedIcon = selected.Icon;
+
+  useEffect(() => {
+    if (!open) return;
+
+    function onPointerDown(e: MouseEvent) {
+      if (!rootRef.current?.contains(e.target as Node)) setOpen(false);
+    }
+    function onKeyDown(e: KeyboardEvent) {
+      if (e.key === "Escape") setOpen(false);
+    }
+
+    document.addEventListener("mousedown", onPointerDown);
+    document.addEventListener("keydown", onKeyDown);
+    return () => {
+      document.removeEventListener("mousedown", onPointerDown);
+      document.removeEventListener("keydown", onKeyDown);
+    };
+  }, [open]);
+
+  return (
+    <div className="space-y-1.5" ref={rootRef}>
+      <label
+        id={`${listId}-label`}
+        className="text-xs font-medium uppercase tracking-wider text-faint"
+      >
+        Способ доставки
+      </label>
+
+      <div className="relative">
+        <button
+          type="button"
+          aria-haspopup="listbox"
+          aria-expanded={open}
+          aria-labelledby={`${listId}-label`}
+          aria-controls={listId}
+          onClick={() => setOpen((v) => !v)}
+          className={cn(
+            "flex w-full items-center gap-3 rounded-xl border bg-bg-2/60 px-3.5 py-3 text-left text-[15px] outline-none transition-colors cursor-pointer",
+            open
+              ? "border-cyan/70 ring-2 ring-cyan/20"
+              : "border-line hover:border-white/20 focus:border-cyan/70 focus:ring-2 focus:ring-cyan/20",
+          )}
+        >
+          <span className="grid h-9 w-9 shrink-0 place-items-center rounded-lg border border-line bg-white/[0.03] text-cyan">
+            <SelectedIcon size={17} strokeWidth={2} />
+          </span>
+          <span className="min-w-0 flex-1">
+            <span className="block truncate font-medium text-ink">
+              {selected.label}
+            </span>
+            <span className="block truncate text-xs text-faint">
+              {selected.detail}
+            </span>
+          </span>
+          <span
+            className={cn(
+              "shrink-0 text-sm tabular-nums",
+              selected.price === 0 ? "text-cyan" : "text-muted",
+            )}
+          >
+            {selected.price === 0 ? "бесплатно" : formatPrice(selected.price)}
+          </span>
+          <ChevronDown
+            size={16}
+            className={cn(
+              "shrink-0 text-faint transition-transform duration-200",
+              open && "rotate-180 text-cyan",
+            )}
+          />
+        </button>
+
+        <AnimatePresence>
+          {open && (
+            <motion.ul
+              id={listId}
+              role="listbox"
+              aria-labelledby={`${listId}-label`}
+              initial={{ opacity: 0, y: -6, scale: 0.98 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: -4, scale: 0.98 }}
+              transition={{ duration: 0.16, ease: "easeOut" }}
+              className="absolute left-0 right-0 z-30 mt-2 overflow-hidden rounded-2xl border border-line bg-panel/95 p-1.5 shadow-[0_18px_50px_-20px_rgba(0,0,0,0.75)] backdrop-blur-xl"
+            >
+              {DELIVERY.map((option) => {
+                const active = option.id === value;
+                const OptionIcon = option.Icon;
+                return (
+                  <li key={option.id} role="option" aria-selected={active}>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        onChange(option.id);
+                        setOpen(false);
+                      }}
+                      className={cn(
+                        "flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left transition-colors cursor-pointer",
+                        active
+                          ? "bg-cyan/10 text-ink"
+                          : "text-ink hover:bg-white/[0.04]",
+                      )}
+                    >
+                      <span
+                        className={cn(
+                          "grid h-8 w-8 shrink-0 place-items-center rounded-lg border",
+                          active
+                            ? "border-cyan/40 bg-cyan/10 text-cyan"
+                            : "border-line bg-white/[0.02] text-muted",
+                        )}
+                      >
+                        <OptionIcon size={15} strokeWidth={2} />
+                      </span>
+                      <span className="min-w-0 flex-1">
+                        <span className="block truncate text-sm font-medium">
+                          {option.label}
+                        </span>
+                        <span className="block truncate text-xs text-faint">
+                          {option.detail}
+                        </span>
+                      </span>
+                      <span
+                        className={cn(
+                          "shrink-0 text-xs tabular-nums",
+                          option.price === 0 ? "text-cyan" : "text-faint",
+                        )}
+                      >
+                        {option.price === 0
+                          ? "бесплатно"
+                          : formatPrice(option.price)}
+                      </span>
+                      {active && (
+                        <Check size={15} className="shrink-0 text-cyan" />
+                      )}
+                    </button>
+                  </li>
+                );
+              })}
+            </motion.ul>
+          )}
+        </AnimatePresence>
       </div>
     </div>
   );

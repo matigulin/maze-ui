@@ -25,7 +25,12 @@ export function ProductThumb({
 }) {
   if (product.imageUrl) {
     return (
-      <div className={cn("relative overflow-hidden rounded-2xl bg-white/5", className)}>
+      <div
+        className={cn(
+          "relative overflow-hidden rounded-2xl bg-white/5",
+          className,
+        )}
+      >
         <Image
           src={product.imageUrl}
           alt={product.name ?? product.glyph}
@@ -48,11 +53,15 @@ export function ProductThumb({
     >
       <div
         className="absolute -left-8 -top-10 h-2/3 w-2/3 rounded-full opacity-60 blur-2xl"
-        style={{ background: `radial-gradient(circle, ${c1}, transparent 70%)` }}
+        style={{
+          background: `radial-gradient(circle, ${c1}, transparent 70%)`,
+        }}
       />
       <div
         className="absolute -bottom-12 -right-6 h-2/3 w-2/3 rounded-full opacity-50 blur-2xl"
-        style={{ background: `radial-gradient(circle, ${c2}, transparent 70%)` }}
+        style={{
+          background: `radial-gradient(circle, ${c2}, transparent 70%)`,
+        }}
       />
       <div className="absolute inset-0 bg-gradient-to-b from-white/15 via-transparent to-black/25" />
       <div
