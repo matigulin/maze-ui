@@ -23,6 +23,7 @@ import type {
   ManagerStaffRow,
 } from "@/lib/admin/types";
 import { useStaffAuth } from "@/components/staff/StaffAuthProvider";
+import { requestPendingOrdersCountRefresh } from "@/features/admin-orders";
 
 const STATUS_LABEL: Record<string, string> = {
   pending: "Новый",
@@ -100,6 +101,7 @@ export function OrdersListPage() {
         const total = res.meta?.total ?? res.items.length;
         const limit = res.meta?.limit ?? 24;
         setPages(Math.max(1, Math.ceil(total / limit)));
+        requestPendingOrdersCountRefresh();
       } catch (e) {
         if (!cancelled) setError(errorMessage(e));
       } finally {
@@ -264,6 +266,7 @@ export function OrderDetailPage() {
     try {
       const next = await api.updateOrderStatus(id, { status });
       setOrder(next);
+      requestPendingOrdersCountRefresh();
     } catch (e) {
       setError(errorMessage(e));
     } finally {

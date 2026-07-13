@@ -11,6 +11,10 @@ import {
   ArrowRight,
   ShoppingBag,
 } from "lucide-react";
+import {
+  OrdersCountBadge,
+  usePendingOrdersCount,
+} from "@/features/admin-orders";
 
 const SECTIONS = [
   {
@@ -58,12 +62,14 @@ const SECTIONS = [
 ] as const;
 
 export function AdminDashboard() {
+  const { count: pendingOrdersCount } = usePendingOrdersCount();
 
   return (
     <div className="mx-auto max-w-4xl space-y-8">
       <div className="grid gap-3 sm:grid-cols-2">
         {SECTIONS.map((section) => {
           const Icon = section.icon;
+          const isOrders = section.href === "/admin/orders";
           return (
             <Link
               key={section.title}
@@ -76,8 +82,13 @@ export function AdminDashboard() {
                 </span>
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center justify-between gap-2">
-                    <h3 className="font-medium text-ink">{section.title}</h3>
-                    <ArrowRight className="h-4 w-4 text-cyan" />
+                    <h3 className="flex items-center gap-2 font-medium text-ink">
+                      {section.title}
+                      {isOrders && (
+                        <OrdersCountBadge count={pendingOrdersCount} />
+                      )}
+                    </h3>
+                    <ArrowRight className="h-4 w-4 shrink-0 text-cyan" />
                   </div>
                   <p className="mt-1 text-sm text-muted">{section.desc}</p>
                 </div>
@@ -86,19 +97,6 @@ export function AdminDashboard() {
           );
         })}
       </div>
-
-      {/* <div className="rounded-2xl border border-cyan/20 bg-cyan/5 p-5">
-        <p className="text-sm text-ink">
-          API уже отвечает. Следующий шаг — CRUD категорий и товаров.
-        </p>
-        <Link
-          href="/"
-          className="mt-3 inline-flex items-center gap-2 text-sm text-cyan transition hover:opacity-80"
-        >
-          Открыть витрину
-          <ArrowRight className="h-3.5 w-3.5" />
-        </Link>
-      </div> */}
     </div>
   );
 }

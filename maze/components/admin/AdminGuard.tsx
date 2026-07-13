@@ -4,6 +4,7 @@ import { useEffect, type ReactNode } from "react";
 import { useRouter } from "next/navigation";
 import { useStaffAuth } from "@/components/staff/StaffAuthProvider";
 import { AdminShell } from "@/components/admin/AdminShell";
+import { PendingOrdersCountProvider } from "@/features/admin-orders";
 
 /** Any authenticated staff can use admin for now; roles later. */
 export function AdminGuard({ children }: { children: ReactNode }) {
@@ -31,5 +32,9 @@ export function AdminGuard({ children }: { children: ReactNode }) {
     );
   }
 
-  return <AdminShell>{children}</AdminShell>;
+  return (
+    <PendingOrdersCountProvider>
+      <AdminShell>{children}</AdminShell>
+    </PendingOrdersCountProvider>
+  );
 }

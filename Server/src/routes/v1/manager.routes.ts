@@ -7,6 +7,7 @@ import {
   MANAGER_ORDER_STATUSES,
   addManagerOrderNote,
   assignManagerOrder,
+  countOrdersByStatus,
   getManagerOrderById,
   listManagerOrders,
   updateManagerOrderStatus,
@@ -35,6 +36,12 @@ const managerRoutes: FastifyPluginAsync = async (fastify) => {
       request.query as Record<string, unknown>,
     );
     return success(result.items, request.requestId, result.meta);
+  });
+
+  fastify.get('/orders/pending-count', async (request) => {
+    await fastify.authenticateStaff(request);
+    const count = await countOrdersByStatus('pending');
+    return success({ count }, request.requestId);
   });
 
   fastify.get('/orders/:id', async (request) => {

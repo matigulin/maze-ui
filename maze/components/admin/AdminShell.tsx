@@ -18,6 +18,10 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useStaffAuth } from "@/components/staff/StaffAuthProvider";
+import {
+  OrdersCountBadge,
+  usePendingOrdersCount,
+} from "@/features/admin-orders";
 
 type NavItem = {
   href: string;
@@ -43,6 +47,7 @@ export function AdminShell({ children }: { children: ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
   const { displayName, staff, logout } = useStaffAuth();
+  const { count: pendingOrdersCount } = usePendingOrdersCount();
 
   async function onLogout() {
     await logout();
@@ -69,6 +74,7 @@ export function AdminShell({ children }: { children: ReactNode }) {
               ? pathname === item.href
               : pathname === item.href || pathname.startsWith(`${item.href}/`);
             const Icon = item.icon;
+            const showOrdersBadge = item.href === "/admin/orders";
             return (
               <Link
                 key={item.href}
@@ -81,7 +87,12 @@ export function AdminShell({ children }: { children: ReactNode }) {
                 )}
               >
                 <Icon className="h-4 w-4 shrink-0" />
-                {item.label}
+                <span className="inline-flex min-w-0 items-center gap-1.5">
+                  <span className="truncate">{item.label}</span>
+                  {showOrdersBadge && (
+                    <OrdersCountBadge count={pendingOrdersCount} />
+                  )}
+                </span>
               </Link>
             );
           })}

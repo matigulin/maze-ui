@@ -46,6 +46,11 @@ function mapManagerListItem(order: Order) {
   };
 }
 
+/** Точный count без include (для бейджа новых заказов в админке). */
+export async function countOrdersByStatus(status: string): Promise<number> {
+  return Order.count({ where: { status } });
+}
+
 export async function listManagerOrders(
   staffId: string,
   staffRole: string,
