@@ -156,6 +156,7 @@ export async function apiPostJson<T>(
   opts?: {
     csrfHeader?: { name: string; value: string };
     accessToken?: string | null;
+    headers?: Record<string, string>;
   },
 ): Promise<T> {
   const url = buildUrl(endpoint);
@@ -169,6 +170,7 @@ export async function apiPostJson<T>(
       ...(opts?.csrfHeader
         ? { [opts.csrfHeader.name]: opts.csrfHeader.value }
         : null),
+      ...opts?.headers,
     },
     credentials: "include",
     body: hasBody ? JSON.stringify(body) : undefined,

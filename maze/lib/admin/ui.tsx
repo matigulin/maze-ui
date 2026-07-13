@@ -1,7 +1,16 @@
 "use client";
 
 import { cn } from "@/lib/utils";
-import type { ButtonHTMLAttributes, ReactNode } from "react";
+import { AnimatePresence, motion } from "motion/react";
+import { Check, ChevronDown } from "lucide-react";
+import {
+  useEffect,
+  useId,
+  useRef,
+  useState,
+  type ButtonHTMLAttributes,
+  type ReactNode,
+} from "react";
 
 export function AdminPageHeader({
   title,
@@ -51,8 +60,7 @@ export function AdminButton({
   variant?: "primary" | "ghost" | "danger" | "secondary";
 }) {
   const styles = {
-    primary:
-      "bg-cyan/90 text-bg hover:bg-cyan disabled:opacity-50",
+    primary: "bg-cyan/90 text-bg hover:bg-cyan disabled:opacity-50",
     secondary:
       "border border-line bg-bg-2 text-ink hover:border-cyan/40 disabled:opacity-50",
     ghost: "text-muted hover:bg-bg-2 hover:text-ink disabled:opacity-50",
@@ -196,30 +204,146 @@ export function AdminSelect({
   onChange,
   options,
   required,
+  className,
 }: {
   label: string;
   value: string;
   onChange: (v: string) => void;
-  options: Array<{ value: string; label: string }>;
+  options: Array<{ value: string; label: string; detail?: string }>;
   required?: boolean;
+  className?: string;
 }) {
+  const [open, setOpen] = useState(false);
+  const rootRef = useRef<HTMLDivElement>(null);
+  const listId = useId();
+  const selected =
+    options.find((opt) => opt.value === value) ??
+    options[0] ?? { value: "", label: "—" };
+
+  useEffect(() => {
+    if (!open) return;
+
+    function onPointerDown(e: MouseEvent) {
+      if (!rootRef.current?.contains(e.target as Node)) setOpen(false);
+    }
+    function onKeyDown(e: KeyboardEvent) {
+      if (e.key === "Escape") setOpen(false);
+    }
+
+    document.addEventListener("mousedown", onPointerDown);
+    document.addEventListener("keydown", onKeyDown);
+    return () => {
+      document.removeEventListener("mousedown", onPointerDown);
+      document.removeEventListener("keydown", onKeyDown);
+    };
+  }, [open]);
+
   return (
-    <div className="space-y-1.5">
-      <label className="block text-xs font-medium uppercase tracking-wider text-muted">
+    <div className={cn("relative space-y-1.5", className)} ref={rootRef}>
+      <label
+        id={`${listId}-label`}
+        className="block text-xs font-medium uppercase tracking-wider text-muted"
+      >
         {label}
       </label>
+
       <select
         required={required}
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        className="w-full rounded-xl border border-line bg-bg-2/60 px-4 py-3 text-[15px] text-ink outline-none focus:border-cyan/70 focus:ring-2 focus:ring-cyan/20"
+        tabIndex={-1}
+        aria-hidden
+        className="pointer-events-none absolute h-0 w-0 opacity-0"
       >
         {options.map((opt) => (
-          <option key={opt.value} value={opt.value}>
+          <option key={opt.value || "__empty"} value={opt.value}>
             {opt.label}
           </option>
         ))}
       </select>
+
+      <div className="relative">
+        <button
+          type="button"
+          aria-haspopup="listbox"
+          aria-expanded={open}
+          aria-labelledby={`${listId}-label`}
+          aria-controls={listId}
+          onClick={() => setOpen((v) => !v)}
+          className={cn(
+            "flex w-full items-center gap-3 rounded-xl border bg-bg-2/60 px-3.5 py-3 text-left text-[15px] outline-none transition-colors cursor-pointer",
+            open
+              ? "border-cyan/70 ring-2 ring-cyan/20"
+              : "border-line hover:border-white/20 focus:border-cyan/70 focus:ring-2 focus:ring-cyan/20",
+          )}
+        >
+          <span className="min-w-0 flex-1">
+            <span className="block truncate font-medium text-ink">{selected.label}</span>
+            {selected.detail && (
+              <span className="block truncate text-xs text-faint">{selected.detail}</span>
+            )}
+          </span>
+          <ChevronDown
+            size={16}
+            className={cn(
+              "shrink-0 text-faint transition-transform duration-200",
+              open && "rotate-180 text-cyan",
+            )}
+          />
+        </button>
+
+        <AnimatePresence>
+          {open && (
+            <motion.ul
+              id={listId}
+              role="listbox"
+              aria-labelledby={`${listId}-label`}
+              initial={{ opacity: 0, y: -6, scale: 0.98 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: -4, scale: 0.98 }}
+              transition={{ duration: 0.16, ease: "easeOut" }}
+              className="absolute left-0 right-0 z-40 mt-2 max-h-64 overflow-y-auto rounded-2xl border border-line bg-panel/95 p-1.5 shadow-[0_18px_50px_-20px_rgba(0,0,0,0.75)] backdrop-blur-xl"
+            >
+              {options.map((option) => {
+                const active = option.value === value;
+                return (
+                  <li
+                    key={option.value || "__empty"}
+                    role="option"
+                    aria-selected={active}
+                  >
+                    <button
+                      type="button"
+                      onClick={() => {
+                        onChange(option.value);
+                        setOpen(false);
+                      }}
+                      className={cn(
+                        "flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left transition-colors cursor-pointer",
+                        active
+                          ? "bg-cyan/10 text-ink"
+                          : "text-ink hover:bg-white/[0.04]",
+                      )}
+                    >
+                      <span className="min-w-0 flex-1">
+                        <span className="block truncate text-sm font-medium">
+                          {option.label}
+                        </span>
+                        {option.detail && (
+                          <span className="block truncate text-xs text-faint">
+                            {option.detail}
+                          </span>
+                        )}
+                      </span>
+                      {active && <Check size={15} className="shrink-0 text-cyan" />}
+                    </button>
+                  </li>
+                );
+              })}
+            </motion.ul>
+          )}
+        </AnimatePresence>
+      </div>
     </div>
   );
 }

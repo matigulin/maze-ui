@@ -2,6 +2,7 @@ import { randomUUID } from 'node:crypto';
 import { Op } from 'sequelize';
 import { toNumber } from '../lib/decimal.js';
 import { NotFoundError, ValidationError } from '../lib/errors.js';
+import { isoTimestamp } from '../lib/model-attrs.js';
 import { fulfillOrderStock, releaseOrderStockReservations } from '../lib/order-stock.js';
 import { paginationOffset, parsePagination } from '../lib/pagination.js';
 import { runInTransaction } from '../lib/transaction.js';
@@ -41,7 +42,7 @@ function mapManagerListItem(order: Order) {
       phone: order.get('customer_phone') as string,
     },
     assignedManagerId: (order.get('assigned_manager_id') as string | null) ?? null,
-    createdAt: (order.get('created_at') as Date).toISOString(),
+    createdAt: isoTimestamp(order, 'createdAt'),
   };
 }
 
@@ -174,7 +175,7 @@ export async function getManagerOrderById(orderId: string) {
       id: note.id,
       staffUserId: note.staff_user_id,
       text: note.text,
-      createdAt: (note.get('created_at') as Date).toISOString(),
+      createdAt: isoTimestamp(note, 'createdAt'),
     })),
     statusHistory: (order.statusHistory ?? []).map((entry) => ({
       id: entry.id,
@@ -182,9 +183,9 @@ export async function getManagerOrderById(orderId: string) {
       toStatus: entry.to_status,
       staffUserId: entry.staff_user_id,
       note: entry.note,
-      createdAt: (entry.get('created_at') as Date).toISOString(),
+      createdAt: isoTimestamp(entry, 'createdAt'),
     })),
-    createdAt: (order.get('created_at') as Date).toISOString(),
+    createdAt: isoTimestamp(order, 'createdAt'),
   };
 }
 
@@ -288,7 +289,7 @@ export async function addManagerOrderNote(
     id: note.id,
     staffUserId: note.staff_user_id,
     text: note.text,
-    createdAt: (note.get('created_at') as Date).toISOString(),
+    createdAt: isoTimestamp(note, 'createdAt'),
   };
 }
 
