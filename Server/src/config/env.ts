@@ -8,7 +8,7 @@ const envSchema = z.object({
   REDIS_URL: z.string().min(1),
   JWT_SECRET: z.string().min(32),
   JWT_REFRESH_SECRET: z.string().min(32),
-  CORS_ORIGIN: z.string().url(),
+  CORS_ORIGIN: z.string().min(1),
   COOKIE_DOMAIN: z.string().optional(),
   SMS_API_KEY: z.string().optional(),
   CDEK_CLIENT_ID: z.string().optional(),

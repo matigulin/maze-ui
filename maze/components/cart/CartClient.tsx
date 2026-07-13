@@ -18,6 +18,7 @@ import {
 import { useCart } from "@/components/store";
 import { ProductThumb } from "@/components/ProductThumb";
 import { Field } from "@/components/Field";
+import { useUserAuth } from "@/features/auth";
 import { formatPrice, plural, cn } from "@/lib/utils";
 import { checkoutCart } from "@/lib/checkout-client";
 import { ApiError } from "@/lib/api";
@@ -63,6 +64,7 @@ type DeliveryId = (typeof DELIVERY)[number]["id"];
 
 export function CartClient() {
   const { items, subtotal, count, updateQty, removeItem, clearCart } = useCart();
+  const { ensureAccessToken } = useUserAuth();
   const [delivery, setDelivery] = useState<DeliveryId>(DELIVERY[0].id);
   const [payment, setPayment] = useState(PAYMENT[0].id);
   const [firstName, setFirstName] = useState("");
@@ -229,6 +231,7 @@ export function CartClient() {
                   throw new Error("В корзине нет вариантов товара");
                 }
 
+                const accessToken = await ensureAccessToken();
                 const order = await checkoutCart({
                   deliveryUiId: delivery,
                   paymentUiId: payment,
@@ -236,13 +239,16 @@ export function CartClient() {
                   lastName: "Клиент",
                   phone,
                   items: lines,
+                  accessToken,
                 });
                 setDoneOrder(order.orderNumber);
                 await clearCart();
               } catch (err) {
                 const message =
                   err instanceof ApiError
-                    ? err.message
+                    ? err.message === "Cart is empty"
+                      ? "Корзина на сервере пуста. Обновите страницу и добавьте товар снова."
+                      : err.message
                     : err instanceof Error
                       ? err.message
                       : "Не удалось оформить заказ";

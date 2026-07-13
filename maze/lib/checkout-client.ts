@@ -56,26 +56,38 @@ export async function requestDeliveryQuote(input: {
   city: string;
   address?: { street?: string; house?: string; flat?: string };
   items: Array<{ variantId: string; quantity: number }>;
+  accessToken?: string | null;
 }): Promise<DeliveryQuoteDto> {
-  return apiPostJson<DeliveryQuoteDto>("/delivery/quote", input);
+  const { accessToken, ...body } = input;
+  return apiPostJson<DeliveryQuoteDto>("/delivery/quote", body, {
+    accessToken,
+  });
 }
 
-export async function getDeliveryQuote(quoteId: string): Promise<DeliveryQuoteDto> {
+export async function getDeliveryQuote(
+  quoteId: string,
+  accessToken?: string | null,
+): Promise<DeliveryQuoteDto> {
   return apiGet<DeliveryQuoteDto>(`/delivery/quote/${quoteId}`, undefined, {
     credentials: "include",
+    accessToken,
   });
 }
 
 export async function waitForQuoteReady(
   quoteId: string,
-  { timeoutMs = 12000, intervalMs = 400 } = {},
+  {
+    timeoutMs = 12000,
+    intervalMs = 400,
+    accessToken,
+  }: { timeoutMs?: number; intervalMs?: number; accessToken?: string | null } = {},
 ): Promise<DeliveryQuoteDto> {
   const started = Date.now();
-  let last = await getDeliveryQuote(quoteId);
+  let last = await getDeliveryQuote(quoteId, accessToken);
 
   while (last.status === "pending" && Date.now() - started < timeoutMs) {
     await new Promise((r) => setTimeout(r, intervalMs));
-    last = await getDeliveryQuote(quoteId);
+    last = await getDeliveryQuote(quoteId, accessToken);
   }
 
   if (last.status !== "ready") {
@@ -99,8 +111,11 @@ export async function createOrder(input: {
   delivery: { quoteId: string; comment?: string };
   payment: { method: CheckoutPaymentMethod };
   comment?: string;
+  accessToken?: string | null;
 }): Promise<CreateOrderResponse> {
-  return apiPostJson<CreateOrderResponse>("/orders", input, {
+  const { accessToken, ...body } = input;
+  return apiPostJson<CreateOrderResponse>("/orders", body, {
+    accessToken,
     headers: {
       "Idempotency-Key": crypto.randomUUID(),
     },
@@ -114,6 +129,7 @@ export async function checkoutCart(opts: {
   lastName: string;
   phone: string;
   items: Array<{ variantId: string; quantity: number }>;
+  accessToken?: string | null;
 }): Promise<CreateOrderResponse> {
   const provider = mapUiDeliveryProvider(opts.deliveryUiId);
   const city = provider === "rf_cdek" ? "Москва" : "Санкт-Петербург";
@@ -127,10 +143,13 @@ export async function checkoutCart(opts: {
     city,
     address,
     items: opts.items,
+    accessToken: opts.accessToken,
   });
 
   if (quote.status === "pending") {
-    quote = await waitForQuoteReady(quote.quoteId);
+    quote = await waitForQuoteReady(quote.quoteId, {
+      accessToken: opts.accessToken,
+    });
   } else if (quote.status === "failed") {
     throw new Error("Не удалось рассчитать доставку");
   }
@@ -143,5 +162,6 @@ export async function checkoutCart(opts: {
     },
     delivery: { quoteId: quote.quoteId },
     payment: { method: mapUiPaymentMethod(opts.paymentUiId) },
+    accessToken: opts.accessToken,
   });
 }
