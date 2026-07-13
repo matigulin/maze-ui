@@ -121,46 +121,55 @@ function formatPhone(phone: string): string {
   return phone;
 }
 
+function mockSiteChrome(): SiteChrome {
+  return {
+    categories: CATEGORIES.map((c) => ({
+      slug: c.slug,
+      name: c.name,
+      count: c.count,
+      icon: c.icon,
+      tint: c.tint as [string, string],
+    })),
+    store: STORE,
+    partnerBrands: BRANDS,
+  };
+}
+
 export async function fetchSiteChrome(): Promise<SiteChrome> {
   if (shouldUseMocks()) {
-    return {
-      categories: CATEGORIES.map((c) => ({
-        slug: c.slug,
-        name: c.name,
-        count: c.count,
-        icon: c.icon,
-        tint: c.tint as [string, string],
-      })),
-      store: STORE,
-      partnerBrands: BRANDS,
-    };
+    return mockSiteChrome();
   }
 
-  const [categories, settings, home] = await Promise.all([
-    apiGet<CategoryTreeItemDto[]>("/catalog/categories"),
-    apiGet<{
-      phone: string;
-      address: string;
-      metro: string;
-      workingHours: string;
-    }>("/settings/public"),
-    apiGet<{ partnerBrands: HomePartnerBrandDto[] }>("/home"),
-  ]);
+  try {
+    const [categories, settings, home] = await Promise.all([
+      apiGet<CategoryTreeItemDto[]>("/catalog/categories"),
+      apiGet<{
+        phone: string;
+        address: string;
+        metro: string;
+        workingHours: string;
+      }>("/settings/public"),
+      apiGet<{ partnerBrands: HomePartnerBrandDto[] }>("/home"),
+    ]);
 
-  const [city, ...addressParts] = settings.address.split(",").map((s) => s.trim());
+    const [city, ...addressParts] = settings.address.split(",").map((s) => s.trim());
 
-  return {
-    categories: categories.map(mapCategory),
-    store: {
-      phone: formatPhone(settings.phone),
-      city: city || "Санкт-Петербург",
-      address: addressParts.join(", ") || settings.address,
-      metro: settings.metro,
-      hours: settings.workingHours,
-      socials: ["TG", "VK", "YT"],
-    },
-    partnerBrands: home.partnerBrands.map((b) => b.name),
-  };
+    return {
+      categories: categories.map(mapCategory),
+      store: {
+        phone: formatPhone(settings.phone),
+        city: city || "Санкт-Петербург",
+        address: addressParts.join(", ") || settings.address,
+        metro: settings.metro,
+        hours: settings.workingHours,
+        socials: ["TG", "VK", "YT"],
+      },
+      partnerBrands: home.partnerBrands.map((b) => b.name),
+    };
+  } catch {
+    // API down / сеть — layout всё равно должен отрендериться
+    return mockSiteChrome();
+  }
 }
 
 export async function fetchHomeFeatures(): Promise<UiFeature[]> {
@@ -172,13 +181,21 @@ export async function fetchHomeFeatures(): Promise<UiFeature[]> {
     }));
   }
 
-  const home = await apiGet<{ advantages: HomeAdvantageDto[] }>("/home");
-  return home.advantages.map((a) => ({
-    icon: "star",
-    emoji: a.icon,
-    title: a.title,
-    text: a.desc,
-  }));
+  try {
+    const home = await apiGet<{ advantages: HomeAdvantageDto[] }>("/home");
+    return home.advantages.map((a) => ({
+      icon: "star",
+      emoji: a.icon,
+      title: a.title,
+      text: a.desc,
+    }));
+  } catch {
+    return FEATURES.map((f) => ({
+      icon: f.icon,
+      title: f.title,
+      text: f.text,
+    }));
+  }
 }
 
 export async function fetchReviews(limit = 8): Promise<Review[]> {
@@ -186,19 +203,27 @@ export async function fetchReviews(limit = 8): Promise<Review[]> {
     return mockReviews;
   }
 
-  const items = await apiGet<ReviewDto[]>("/reviews", { limit, page: 1 });
-  return items.map((r, i) => ({
-    name: r.name,
-    initials: initials(r.name),
-    text: r.text,
-    rating: r.rating,
-    product: r.source,
-    hue: REVIEW_HUES[i % REVIEW_HUES.length],
-  }));
+  try {
+    const items = await apiGet<ReviewDto[]>("/reviews", { limit, page: 1 });
+    return items.map((r, i) => ({
+      name: r.name,
+      initials: initials(r.name),
+      text: r.text,
+      rating: r.rating,
+      product: r.source,
+      hue: REVIEW_HUES[i % REVIEW_HUES.length],
+    }));
+  } catch {
+    return mockReviews;
+  }
 }
 
 export async function fetchPartnerBrands(): Promise<string[]> {
   if (shouldUseMocks()) return BRANDS;
-  const home = await apiGet<{ partnerBrands: HomePartnerBrandDto[] }>("/home");
-  return home.partnerBrands.map((b) => b.name);
+  try {
+    const home = await apiGet<{ partnerBrands: HomePartnerBrandDto[] }>("/home");
+    return home.partnerBrands.map((b) => b.name);
+  } catch {
+    return BRANDS;
+  }
 }

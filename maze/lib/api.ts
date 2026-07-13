@@ -31,6 +31,26 @@ export class ApiError extends Error {
   }
 }
 
+/** true для ECONNREFUSED / offline / DNS — удобно для SSR-фолбэка. */
+export function isNetworkApiError(err: unknown): boolean {
+  return err instanceof ApiError && (err.status === 0 || err.code === "NETWORK_ERROR");
+}
+
+async function apiFetch(
+  input: string,
+  init?: RequestInit,
+): Promise<Response> {
+  try {
+    return await fetch(input, init);
+  } catch {
+    throw new ApiError({
+      message: "Сервер API недоступен",
+      status: 0,
+      code: "NETWORK_ERROR",
+    });
+  }
+}
+
 function buildUrl(endpoint: string, query?: Record<string, unknown>) {
   const url = new URL(API_BASE_URL);
   const clean = endpoint.startsWith("/") ? endpoint.slice(1) : endpoint;
@@ -78,7 +98,7 @@ export async function apiGet<T>(
   opts?: { credentials?: RequestCredentials; accessToken?: string | null },
 ): Promise<T> {
   const url = buildUrl(endpoint, query);
-  const res = await fetch(url, {
+  const res = await apiFetch(url, {
     method: "GET",
     credentials: opts?.credentials,
     headers: {
@@ -95,7 +115,7 @@ export async function apiGetWithMeta<T>(
   opts?: { credentials?: RequestCredentials; accessToken?: string | null },
 ): Promise<{ data: T; meta?: PaginationMeta }> {
   const url = buildUrl(endpoint, query);
-  const res = await fetch(url, {
+  const res = await apiFetch(url, {
     method: "GET",
     credentials: opts?.credentials,
     headers: {
@@ -113,7 +133,7 @@ async function apiMutate<T>(
 ): Promise<T> {
   const url = buildUrl(endpoint);
   const hasBody = body !== undefined;
-  const res = await fetch(url, {
+  const res = await apiFetch(url, {
     method,
     headers: {
       ...(hasBody ? { "Content-Type": "application/json" } : {}),
@@ -161,7 +181,7 @@ export async function apiPostJson<T>(
 ): Promise<T> {
   const url = buildUrl(endpoint);
   const hasBody = body !== undefined;
-  const res = await fetch(url, {
+  const res = await apiFetch(url, {
     method: "POST",
     headers: {
       ...(hasBody ? { "Content-Type": "application/json" } : {}),
@@ -188,7 +208,7 @@ export async function apiUpload<T>(
   const form = new FormData();
   form.append(opts?.fieldName ?? "file", file);
 
-  const res = await fetch(url, {
+  const res = await apiFetch(url, {
     method: "POST",
     headers: {
       "X-Requested-With": "maze-web",

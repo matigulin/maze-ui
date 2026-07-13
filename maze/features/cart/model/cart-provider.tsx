@@ -196,9 +196,9 @@ export function CartProvider({
         if (!requireAuthForCart()) return;
 
         if (useApi) {
-          const variantId = await loadVariantId(product, opts);
-          if (!variantId) return;
           try {
+            const variantId = await loadVariantId(product, opts);
+            if (!variantId) return;
             const next = await addCartLine(
               variantId,
               opts.qty ?? 1,
@@ -208,7 +208,7 @@ export function CartProvider({
             // Не открываем пустую корзину (например out-of-stock, отфильтрованный ответ).
             if (!opts.silent && next.length > 0) setMiniOpen(true);
           } catch {
-            /* ошибка API — мини-корзину не трогаем */
+            /* сеть / API — мини-корзину не трогаем */
           }
           return;
         }
@@ -249,7 +249,11 @@ export function CartProvider({
         if (!requireAuthForCart()) return;
 
         if (useApi) {
-          setItems(await removeCartLine(key, await cartAuth()));
+          try {
+            setItems(await removeCartLine(key, await cartAuth()));
+          } catch {
+            /* ignore */
+          }
           return;
         }
         setItems((prev) => prev.filter((i) => i.key !== key));
@@ -262,16 +266,20 @@ export function CartProvider({
         const nextQty = Math.min(Math.max(0, qty), maxQty);
 
         if (useApi) {
-          if (nextQty === 0) {
-            setItems(await removeCartLine(key, await cartAuth()));
-            return;
+          try {
+            if (nextQty === 0) {
+              setItems(await removeCartLine(key, await cartAuth()));
+              return;
+            }
+            if (line && nextQty === line.qty) return;
+            const lines = items.map((i) => ({
+              variantId: i.variantId ?? i.key,
+              quantity: i.key === key ? nextQty : i.qty,
+            }));
+            setItems(await replaceCartLines(lines, await cartAuth()));
+          } catch {
+            /* ignore */
           }
-          if (line && nextQty === line.qty) return;
-          const lines = items.map((i) => ({
-            variantId: i.variantId ?? i.key,
-            quantity: i.key === key ? nextQty : i.qty,
-          }));
-          setItems(await replaceCartLines(lines, await cartAuth()));
           return;
         }
         setItems((prev) =>
@@ -288,7 +296,11 @@ export function CartProvider({
         if (!requireAuthForCart()) return;
 
         if (useApi) {
-          setItems(await clearCartApi(await cartAuth()));
+          try {
+            setItems(await clearCartApi(await cartAuth()));
+          } catch {
+            /* ignore */
+          }
           return;
         }
         setItems([]);

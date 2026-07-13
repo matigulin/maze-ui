@@ -49,19 +49,27 @@ export async function fetchEditorChoice(): Promise<Product[]> {
   if (shouldUseMocks()) {
     return [...products].sort((a, b) => b.reviews - a.reviews).slice(0, 8);
   }
-  const home = await apiGet<{ editorChoice: ProductListItemDto[] }>("/home");
-  return home.editorChoice.map(mapProductListItemToUiProduct);
+  try {
+    const home = await apiGet<{ editorChoice: ProductListItemDto[] }>("/home");
+    return home.editorChoice.map(mapProductListItemToUiProduct);
+  } catch {
+    return [...products].sort((a, b) => b.reviews - a.reviews).slice(0, 8);
+  }
 }
 
 export async function fetchNewProducts(): Promise<Product[]> {
   if (shouldUseMocks()) {
     return products.filter((p) => p.badge === "NEW").slice(0, 4);
   }
-  const home = await apiGet<{ editorChoice: ProductListItemDto[] }>("/home");
-  return home.editorChoice
-    .filter((p) => p.badges.map((b) => b.toLowerCase()).includes("new"))
-    .slice(0, 4)
-    .map(mapProductListItemToUiProduct);
+  try {
+    const home = await apiGet<{ editorChoice: ProductListItemDto[] }>("/home");
+    return home.editorChoice
+      .filter((p) => p.badges.map((b) => b.toLowerCase()).includes("new"))
+      .slice(0, 4)
+      .map(mapProductListItemToUiProduct);
+  } catch {
+    return products.filter((p) => p.badge === "NEW").slice(0, 4);
+  }
 }
 
 export async function fetchCatalogProducts(opts: {
@@ -72,17 +80,21 @@ export async function fetchCatalogProducts(opts: {
     return filterMockProducts(opts);
   }
 
-  const mapped = opts.cat ? CAT_MAP[opts.cat] : undefined;
-  const apiQuery: Record<string, unknown> = { limit: 48, page: 1 };
-  if (opts.q) apiQuery.search = opts.q;
-  if (mapped?.brand) apiQuery.brand = mapped.brand;
-  if (mapped?.category) apiQuery.category = mapped.category;
+  try {
+    const mapped = opts.cat ? CAT_MAP[opts.cat] : undefined;
+    const apiQuery: Record<string, unknown> = { limit: 48, page: 1 };
+    if (opts.q) apiQuery.search = opts.q;
+    if (mapped?.brand) apiQuery.brand = mapped.brand;
+    if (mapped?.category) apiQuery.category = mapped.category;
 
-  const items = await apiGet<ProductListItemDto[]>(
-    "/catalog/products",
-    apiQuery,
-  );
-  return items.map(mapProductListItemToUiProduct);
+    const items = await apiGet<ProductListItemDto[]>(
+      "/catalog/products",
+      apiQuery,
+    );
+    return items.map(mapProductListItemToUiProduct);
+  } catch {
+    return filterMockProducts(opts);
+  }
 }
 
 export async function fetchProductBySlug(
@@ -97,7 +109,7 @@ export async function fetchProductBySlug(
     return mapProductDetailToUiProduct(dto);
   } catch (e) {
     if (e instanceof ApiError && e.status === 404) return null;
-    throw e;
+    return getProduct(slug) ?? null;
   }
 }
 
@@ -109,13 +121,17 @@ export async function fetchRelatedProducts(
     return relatedProducts(slug, n);
   }
 
-  const dto = await apiGet<ProductDetailDto>(`/catalog/products/${slug}`);
-  const relatedItems = await apiGet<ProductListItemDto[]>(
-    "/catalog/products",
-    { brand: dto.brandSlug, limit: 8 },
-  );
-  return relatedItems
-    .filter((x) => x.slug !== slug)
-    .slice(0, n)
-    .map(mapProductListItemToUiProduct);
+  try {
+    const dto = await apiGet<ProductDetailDto>(`/catalog/products/${slug}`);
+    const relatedItems = await apiGet<ProductListItemDto[]>(
+      "/catalog/products",
+      { brand: dto.brandSlug, limit: 8 },
+    );
+    return relatedItems
+      .filter((x) => x.slug !== slug)
+      .slice(0, n)
+      .map(mapProductListItemToUiProduct);
+  } catch {
+    return relatedProducts(slug, n);
+  }
 }
