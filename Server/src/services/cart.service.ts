@@ -261,6 +261,9 @@ export async function getCart(owner: CartOwner): Promise<CartDto> {
 
   if (needsSave) {
     await saveCartLines(owner, validLines);
+  } else if (validLines.length > 0) {
+    // Продлеваем TTL при каждом чтении, чтобы корзина жила долго при активности.
+    await getRedis().expire(cartKey(owner), CART_TTL_SEC);
   }
 
   return cart;

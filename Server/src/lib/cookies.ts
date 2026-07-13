@@ -1,6 +1,6 @@
 import type { CookieSerializeOptions } from '@fastify/cookie';
 import { loadEnv } from '../config/env.js';
-import { COOKIE_NAMES, REFRESH_TOKEN_TTL_SEC } from './constants.js';
+import { CART_TTL_SEC, COOKIE_NAMES, REFRESH_TOKEN_TTL_SEC } from './constants.js';
 
 function baseCookieOptions(): CookieSerializeOptions {
   const env = loadEnv();
@@ -38,7 +38,7 @@ export function guestCookieOptions(): CookieSerializeOptions {
     secure,
     sameSite: 'lax',
     path: '/',
-    maxAge: REFRESH_TOKEN_TTL_SEC,
+    maxAge: CART_TTL_SEC,
     ...(env.COOKIE_DOMAIN ? { domain: env.COOKIE_DOMAIN } : {}),
   };
 }

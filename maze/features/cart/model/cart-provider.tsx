@@ -171,6 +171,7 @@ export function CartProvider({
     if (hydrated) writeWishlist(wishlist);
   }, [wishlist, hydrated]);
 
+  /** Корзина — только для авторизованных; избранное доступно гостю на устройстве. */
   const requireAuthForCart = useCallback(() => {
     if (!ready) return false;
     if (isAuthenticated) return true;

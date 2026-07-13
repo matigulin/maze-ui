@@ -120,7 +120,8 @@ export function AccountClient({
     );
   }
 
-  if (!isAuthenticated) {
+  // Гость: избранное доступно без входа; корзина и остальной кабинет — только после логина.
+  if (!isAuthenticated && tab !== "wishlist") {
     return (
       <div className="glass flex max-w-lg flex-col items-start gap-4 rounded-3xl p-8">
         <p className="eyebrow">MAZE ID</p>
@@ -128,12 +129,21 @@ export function AccountClient({
           Войдите в аккаунт
         </h1>
         <p className="text-sm text-muted">
-          Профиль, заказы и сохранённая корзина доступны после входа по номеру
-          телефона.
+          Профиль, заказы и корзина доступны после входа. Избранное можно
+          собирать без аккаунта — оно сохранится на этом устройстве.
         </p>
-        <button type="button" onClick={onLogin} className="btn-primary">
-          Войти
-        </button>
+        <div className="flex flex-wrap gap-3">
+          <button type="button" onClick={onLogin} className="btn-primary">
+            Войти
+          </button>
+          <button
+            type="button"
+            onClick={() => selectTab("wishlist")}
+            className="btn-ghost"
+          >
+            К избранному
+          </button>
+        </div>
       </div>
     );
   }
@@ -144,35 +154,53 @@ export function AccountClient({
         <div>
           <p className="eyebrow mb-2">MAZE ID</p>
           <h1 className="font-display text-4xl font-bold tracking-tight sm:text-5xl">
-            Личный кабинет
+            {isAuthenticated ? "Личный кабинет" : "Избранное"}
           </h1>
         </div>
+        {!isAuthenticated && (
+          <button type="button" onClick={onLogin} className="btn-ghost">
+            Войти
+          </button>
+        )}
       </div>
 
       <div className="mb-8 flex flex-wrap gap-1.5">
-        {TABS.map((t) => (
-          <button
-            key={t.id}
-            type="button"
-            onClick={() => selectTab(t.id)}
-            className={cn(
-              "relative rounded-full px-4 py-2 text-sm font-medium transition-colors cursor-pointer",
-              tab === t.id ? "text-ink" : "text-muted hover:text-ink",
-            )}
-          >
-            {tab === t.id && (
-              <motion.span
-                layoutId="acc-tab"
-                className="pointer-events-none absolute inset-0 -z-10 rounded-full bg-white/10"
-                transition={{ type: "spring", stiffness: 380, damping: 30 }}
-              />
-            )}
-            {t.label}
-            {t.id === "wishlist" && wishedItems.length > 0 && (
-              <span className="ml-1.5 text-xs text-cyan">{wishedItems.length}</span>
-            )}
-          </button>
-        ))}
+        {TABS.map((t) => {
+          const guestBlocked = !isAuthenticated && t.id !== "wishlist";
+          return (
+            <button
+              key={t.id}
+              type="button"
+              onClick={() => {
+                if (guestBlocked) {
+                  onLogin();
+                  return;
+                }
+                selectTab(t.id);
+              }}
+              className={cn(
+                "relative rounded-full px-4 py-2 text-sm font-medium transition-colors cursor-pointer",
+                tab === t.id ? "text-ink" : "text-muted hover:text-ink",
+                guestBlocked && "opacity-50",
+              )}
+              title={
+                guestBlocked ? "Доступно после входа" : undefined
+              }
+            >
+              {tab === t.id && (
+                <motion.span
+                  layoutId="acc-tab"
+                  className="pointer-events-none absolute inset-0 -z-10 rounded-full bg-white/10"
+                  transition={{ type: "spring", stiffness: 380, damping: 30 }}
+                />
+              )}
+              {t.label}
+              {t.id === "wishlist" && wishedItems.length > 0 && (
+                <span className="ml-1.5 text-xs text-cyan">{wishedItems.length}</span>
+              )}
+            </button>
+          );
+        })}
       </div>
 
       <motion.div
@@ -181,16 +209,16 @@ export function AccountClient({
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.3 }}
       >
-        {tab === "profile" && (
+        {tab === "wishlist" && <Wishlist items={wishedItems} />}
+        {isAuthenticated && tab === "profile" && (
           <AccountProfile
             ensureAccessToken={ensureAccessToken}
             isAuthenticated={isAuthenticated}
           />
         )}
-        {tab === "orders" && <Orders />}
-        {tab === "wishlist" && <Wishlist items={wishedItems} />}
-        {tab === "addresses" && <Addresses />}
-        {tab === "company" && <Company />}
+        {isAuthenticated && tab === "orders" && <Orders />}
+        {isAuthenticated && tab === "addresses" && <Addresses />}
+        {isAuthenticated && tab === "company" && <Company />}
       </motion.div>
     </div>
   );
