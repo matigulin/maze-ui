@@ -78,7 +78,10 @@ function mapQuoteResponse(
   const priceRub = toNumber(row.price);
   const isReady =
     status?.status === 'ready' ||
-    (priceRub > 0 && row.expires_at > new Date());
+    (status?.status !== 'pending' &&
+      status?.status !== 'failed' &&
+      row.expires_at > new Date() &&
+      (priceRub > 0 || row.provider === 'pickup'));
 
   if (isReady) {
     return {
@@ -144,13 +147,25 @@ export async function requestDeliveryQuote(
   await writeQuoteStatus(quoteId, { status: 'pending' });
   await redis.set(cacheKeyForHash(requestHash), quoteId, 'EX', DELIVERY_QUOTE_TTL_SEC);
 
-  await getQueue(QUEUE_NAMES.delivery).add(
-    'quote',
-    { quoteId },
-    { jobId: `delivery-quote:${quoteId}` },
-  );
+  // Process fixed rates inline (no dependency on queue latency / jobId quirks)
+  try {
+    await processDeliveryQuoteJob(quoteId);
+  } catch (error) {
+    console.error('[delivery-quote] inline process failed', quoteId, error);
+  }
 
-  return { quoteId, status: 'pending' };
+  // Best-effort background retry for external providers; BullMQ forbids `:` in custom ids
+  try {
+    await getQueue(QUEUE_NAMES.delivery).add(
+      'quote',
+      { quoteId },
+      { jobId: `delivery-quote-${quoteId}` },
+    );
+  } catch (error) {
+    console.error('[delivery-quote] enqueue failed', quoteId, error);
+  }
+
+  return getQuoteForOwner(quoteId, owner);
 }
 
 export async function computeItemsSubtotal(
@@ -243,8 +258,13 @@ export async function validateQuoteForCheckout(
     throw new ConflictError('QUOTE_INVALID', 'Delivery quote is invalid');
   }
 
-  if (row.expires_at <= new Date() || toNumber(row.price) <= 0) {
+  if (row.expires_at <= new Date()) {
     throw new ConflictError('QUOTE_EXPIRED', 'Delivery quote expired');
+  }
+
+  // Free pickup/threshold can be 0; only reject quotes that are not ready yet
+  if (status?.status !== 'ready') {
+    throw new ConflictError('QUOTE_EXPIRED', 'Delivery quote is not ready');
   }
 
   if (!cartMatchesQuoteItems(cartLines, payload.items)) {

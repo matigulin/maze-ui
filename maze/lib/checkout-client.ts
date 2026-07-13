@@ -1,0 +1,147 @@
+import { apiGet, apiPostJson } from "@/lib/api";
+
+export type DeliveryProvider =
+  | "pickup"
+  | "spb_courier"
+  | "spb_yandex"
+  | "rf_cdek"
+  | "rf_yandex";
+
+export type CheckoutPaymentMethod = "cash" | "card_qr" | "installment" | "invoice_b2b";
+
+export type DeliveryQuoteDto = {
+  quoteId: string;
+  status: "ready" | "pending" | "failed";
+  priceRub?: number;
+  etaDays?: number;
+  expiresAt?: string;
+};
+
+export type CreateOrderResponse = {
+  orderId: string;
+  orderNumber: string;
+  status: string;
+  totals: {
+    subtotalRub: number;
+    deliveryRub: number;
+    paymentFeeRub: number;
+    installmentFeeRub: number;
+    totalRub: number;
+  };
+  pricingVersion: string;
+};
+
+const PROVIDER_BY_UI: Record<string, DeliveryProvider> = {
+  pickup: "pickup",
+  courier: "spb_courier",
+  yandex: "spb_yandex",
+  cdek: "rf_cdek",
+};
+
+const PAYMENT_BY_UI: Record<string, CheckoutPaymentMethod> = {
+  cash: "cash",
+  card: "card_qr",
+};
+
+export function mapUiDeliveryProvider(uiId: string): DeliveryProvider {
+  return PROVIDER_BY_UI[uiId] ?? "pickup";
+}
+
+export function mapUiPaymentMethod(uiId: string): CheckoutPaymentMethod {
+  return PAYMENT_BY_UI[uiId] ?? "cash";
+}
+
+export async function requestDeliveryQuote(input: {
+  provider: DeliveryProvider;
+  city: string;
+  address?: { street?: string; house?: string; flat?: string };
+  items: Array<{ variantId: string; quantity: number }>;
+}): Promise<DeliveryQuoteDto> {
+  return apiPostJson<DeliveryQuoteDto>("/delivery/quote", input);
+}
+
+export async function getDeliveryQuote(quoteId: string): Promise<DeliveryQuoteDto> {
+  return apiGet<DeliveryQuoteDto>(`/delivery/quote/${quoteId}`, undefined, {
+    credentials: "include",
+  });
+}
+
+export async function waitForQuoteReady(
+  quoteId: string,
+  { timeoutMs = 12000, intervalMs = 400 } = {},
+): Promise<DeliveryQuoteDto> {
+  const started = Date.now();
+  let last = await getDeliveryQuote(quoteId);
+
+  while (last.status === "pending" && Date.now() - started < timeoutMs) {
+    await new Promise((r) => setTimeout(r, intervalMs));
+    last = await getDeliveryQuote(quoteId);
+  }
+
+  if (last.status !== "ready") {
+    throw new Error(
+      last.status === "failed"
+        ? "Не удалось рассчитать доставку"
+        : "Таймаут расчёта доставки",
+    );
+  }
+
+  return last;
+}
+
+export async function createOrder(input: {
+  customer: {
+    phone: string;
+    firstName: string;
+    lastName: string;
+    email?: string;
+  };
+  delivery: { quoteId: string; comment?: string };
+  payment: { method: CheckoutPaymentMethod };
+  comment?: string;
+}): Promise<CreateOrderResponse> {
+  return apiPostJson<CreateOrderResponse>("/orders", input, {
+    headers: {
+      "Idempotency-Key": crypto.randomUUID(),
+    },
+  });
+}
+
+export async function checkoutCart(opts: {
+  deliveryUiId: string;
+  paymentUiId: string;
+  firstName: string;
+  lastName: string;
+  phone: string;
+  items: Array<{ variantId: string; quantity: number }>;
+}): Promise<CreateOrderResponse> {
+  const provider = mapUiDeliveryProvider(opts.deliveryUiId);
+  const city = provider === "rf_cdek" ? "Москва" : "Санкт-Петербург";
+  const address =
+    provider === "pickup"
+      ? undefined
+      : { street: "Невский пр.", house: "1" };
+
+  let quote = await requestDeliveryQuote({
+    provider,
+    city,
+    address,
+    items: opts.items,
+  });
+
+  if (quote.status === "pending") {
+    quote = await waitForQuoteReady(quote.quoteId);
+  } else if (quote.status === "failed") {
+    throw new Error("Не удалось рассчитать доставку");
+  }
+
+  return createOrder({
+    customer: {
+      firstName: opts.firstName.trim(),
+      lastName: opts.lastName.trim() || "Клиент",
+      phone: opts.phone.trim(),
+    },
+    delivery: { quoteId: quote.quoteId },
+    payment: { method: mapUiPaymentMethod(opts.paymentUiId) },
+  });
+}

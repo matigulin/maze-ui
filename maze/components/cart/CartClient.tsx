@@ -19,6 +19,8 @@ import { useCart } from "@/components/store";
 import { ProductThumb } from "@/components/ProductThumb";
 import { Field } from "@/components/Field";
 import { formatPrice, plural, cn } from "@/lib/utils";
+import { checkoutCart } from "@/lib/checkout-client";
+import { ApiError } from "@/lib/api";
 
 const DELIVERY = [
   {
@@ -63,13 +65,17 @@ export function CartClient() {
   const { items, subtotal, count, updateQty, removeItem, clearCart } = useCart();
   const [delivery, setDelivery] = useState<DeliveryId>(DELIVERY[0].id);
   const [payment, setPayment] = useState(PAYMENT[0].id);
-  const [done, setDone] = useState(false);
+  const [firstName, setFirstName] = useState("");
+  const [phone, setPhone] = useState("");
+  const [submitting, setSubmitting] = useState(false);
+  const [formError, setFormError] = useState<string | null>(null);
+  const [doneOrder, setDoneOrder] = useState<string | null>(null);
 
   const deliveryPrice = DELIVERY.find((d) => d.id === delivery)?.price ?? 0;
   const surcharge = PAYMENT.find((p) => p.id === payment)?.surcharge ?? 0;
   const total = Math.round(subtotal * (1 + surcharge)) + deliveryPrice;
 
-  if (done) {
+  if (doneOrder) {
     return (
       <motion.div
         initial={{ opacity: 0, y: 20 }}
@@ -86,7 +92,7 @@ export function CartClient() {
         </motion.div>
         <h2 className="font-display text-2xl font-bold">Заказ оформлен!</h2>
         <p className="mt-2 text-muted">
-          Заказ <span className="text-cyan">#MAZE-{Math.floor(1000 + Math.random() * 9000)}</span>{" "} {/* eslint-disable-line */}
+          Заказ <span className="text-cyan">#{doneOrder}</span>{" "}
           принят. Менеджер свяжется с вами в ближайшее время.
         </p>
         <Link href="/catalog" className="btn-primary mt-8 inline-flex">
@@ -208,8 +214,43 @@ export function CartClient() {
         <form
           onSubmit={(e) => {
             e.preventDefault();
-            setDone(true);
-            setTimeout(() => void clearCart(), 300);
+            if (submitting) return;
+            setFormError(null);
+            setSubmitting(true);
+            void (async () => {
+              try {
+                const lines: Array<{ variantId: string; quantity: number }> = [];
+                for (const it of items) {
+                  if (!it.variantId) continue;
+                  lines.push({ variantId: it.variantId, quantity: it.qty });
+                }
+
+                if (lines.length === 0) {
+                  throw new Error("В корзине нет вариантов товара");
+                }
+
+                const order = await checkoutCart({
+                  deliveryUiId: delivery,
+                  paymentUiId: payment,
+                  firstName,
+                  lastName: "Клиент",
+                  phone,
+                  items: lines,
+                });
+                setDoneOrder(order.orderNumber);
+                await clearCart();
+              } catch (err) {
+                const message =
+                  err instanceof ApiError
+                    ? err.message
+                    : err instanceof Error
+                      ? err.message
+                      : "Не удалось оформить заказ";
+                setFormError(message);
+              } finally {
+                setSubmitting(false);
+              }
+            })();
           }}
           className="glass space-y-5 rounded-3xl p-6"
         >
@@ -252,8 +293,30 @@ export function CartClient() {
             </div>
           </div>
 
-          <Field label="Имя" required placeholder="Иван" />
-          <Field label="Телефон" type="tel" required placeholder="+7 (999) 123-45-67" />
+          <Field
+            label="Имя"
+            required
+            placeholder="Иван"
+            value={firstName}
+            onChange={(e) => setFirstName(e.target.value)}
+          />
+          <Field
+            label="Телефон"
+            type="tel"
+            required
+            placeholder="+7 (999) 123-45-67"
+            value={phone}
+            onChange={(e) => setPhone(e.target.value)}
+          />
+
+          {formError && (
+            <p
+              role="alert"
+              className="rounded-xl border border-magenta/30 bg-magenta/10 px-3 py-2 text-sm text-ink"
+            >
+              {formError}
+            </p>
+          )}
 
           {/* Суммы */}
           <div className="space-y-2 border-t border-line pt-4 text-sm">
@@ -276,8 +339,8 @@ export function CartClient() {
             </div>
           </div>
 
-          <button type="submit" className="btn-primary w-full">
-            Оформить заказ
+          <button type="submit" className="btn-primary w-full" disabled={submitting}>
+            {submitting ? "Оформляем…" : "Оформить заказ"}
           </button>
           <p className="text-center text-xs text-faint">
             Нажимая кнопку, вы соглашаетесь с условиями обработки данных

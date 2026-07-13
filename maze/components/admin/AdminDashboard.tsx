@@ -9,10 +9,16 @@ import {
   Warehouse,
   Settings,
   ArrowRight,
+  ShoppingBag,
 } from "lucide-react";
-import { useStaffAuth } from "@/components/staff/StaffAuthProvider";
 
 const SECTIONS = [
+  {
+    title: "Заказы",
+    desc: "Клиенты, товары и статусы заказов",
+    icon: ShoppingBag,
+    href: "/admin/orders",
+  },
   {
     title: "Категории",
     desc: "Дерево брендов и подкатегорий",
@@ -52,22 +58,9 @@ const SECTIONS = [
 ] as const;
 
 export function AdminDashboard() {
-  const { displayName } = useStaffAuth();
 
   return (
     <div className="mx-auto max-w-4xl space-y-8">
-      <div>
-        <p className="text-sm text-muted">Здравствуйте, {displayName}</p>
-        <h2 className="mt-1 font-display text-2xl tracking-wide text-ink">
-          Обзор админки
-        </h2>
-        <p className="mt-2 max-w-xl text-sm leading-relaxed text-muted">
-          Каркас панели готов: вход staff, защита маршрута и оболочка.
-          Разделы CRUD подключим к уже готовому API{" "}
-          <code className="rounded bg-bg-2 px-1.5 py-0.5 text-cyan">/admin/*</code>.
-        </p>
-      </div>
-
       <div className="grid gap-3 sm:grid-cols-2">
         {SECTIONS.map((section) => {
           const Icon = section.icon;
@@ -94,7 +87,7 @@ export function AdminDashboard() {
         })}
       </div>
 
-      <div className="rounded-2xl border border-cyan/20 bg-cyan/5 p-5">
+      {/* <div className="rounded-2xl border border-cyan/20 bg-cyan/5 p-5">
         <p className="text-sm text-ink">
           API уже отвечает. Следующий шаг — CRUD категорий и товаров.
         </p>
@@ -105,7 +98,7 @@ export function AdminDashboard() {
           Открыть витрину
           <ArrowRight className="h-3.5 w-3.5" />
         </Link>
-      </div>
+      </div> */}
     </div>
   );
 }

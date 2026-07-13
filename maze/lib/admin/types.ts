@@ -218,3 +218,94 @@ export const DEVICE_TYPES = [
   "accessory",
   "other",
 ] as const;
+
+export type ManagerOrderStatus =
+  | "confirmed"
+  | "awaiting_payment"
+  | "paid"
+  | "shipping"
+  | "delivered"
+  | "cancelled";
+
+export type ManagerOrderListItem = {
+  id: string;
+  orderNumber: string;
+  status: string;
+  totalRub: number;
+  itemsCount: number;
+  customer: {
+    firstName: string;
+    lastName: string;
+    phone: string;
+  };
+  assignedManagerId: string | null;
+  createdAt: string;
+};
+
+export type ManagerOrderDetail = {
+  id: string;
+  orderNumber: string;
+  status: string;
+  userId: string | null;
+  assignedManagerId: string | null;
+  customer: {
+    firstName: string;
+    lastName: string;
+    phone: string;
+    email: string | null;
+  };
+  totals: {
+    subtotalRub: number;
+    deliveryRub: number;
+    paymentFeeRub: number;
+    installmentFeeRub: number;
+    totalRub: number;
+  };
+  delivery: {
+    type: string;
+    city: string;
+    street: string;
+    house: string;
+    apartment: string | null;
+    requiresPrepay: boolean;
+  } | null;
+  payment: {
+    methodCode: string;
+    methodName: string;
+    isPaid: boolean;
+  } | null;
+  items: Array<{
+    id: string;
+    name: string;
+    image: string;
+    color: string | null;
+    memory: string | null;
+    unitPrice: number;
+    quantity: number;
+    lineTotal: number;
+  }>;
+  comment: string | null;
+  pricingVersion: string;
+  notes: Array<{
+    id: string;
+    staffUserId: string;
+    text: string;
+    createdAt: string;
+  }>;
+  statusHistory: Array<{
+    id: string;
+    fromStatus: string | null;
+    toStatus: string;
+    staffUserId: string | null;
+    note: string | null;
+    createdAt: string;
+  }>;
+  createdAt: string;
+};
+
+export type ManagerStaffRow = {
+  id: string;
+  email: string;
+  name: string;
+  role: string;
+};

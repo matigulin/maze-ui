@@ -14,6 +14,7 @@ import {
   Warehouse,
   LogOut,
   ExternalLink,
+  ShoppingBag,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useStaffAuth } from "@/components/staff/StaffAuthProvider";
@@ -27,6 +28,7 @@ type NavItem = {
 
 const NAV: NavItem[] = [
   { href: "/admin", label: "Обзор", icon: LayoutDashboard, exact: true },
+  { href: "/admin/orders", label: "Заказы", icon: ShoppingBag },
   { href: "/admin/catalog/categories", label: "Категории", icon: Layers },
   { href: "/admin/catalog/products", label: "Товары", icon: Package },
   { href: "/admin/content/banners", label: "Баннеры", icon: ImageIcon },

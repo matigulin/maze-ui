@@ -4,62 +4,546 @@ import Link from "next/link";
 import { useEffect, useState, type FormEvent } from "react";
 import { Field, fieldCls } from "@/components/Field";
 import { useAdminApi } from "@/lib/admin/client";
-import type { AdminBanner, AdminCmsPage, AdminInfoSlide, PublicSettings } from "@/lib/admin/types";
+import type {
+  AdminBanner,
+  AdminCmsPage,
+  AdminInfoSlide,
+  PublicSettings,
+} from "@/lib/admin/types";
 import {
-  AdminAlert, AdminButton, AdminCheckbox, AdminModal, AdminPageHeader, AdminTable,
-  AdminTd, AdminTextarea, AdminTh, errorMessage,
+  AdminAlert,
+  AdminButton,
+  AdminCheckbox,
+  AdminModal,
+  AdminPageHeader,
+  AdminTable,
+  AdminTd,
+  AdminTextarea,
+  AdminTh,
+  errorMessage,
 } from "@/lib/admin/ui";
 
-const emptyBanner = { title: "", subtitle: "", imageUrl: "", link: "", size: "large", sortOrder: 0, isActive: true };
-const emptySlide = { icon: "", title: "", description: "", sortOrder: 0, isActive: true };
-const emptyCms = { slug: "", title: "", content: "", metaDescription: "", isPublished: true };
+const emptyBanner = {
+  title: "",
+  subtitle: "",
+  imageUrl: "",
+  link: "",
+  size: "large",
+  sortOrder: 0,
+  isActive: true,
+};
+const emptySlide = {
+  icon: "",
+  title: "",
+  description: "",
+  sortOrder: 0,
+  isActive: true,
+};
+const emptyCms = {
+  slug: "",
+  title: "",
+  content: "",
+  metaDescription: "",
+  isPublished: true,
+};
 
-function UploadField({ value, onChange, label = "Изображение" }: { value: string; onChange: (value: string) => void; label?: string }) {
+function UploadField({
+  value,
+  onChange,
+  label = "Изображение",
+}: {
+  value: string;
+  onChange: (value: string) => void;
+  label?: string;
+}) {
   const api = useAdminApi();
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState("");
   async function upload(file?: File) {
     if (!file) return;
-    setUploading(true); setError("");
-    try { onChange((await api.upload(file)).url); } catch (err) { setError(errorMessage(err)); } finally { setUploading(false); }
+    setUploading(true);
+    setError("");
+    try {
+      onChange((await api.upload(file)).url);
+    } catch (err) {
+      setError(errorMessage(err));
+    } finally {
+      setUploading(false);
+    }
   }
-  return <div className="space-y-2"><Field label={label} value={value} onChange={(e) => onChange(e.target.value)} />
-    <input aria-label={`Загрузить: ${label}`} type="file" accept="image/*" onChange={(e) => void upload(e.target.files?.[0])} className="block w-full text-xs text-muted file:mr-3 file:rounded-lg file:border-0 file:bg-bg-2 file:px-3 file:py-2 file:text-ink" />
-    {uploading && <p className="text-xs text-muted">Загрузка…</p>}{error && <AdminAlert>{error}</AdminAlert>}
-  </div>;
+  return (
+    <div className="space-y-2">
+      <Field
+        label={label}
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+      />
+      <input
+        aria-label={`Загрузить: ${label}`}
+        type="file"
+        accept="image/*"
+        onChange={(e) => void upload(e.target.files?.[0])}
+        className="block w-full text-xs text-muted file:mr-3 file:rounded-lg file:border-0 file:bg-bg-2 file:px-3 file:py-2 file:text-ink"
+      />
+      {uploading && <p className="text-xs text-muted">Загрузка…</p>}
+      {error && <AdminAlert>{error}</AdminAlert>}
+    </div>
+  );
 }
 
 export function BannersPage() {
-  const api = useAdminApi(); const [items, setItems] = useState<AdminBanner[]>([]); const [form, setForm] = useState(emptyBanner); const [editing, setEditing] = useState<AdminBanner | null>(null); const [open, setOpen] = useState(false); const [error, setError] = useState("");
-  const load = async () => { try { setItems(await api.listBanners()); } catch (e) { setError(errorMessage(e)); } };
-  useEffect(() => { void load(); }, []); // eslint-disable-line react-hooks/exhaustive-deps
-  const set = <K extends keyof typeof form>(key: K, value: (typeof form)[K]) => setForm((f) => ({ ...f, [key]: value }));
-  async function save(e: FormEvent) { e.preventDefault(); setError(""); try { if (editing) await api.updateBanner(editing.id, form); else await api.createBanner(form); setOpen(false); await load(); } catch (err) { setError(errorMessage(err)); } }
-  return <div><AdminPageHeader title="Баннеры" description="Баннеры главной страницы" actions={<AdminButton onClick={() => { setEditing(null); setForm(emptyBanner); setOpen(true); }}>Создать</AdminButton>} />{error && <AdminAlert>{error}</AdminAlert>}
-    <AdminTable><thead><tr><AdminTh>Баннер</AdminTh><AdminTh>Размер</AdminTh><AdminTh>Статус</AdminTh><AdminTh /></tr></thead><tbody>{items.map((b) => <tr key={b.id}><AdminTd><p>{b.title}</p><p className="text-xs text-muted">{b.link}</p></AdminTd><AdminTd>{b.size}</AdminTd><AdminTd>{b.isActive ? "Активен" : "Скрыт"}</AdminTd><AdminTd className="space-x-2"><AdminButton variant="ghost" onClick={() => { setEditing(b); setForm({ title: b.title, subtitle: b.subtitle ?? "", imageUrl: b.imageUrl, link: b.link, size: b.size, sortOrder: b.sortOrder, isActive: b.isActive }); setOpen(true); }}>Изменить</AdminButton><AdminButton variant="danger" onClick={() => void api.deleteBanner(b.id).then(load).catch((e) => setError(errorMessage(e)))}>Удалить</AdminButton></AdminTd></tr>)}</tbody></AdminTable>
-    <AdminModal open={open} onClose={() => setOpen(false)} title={editing ? "Изменить баннер" : "Новый баннер"} wide><form onSubmit={save} className="grid gap-4 sm:grid-cols-2"><Field required label="Заголовок" value={form.title} onChange={(e) => set("title", e.target.value)} /><Field label="Подзаголовок" value={form.subtitle} onChange={(e) => set("subtitle", e.target.value)} /><UploadField value={form.imageUrl} onChange={(v) => set("imageUrl", v)} /><Field required label="Ссылка" value={form.link} onChange={(e) => set("link", e.target.value)} /><Field label="Размер" value={form.size} onChange={(e) => set("size", e.target.value)} /><Field type="number" label="Порядок" value={form.sortOrder} onChange={(e) => set("sortOrder", Number(e.target.value))} /><div className="sm:col-span-2"><AdminCheckbox label="Активен" checked={form.isActive} onChange={(v) => set("isActive", v)} /></div><div className="sm:col-span-2 flex justify-end gap-2"><AdminButton variant="secondary" onClick={() => setOpen(false)}>Отмена</AdminButton><AdminButton type="submit">Сохранить</AdminButton></div></form></AdminModal></div>;
+  const api = useAdminApi();
+  const [items, setItems] = useState<AdminBanner[]>([]);
+  const [form, setForm] = useState(emptyBanner);
+  const [editing, setEditing] = useState<AdminBanner | null>(null);
+  const [open, setOpen] = useState(false);
+  const [error, setError] = useState("");
+  const load = async () => {
+    try {
+      setItems(await api.listBanners());
+    } catch (e) {
+      setError(errorMessage(e));
+    }
+  };
+  useEffect(() => {
+    void load();
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  const set = <K extends keyof typeof form>(key: K, value: (typeof form)[K]) =>
+    setForm((f) => ({ ...f, [key]: value }));
+  async function save(e: FormEvent) {
+    e.preventDefault();
+    setError("");
+    try {
+      if (editing) await api.updateBanner(editing.id, form);
+      else await api.createBanner(form);
+      setOpen(false);
+      await load();
+    } catch (err) {
+      setError(errorMessage(err));
+    }
+  }
+  return (
+    <div>
+      <AdminPageHeader
+        title="Баннеры"
+        description="Баннеры главной страницы"
+        actions={
+          <AdminButton
+            onClick={() => {
+              setEditing(null);
+              setForm(emptyBanner);
+              setOpen(true);
+            }}
+          >
+            Создать
+          </AdminButton>
+        }
+      />
+      {error && <AdminAlert>{error}</AdminAlert>}
+      <AdminTable>
+        <thead>
+          <tr>
+            <AdminTh>Баннер</AdminTh>
+            <AdminTh>Размер</AdminTh>
+            <AdminTh>Статус</AdminTh>
+            <AdminTh />
+          </tr>
+        </thead>
+        <tbody>
+          {items.map((b) => (
+            <tr key={b.id}>
+              <AdminTd>
+                <p>{b.title}</p>
+                <p className="text-xs text-muted">{b.link}</p>
+              </AdminTd>
+              <AdminTd>{b.size}</AdminTd>
+              <AdminTd>{b.isActive ? "Активен" : "Скрыт"}</AdminTd>
+              <AdminTd className="space-x-2">
+                <AdminButton
+                  variant="ghost"
+                  onClick={() => {
+                    setEditing(b);
+                    setForm({
+                      title: b.title,
+                      subtitle: b.subtitle ?? "",
+                      imageUrl: b.imageUrl,
+                      link: b.link,
+                      size: b.size,
+                      sortOrder: b.sortOrder,
+                      isActive: b.isActive,
+                    });
+                    setOpen(true);
+                  }}
+                >
+                  Изменить
+                </AdminButton>
+                <AdminButton
+                  variant="danger"
+                  onClick={() =>
+                    void api
+                      .deleteBanner(b.id)
+                      .then(load)
+                      .catch((e) => setError(errorMessage(e)))
+                  }
+                >
+                  Удалить
+                </AdminButton>
+              </AdminTd>
+            </tr>
+          ))}
+        </tbody>
+      </AdminTable>
+      <AdminModal
+        open={open}
+        onClose={() => setOpen(false)}
+        title={editing ? "Изменить баннер" : "Новый баннер"}
+        wide
+      >
+        <form onSubmit={save} className="grid gap-4 sm:grid-cols-2">
+          <Field
+            required
+            label="Заголовок"
+            value={form.title}
+            onChange={(e) => set("title", e.target.value)}
+          />
+          <Field
+            label="Подзаголовок"
+            value={form.subtitle}
+            onChange={(e) => set("subtitle", e.target.value)}
+          />
+          <UploadField
+            value={form.imageUrl}
+            onChange={(v) => set("imageUrl", v)}
+          />
+          <Field
+            required
+            label="Ссылка"
+            value={form.link}
+            onChange={(e) => set("link", e.target.value)}
+          />
+          <Field
+            label="Размер"
+            value={form.size}
+            onChange={(e) => set("size", e.target.value)}
+          />
+          <Field
+            type="number"
+            label="Порядок"
+            value={form.sortOrder}
+            onChange={(e) => set("sortOrder", Number(e.target.value))}
+          />
+          <div className="sm:col-span-2">
+            <AdminCheckbox
+              label="Активен"
+              checked={form.isActive}
+              onChange={(v) => set("isActive", v)}
+            />
+          </div>
+          <div className="sm:col-span-2 flex justify-end gap-2">
+            <AdminButton variant="secondary" onClick={() => setOpen(false)}>
+              Отмена
+            </AdminButton>
+            <AdminButton type="submit">Сохранить</AdminButton>
+          </div>
+        </form>
+      </AdminModal>
+    </div>
+  );
 }
 
 export function SlidesPage() {
-  const api = useAdminApi(); const [items, setItems] = useState<AdminInfoSlide[]>([]); const [form, setForm] = useState(emptySlide); const [editing, setEditing] = useState<AdminInfoSlide | null>(null); const [open, setOpen] = useState(false); const [error, setError] = useState("");
-  const load = async () => { try { setItems(await api.listSlides()); } catch (e) { setError(errorMessage(e)); } };
-  useEffect(() => { void load(); }, []); // eslint-disable-line react-hooks/exhaustive-deps
-  async function save(e: FormEvent) { e.preventDefault(); try { if (editing) await api.updateSlide(editing.id, form); else await api.createSlide(form); setOpen(false); await load(); } catch (err) { setError(errorMessage(err)); } }
-  return <div><AdminPageHeader title="Информационные слайды" actions={<AdminButton onClick={() => { setEditing(null); setForm(emptySlide); setOpen(true); }}>Создать</AdminButton>} />{error && <AdminAlert>{error}</AdminAlert>}<AdminTable><thead><tr><AdminTh>Слайд</AdminTh><AdminTh>Порядок</AdminTh><AdminTh>Статус</AdminTh><AdminTh /></tr></thead><tbody>{items.map((s) => <tr key={s.id}><AdminTd><p>{s.icon} {s.title}</p><p className="text-xs text-muted">{s.description}</p></AdminTd><AdminTd>{s.sortOrder}</AdminTd><AdminTd>{s.isActive ? "Активен" : "Скрыт"}</AdminTd><AdminTd className="space-x-2"><AdminButton variant="ghost" onClick={() => { setEditing(s); setForm({ icon: s.icon, title: s.title, description: s.description, sortOrder: s.sortOrder, isActive: s.isActive }); setOpen(true); }}>Изменить</AdminButton><AdminButton variant="danger" onClick={() => void api.deleteSlide(s.id).then(load).catch((e) => setError(errorMessage(e)))}>Удалить</AdminButton></AdminTd></tr>)}</tbody></AdminTable><AdminModal open={open} onClose={() => setOpen(false)} title={editing ? "Изменить слайд" : "Новый слайд"}><form onSubmit={save} className="space-y-4"><Field required label="Иконка" value={form.icon} onChange={(e) => setForm({ ...form, icon: e.target.value })} /><Field required label="Заголовок" value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} /><AdminTextarea required label="Описание" value={form.description} onChange={(v) => setForm({ ...form, description: v })} /><Field type="number" label="Порядок" value={form.sortOrder} onChange={(e) => setForm({ ...form, sortOrder: Number(e.target.value) })} /><AdminCheckbox label="Активен" checked={form.isActive} onChange={(v) => setForm({ ...form, isActive: v })} /><div className="flex justify-end gap-2"><AdminButton variant="secondary" onClick={() => setOpen(false)}>Отмена</AdminButton><AdminButton type="submit">Сохранить</AdminButton></div></form></AdminModal></div>;
+  const api = useAdminApi();
+  const [items, setItems] = useState<AdminInfoSlide[]>([]);
+  const [form, setForm] = useState(emptySlide);
+  const [editing, setEditing] = useState<AdminInfoSlide | null>(null);
+  const [open, setOpen] = useState(false);
+  const [error, setError] = useState("");
+  const load = async () => {
+    try {
+      setItems(await api.listSlides());
+    } catch (e) {
+      setError(errorMessage(e));
+    }
+  };
+  useEffect(() => {
+    void load();
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  async function save(e: FormEvent) {
+    e.preventDefault();
+    try {
+      if (editing) await api.updateSlide(editing.id, form);
+      else await api.createSlide(form);
+      setOpen(false);
+      await load();
+    } catch (err) {
+      setError(errorMessage(err));
+    }
+  }
+  return (
+    <div>
+      <AdminPageHeader
+        title="Информационные слайды"
+        actions={
+          <AdminButton
+            onClick={() => {
+              setEditing(null);
+              setForm(emptySlide);
+              setOpen(true);
+            }}
+          >
+            Создать
+          </AdminButton>
+        }
+      />
+      {error && <AdminAlert>{error}</AdminAlert>}
+      <AdminTable>
+        <thead>
+          <tr>
+            <AdminTh>Слайд</AdminTh>
+            <AdminTh>Порядок</AdminTh>
+            <AdminTh>Статус</AdminTh>
+            <AdminTh />
+          </tr>
+        </thead>
+        <tbody>
+          {items.map((s) => (
+            <tr key={s.id}>
+              <AdminTd>
+                <p>
+                  {s.icon} {s.title}
+                </p>
+                <p className="text-xs text-muted">{s.description}</p>
+              </AdminTd>
+              <AdminTd>{s.sortOrder}</AdminTd>
+              <AdminTd>{s.isActive ? "Активен" : "Скрыт"}</AdminTd>
+              <AdminTd className="space-x-2">
+                <AdminButton
+                  variant="ghost"
+                  onClick={() => {
+                    setEditing(s);
+                    setForm({
+                      icon: s.icon,
+                      title: s.title,
+                      description: s.description,
+                      sortOrder: s.sortOrder,
+                      isActive: s.isActive,
+                    });
+                    setOpen(true);
+                  }}
+                >
+                  Изменить
+                </AdminButton>
+                <AdminButton
+                  variant="danger"
+                  onClick={() =>
+                    void api
+                      .deleteSlide(s.id)
+                      .then(load)
+                      .catch((e) => setError(errorMessage(e)))
+                  }
+                >
+                  Удалить
+                </AdminButton>
+              </AdminTd>
+            </tr>
+          ))}
+        </tbody>
+      </AdminTable>
+      <AdminModal
+        open={open}
+        onClose={() => setOpen(false)}
+        title={editing ? "Изменить слайд" : "Новый слайд"}
+      >
+        <form onSubmit={save} className="space-y-4">
+          <Field
+            required
+            label="Иконка"
+            value={form.icon}
+            onChange={(e) => setForm({ ...form, icon: e.target.value })}
+          />
+          <Field
+            required
+            label="Заголовок"
+            value={form.title}
+            onChange={(e) => setForm({ ...form, title: e.target.value })}
+          />
+          <AdminTextarea
+            required
+            label="Описание"
+            value={form.description}
+            onChange={(v) => setForm({ ...form, description: v })}
+          />
+          <Field
+            type="number"
+            label="Порядок"
+            value={form.sortOrder}
+            onChange={(e) =>
+              setForm({ ...form, sortOrder: Number(e.target.value) })
+            }
+          />
+          <AdminCheckbox
+            label="Активен"
+            checked={form.isActive}
+            onChange={(v) => setForm({ ...form, isActive: v })}
+          />
+          <div className="flex justify-end gap-2">
+            <AdminButton variant="secondary" onClick={() => setOpen(false)}>
+              Отмена
+            </AdminButton>
+            <AdminButton type="submit">Сохранить</AdminButton>
+          </div>
+        </form>
+      </AdminModal>
+    </div>
+  );
 }
 
 export function CmsListPage() {
-  const api = useAdminApi(); const [items, setItems] = useState<AdminCmsPage[]>([]); const [error, setError] = useState("");
-  const load = async () => { try { setItems(await api.listCmsPages()); } catch (e) { setError(errorMessage(e)); } };
-  useEffect(() => { void load(); }, []); // eslint-disable-line react-hooks/exhaustive-deps
-  return <div><AdminPageHeader title="CMS-страницы" actions={<Link href="/admin/content/cms/new"><AdminButton>Создать</AdminButton></Link>} />{error && <AdminAlert>{error}</AdminAlert>}<AdminTable><thead><tr><AdminTh>Название</AdminTh><AdminTh>Slug</AdminTh><AdminTh>Статус</AdminTh><AdminTh /></tr></thead><tbody>{items.map((p) => <tr key={p.id}><AdminTd>{p.title}</AdminTd><AdminTd>{p.slug}</AdminTd><AdminTd>{p.isPublished ? "Опубликована" : "Черновик"}</AdminTd><AdminTd className="space-x-2"><Link href={`/admin/content/cms/${p.id}`}><AdminButton variant="ghost">Изменить</AdminButton></Link><AdminButton variant="danger" onClick={() => void api.deleteCmsPage(p.id).then(load).catch((e) => setError(errorMessage(e)))}>Удалить</AdminButton></AdminTd></tr>)}</tbody></AdminTable></div>;
+  const api = useAdminApi();
+  const [items, setItems] = useState<AdminCmsPage[]>([]);
+  const [error, setError] = useState("");
+  const load = async () => {
+    try {
+      setItems(await api.listCmsPages());
+    } catch (e) {
+      setError(errorMessage(e));
+    }
+  };
+  useEffect(() => {
+    void load(); 
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  return (
+    <div>
+      <AdminPageHeader
+        title="CMS-страницы"
+        actions={
+          <Link href="/admin/content/cms/new">
+            <AdminButton>Создать</AdminButton>
+          </Link>
+        }
+      />
+      {error && <AdminAlert>{error}</AdminAlert>}
+      <AdminTable>
+        <thead>
+          <tr>
+            <AdminTh>Название</AdminTh>
+            <AdminTh>Slug</AdminTh>
+            <AdminTh>Статус</AdminTh>
+            <AdminTh />
+          </tr>
+        </thead>
+        <tbody>
+          {items.map((p) => (
+            <tr key={p.id}>
+              <AdminTd>{p.title}</AdminTd>
+              <AdminTd>{p.slug}</AdminTd>
+              <AdminTd>{p.isPublished ? "Опубликована" : "Черновик"}</AdminTd>
+              <AdminTd className="space-x-2">
+                <Link href={`/admin/content/cms/${p.id}`}>
+                  <AdminButton variant="ghost">Изменить</AdminButton>
+                </Link>
+                <AdminButton
+                  variant="danger"
+                  onClick={() =>
+                    void api
+                      .deleteCmsPage(p.id)
+                      .then(load)
+                      .catch((e) => setError(errorMessage(e)))
+                  }
+                >
+                  Удалить
+                </AdminButton>
+              </AdminTd>
+            </tr>
+          ))}
+        </tbody>
+      </AdminTable>
+    </div>
+  );
 }
 
 export function CmsEditorPage({ id }: { id?: string }) {
-  const api = useAdminApi(); const [form, setForm] = useState(emptyCms); const [error, setError] = useState(""); const [saving, setSaving] = useState(false);
-  useEffect(() => { if (id) void api.getCmsPage(id).then((p) => setForm({ slug: p.slug, title: p.title, content: p.content, metaDescription: p.metaDescription ?? "", isPublished: p.isPublished })).catch((e) => setError(errorMessage(e))); }, [id]); // eslint-disable-line react-hooks/exhaustive-deps
-  async function save(e: FormEvent) { e.preventDefault(); setSaving(true); setError(""); try { if (id) await api.updateCmsPage(id, form); else { const page = await api.createCmsPage(form); window.location.assign(`/admin/content/cms/${page.id}`); return; } } catch (err) { setError(errorMessage(err)); } finally { setSaving(false); } }
-  return <div className="max-w-3xl"><AdminPageHeader title={id ? "Редактирование CMS" : "Новая CMS-страница"} />{error && <AdminAlert>{error}</AdminAlert>}<form onSubmit={save} className="space-y-4 rounded-2xl border border-line bg-panel/50 p-5"><Field required label="Slug" value={form.slug} onChange={(e) => setForm({ ...form, slug: e.target.value })} /><Field required label="Заголовок" value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} /><AdminTextarea required label="Содержимое" rows={16} value={form.content} onChange={(v) => setForm({ ...form, content: v })} /><AdminTextarea label="Meta description" value={form.metaDescription} onChange={(v) => setForm({ ...form, metaDescription: v })} /><AdminCheckbox label="Опубликована" checked={form.isPublished} onChange={(v) => setForm({ ...form, isPublished: v })} /><AdminButton type="submit" disabled={saving}>{saving ? "Сохранение…" : "Сохранить"}</AdminButton></form></div>;
+  const api = useAdminApi();
+  const [form, setForm] = useState(emptyCms);
+  const [error, setError] = useState("");
+  const [saving, setSaving] = useState(false);
+  useEffect(() => {
+    if (id)
+      void api
+        .getCmsPage(id)
+        .then((p) =>
+          setForm({
+            slug: p.slug,
+            title: p.title,
+            content: p.content,
+            metaDescription: p.metaDescription ?? "",
+            isPublished: p.isPublished,
+          }),
+        )
+        .catch((e) => setError(errorMessage(e)));
+  }, [id]); // eslint-disable-line react-hooks/exhaustive-deps
+  async function save(e: FormEvent) {
+    e.preventDefault();
+    setSaving(true);
+    setError("");
+    try {
+      if (id) await api.updateCmsPage(id, form);
+      else {
+        const page = await api.createCmsPage(form);
+        window.location.assign(`/admin/content/cms/${page.id}`);
+        return;
+      }
+    } catch (err) {
+      setError(errorMessage(err));
+    } finally {
+      setSaving(false);
+    }
+  }
+  return (
+    <div className="max-w-3xl">
+      <AdminPageHeader
+        title={id ? "Редактирование CMS" : "Новая CMS-страница"}
+      />
+      {error && <AdminAlert>{error}</AdminAlert>}
+      <form
+        onSubmit={save}
+        className="space-y-4 rounded-2xl border border-line bg-panel/50 p-5"
+      >
+        <Field
+          required
+          label="Slug"
+          value={form.slug}
+          onChange={(e) => setForm({ ...form, slug: e.target.value })}
+        />
+        <Field
+          required
+          label="Заголовок"
+          value={form.title}
+          onChange={(e) => setForm({ ...form, title: e.target.value })}
+        />
+        <AdminTextarea
+          required
+          label="Содержимое"
+          rows={16}
+          value={form.content}
+          onChange={(v) => setForm({ ...form, content: v })}
+        />
+        <AdminTextarea
+          label="Meta description"
+          value={form.metaDescription}
+          onChange={(v) => setForm({ ...form, metaDescription: v })}
+        />
+        <AdminCheckbox
+          label="Опубликована"
+          checked={form.isPublished}
+          onChange={(v) => setForm({ ...form, isPublished: v })}
+        />
+        <AdminButton type="submit" disabled={saving}>
+          {saving ? "Сохранение…" : "Сохранить"}
+        </AdminButton>
+      </form>
+    </div>
+  );
 }
 
 export function SiteSettingsPage() {
