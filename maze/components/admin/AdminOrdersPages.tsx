@@ -24,6 +24,7 @@ import type {
 } from "@/lib/admin/types";
 import { useStaffAuth } from "@/components/staff/StaffAuthProvider";
 import {
+  ADMIN_ORDERS_POLL_MS,
   ORDER_STATUS_LABEL,
   OrderStatusText,
   orderStatusLabel,
@@ -77,9 +78,11 @@ export function OrdersListPage() {
   useEffect(() => {
     let cancelled = false;
 
-    async function load() {
-      setLoading(true);
-      setError("");
+    async function load(opts?: { silent?: boolean }) {
+      if (!opts?.silent) {
+        setLoading(true);
+        setError("");
+      }
       try {
         const res = await api.listOrders({
           page,
@@ -94,15 +97,34 @@ export function OrdersListPage() {
         setPages(Math.max(1, Math.ceil(total / limit)));
         requestPendingOrdersCountRefresh();
       } catch (e) {
-        if (!cancelled) setError(errorMessage(e));
+        if (!cancelled && !opts?.silent) setError(errorMessage(e));
       } finally {
-        if (!cancelled) setLoading(false);
+        if (!cancelled && !opts?.silent) setLoading(false);
       }
     }
 
     void load();
+
+    const pollId = window.setInterval(() => {
+      if (document.visibilityState === "hidden") return;
+      void load({ silent: true });
+    }, ADMIN_ORDERS_POLL_MS);
+
+    function onVisible() {
+      if (document.visibilityState === "visible") void load({ silent: true });
+    }
+    function onFocus() {
+      void load({ silent: true });
+    }
+
+    document.addEventListener("visibilitychange", onVisible);
+    window.addEventListener("focus", onFocus);
+
     return () => {
       cancelled = true;
+      window.clearInterval(pollId);
+      document.removeEventListener("visibilitychange", onVisible);
+      window.removeEventListener("focus", onFocus);
     };
     // api is memoized; avoid putting the whole object if token refresh recreates it mid-flight
   }, [api, page, status]);

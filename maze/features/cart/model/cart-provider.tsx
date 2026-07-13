@@ -198,41 +198,51 @@ export function CartProvider({
         if (useApi) {
           const variantId = await loadVariantId(product, opts);
           if (!variantId) return;
-          const next = await addCartLine(variantId, opts.qty ?? 1, await cartAuth());
-          setItems(next);
-        } else {
-          const key = [product.slug, opts.color, opts.memory]
-            .filter(Boolean)
-            .join("|");
-          setItems((prev) => {
-            const found = prev.find((i) => i.key === key);
-            if (found) {
-              return prev.map((i) =>
-                i.key === key
-                  ? {
-                      ...i,
-                      qty: Math.min(
-                        i.qty + (opts.qty ?? 1),
-                        i.maxQuantity ?? 10,
-                      ),
-                    }
-                  : i,
-              );
-            }
-            return [
-              ...prev,
-              {
-                key,
-                product,
-                qty: opts.qty ?? 1,
-                maxQuantity: 10,
-                color: opts.color,
-                memory: opts.memory,
-                variantId: opts.variantId,
-              },
-            ];
-          });
+          try {
+            const next = await addCartLine(
+              variantId,
+              opts.qty ?? 1,
+              await cartAuth(),
+            );
+            setItems(next);
+            // Не открываем пустую корзину (например out-of-stock, отфильтрованный ответ).
+            if (!opts.silent && next.length > 0) setMiniOpen(true);
+          } catch {
+            /* ошибка API — мини-корзину не трогаем */
+          }
+          return;
         }
+        const key = [product.slug, opts.color, opts.memory]
+          .filter(Boolean)
+          .join("|");
+        setItems((prev) => {
+          const found = prev.find((i) => i.key === key);
+          if (found) {
+            return prev.map((i) =>
+              i.key === key
+                ? {
+                    ...i,
+                    qty: Math.min(
+                      i.qty + (opts.qty ?? 1),
+                      i.maxQuantity ?? 10,
+                    ),
+                  }
+                : i,
+            );
+          }
+          return [
+            ...prev,
+            {
+              key,
+              product,
+              qty: opts.qty ?? 1,
+              maxQuantity: 10,
+              color: opts.color,
+              memory: opts.memory,
+              variantId: opts.variantId,
+            },
+          ];
+        });
         if (!opts.silent) setMiniOpen(true);
       },
       removeItem: async (key) => {

@@ -136,15 +136,28 @@ export async function clearCartForOwner(owner: CartOwner): Promise<void> {
   await saveCartLines(owner, []);
 }
 
-async function assertVariantExists(variantId: string): Promise<void> {
+async function getVariantAvailableQty(variantId: string): Promise<number> {
   const variant = await ProductVariant.findOne({
     where: { id: variantId, is_available: true },
     attributes: ['id'],
+    include: [
+      {
+        model: Stock,
+        as: 'stock',
+        attributes: ['quantity', 'reserved_quantity'],
+        required: false,
+      },
+    ],
   });
 
   if (!variant) {
     throw new NotFoundError('Вариант товара не найден');
   }
+
+  return Math.max(
+    0,
+    (variant.stock?.quantity ?? 0) - (variant.stock?.reserved_quantity ?? 0),
+  );
 }
 
 async function enrichCart(lines: CartLine[]): Promise<{ cart: CartDto; validLines: CartLine[] }> {
@@ -318,18 +331,32 @@ export async function addCartItem(
   quantityInput: number,
 ): Promise<CartDto> {
   const quantity = clampQuantity(quantityInput);
-  await assertVariantExists(variantId);
+  const available = await getVariantAvailableQty(variantId);
+  if (available < 1) {
+    throw new ConflictError(
+      'ORDER_OUT_OF_STOCK',
+      'Недостаточно товара на складе',
+    );
+  }
 
   const lines = await loadCartLines(owner);
   const existing = lines.find((line) => line.variantId === variantId);
+  const nextQty = clampQuantity((existing?.quantity ?? 0) + quantity);
+
+  if (nextQty > available) {
+    throw new ConflictError(
+      'ORDER_OUT_OF_STOCK',
+      `На складе только ${available} шт.`,
+    );
+  }
 
   if (existing) {
-    existing.quantity = clampQuantity(existing.quantity + quantity);
+    existing.quantity = nextQty;
   } else {
     assertMaxLines(lines.length + 1);
     lines.push({
       variantId,
-      quantity,
+      quantity: nextQty,
       addedAt: new Date().toISOString(),
     });
   }

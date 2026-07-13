@@ -11,9 +11,8 @@ import {
 } from "react";
 import { useStaffAuth } from "@/components/staff/StaffAuthProvider";
 import { fetchPendingOrdersCount } from "../api/pending-orders-count";
+import { ADMIN_ORDERS_POLL_MS } from "../lib/poll";
 import { PENDING_ORDERS_COUNT_REFRESH_EVENT } from "../lib/refresh-event";
-
-const POLL_MS = 30_000;
 
 type PendingOrdersCountStore = {
   count: number;
@@ -64,8 +63,27 @@ export function PendingOrdersCountProvider({
 
   useEffect(() => {
     if (!authReady || !isStaff) return;
-    const id = window.setInterval(() => void refresh(), POLL_MS);
-    return () => window.clearInterval(id);
+
+    const id = window.setInterval(() => {
+      if (document.visibilityState === "hidden") return;
+      void refresh();
+    }, ADMIN_ORDERS_POLL_MS);
+
+    function onVisible() {
+      if (document.visibilityState === "visible") void refresh();
+    }
+    function onFocus() {
+      void refresh();
+    }
+
+    document.addEventListener("visibilitychange", onVisible);
+    window.addEventListener("focus", onFocus);
+
+    return () => {
+      window.clearInterval(id);
+      document.removeEventListener("visibilitychange", onVisible);
+      window.removeEventListener("focus", onFocus);
+    };
   }, [authReady, isStaff, refresh]);
 
   useEffect(() => {

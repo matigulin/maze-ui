@@ -6,6 +6,7 @@ export {
   requestPendingOrdersCountRefresh,
 } from "./lib/refresh-event";
 export { fetchPendingOrdersCount } from "./api/pending-orders-count";
+export { ADMIN_ORDERS_POLL_MS } from "./lib/poll";
 export {
   ORDER_STATUS_LABEL,
   orderStatusLabel,
