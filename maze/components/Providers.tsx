@@ -1,7 +1,7 @@
 "use client";
 
 import { type ReactNode } from "react";
-import { CartProvider } from "./store";
+import { CartProvider } from "@/features/cart";
 import { ModalProvider } from "./modals";
 import { SiteDataProvider } from "./site-data";
 import { StaffAuthProvider } from "./staff/StaffAuthProvider";
@@ -19,9 +19,9 @@ export function Providers({
     <SiteDataProvider value={siteData}>
       <StaffAuthProvider>
         <UserAuthProvider>
-          <CartProvider>
-            <ModalProvider>{children}</ModalProvider>
-          </CartProvider>
+          <ModalProvider>
+            <CartProvider>{children}</CartProvider>
+          </ModalProvider>
         </UserAuthProvider>
       </StaffAuthProvider>
     </SiteDataProvider>

@@ -6,7 +6,9 @@ import { motion } from "motion/react";
 import { MapPin, Package, Plus, Building2, Heart } from "lucide-react";
 import { useCart } from "@/components/store";
 import { ProductCard } from "@/components/ProductCard";
-import { Field, fieldCls } from "@/components/Field";
+import { AccountProfile } from "@/features/account";
+import { useUserAuth } from "@/features/auth";
+import { useModal } from "@/components/modals";
 import { products, type Product } from "@/lib/data";
 import { apiGet } from "@/lib/api";
 import { shouldUseMocks } from "@/lib/mocks";
@@ -29,6 +31,8 @@ const TABS: { id: Tab; label: string }[] = [
 export function AccountClient({ initialTab = "profile" }: { initialTab?: Tab }) {
   const [tab, setTab] = useState<Tab>(initialTab);
   const { wishlist } = useCart();
+  const { ready, isAuthenticated } = useUserAuth();
+  const { open } = useModal();
   const [wished, setWished] = useState<Product[]>([]);
 
   useEffect(() => {
@@ -63,6 +67,32 @@ export function AccountClient({ initialTab = "profile" }: { initialTab?: Tab }) 
       cancelled = true;
     };
   }, [wishlist]);
+
+  if (!ready) {
+    return (
+      <div className="glass rounded-3xl p-10 text-sm text-muted">
+        Загружаем личный кабинет…
+      </div>
+    );
+  }
+
+  if (!isAuthenticated) {
+    return (
+      <div className="glass flex max-w-lg flex-col items-start gap-4 rounded-3xl p-8">
+        <p className="eyebrow">MAZE ID</p>
+        <h1 className="font-display text-3xl font-bold tracking-tight">
+          Войдите в аккаунт
+        </h1>
+        <p className="text-sm text-muted">
+          Профиль, заказы и сохранённая корзина доступны после входа по номеру
+          телефона.
+        </p>
+        <button type="button" onClick={() => open("auth")} className="btn-primary">
+          Войти
+        </button>
+      </div>
+    );
+  }
 
   return (
     <div>
@@ -107,7 +137,7 @@ export function AccountClient({ initialTab = "profile" }: { initialTab?: Tab }) 
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.3 }}
       >
-        {tab === "profile" && <Profile />}
+        {tab === "profile" && <AccountProfile />}
         {tab === "orders" && <Orders />}
         {tab === "wishlist" && <Wishlist items={wished} />}
         {tab === "addresses" && <Addresses />}
@@ -117,46 +147,18 @@ export function AccountClient({ initialTab = "profile" }: { initialTab?: Tab }) 
   );
 }
 
-function Profile() {
-  return (
-    <form
-      onSubmit={(e) => e.preventDefault()}
-      className="glass max-w-3xl space-y-5 rounded-3xl p-6 sm:p-8"
-    >
-      <div className="grid gap-5 sm:grid-cols-2">
-        <Field label="Имя" defaultValue="Демо" />
-        <Field label="Фамилия" defaultValue="Пользователь" />
-        <Field label="Отчество" defaultValue="Тестович" />
-        <div className="space-y-1.5">
-          <label className="block text-xs font-medium uppercase tracking-wider text-muted">
-            Пол
-          </label>
-          <select className={`${fieldCls} cursor-pointer appearance-none`}>
-            <option className="bg-panel">Мужской</option>
-            <option className="bg-panel">Женский</option>
-          </select>
-        </div>
-        <Field label="Телефон" type="tel" defaultValue="+7 (999) 123-45-67" />
-        <Field label="E-mail" type="email" defaultValue="demo@maze.ru" />
-        <Field label="Дата рождения" type="date" defaultValue="1996-05-15" />
-      </div>
-      <div className="space-y-2 pt-1">
-        <label className="flex items-center gap-2.5 text-sm text-muted">
-          <input type="checkbox" defaultChecked className="maze-check" />
-          Согласен на e-mail рассылку
-        </label>
-        <label className="flex items-center gap-2.5 text-sm text-muted">
-          <input type="checkbox" className="maze-check" />
-          Согласен на SMS рассылку
-        </label>
-      </div>
-      <button className="btn-primary">Сохранить изменения</button>
-    </form>
-  );
-}
-
 function Orders() {
-  const p = products.find((x) => x.slug === "iphone-15-pro-max")!;
+  const p = products.find((x) => x.slug === "iphone-15-pro-max");
+  if (!p) {
+    return (
+      <Empty
+        icon={<Package size={30} />}
+        title="Заказов пока нет"
+        text="Оформите первый заказ — он появится здесь."
+        cta
+      />
+    );
+  }
   return (
     <div className="max-w-2xl space-y-4">
       <div className="glass rounded-2xl p-5">

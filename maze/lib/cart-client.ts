@@ -26,6 +26,8 @@ export type CartDto = {
   };
 };
 
+type CartRequestOpts = { accessToken?: string | null };
+
 function cartLineToUiItem(line: CartItemDto): CartItem {
   const parts = line.variantLabel.split(" / ");
   const memory = parts.length > 1 ? parts[0] : undefined;
@@ -57,9 +59,12 @@ function cartLineToUiItem(line: CartItemDto): CartItem {
   };
 }
 
-export async function fetchCart(): Promise<CartItem[]> {
+export async function fetchCart(
+  accessToken?: string | null,
+): Promise<CartItem[]> {
   const dto = await apiGet<CartDto>("/cart", undefined, {
     credentials: "include",
+    accessToken,
   });
   return dto.items.map(cartLineToUiItem);
 }
@@ -67,28 +72,36 @@ export async function fetchCart(): Promise<CartItem[]> {
 export async function addCartLine(
   variantId: string,
   quantity = 1,
+  opts?: CartRequestOpts,
 ): Promise<CartItem[]> {
-  const dto = await apiPostJson<CartDto>("/cart/items", {
-    variantId,
-    quantity,
-  });
+  const dto = await apiPostJson<CartDto>(
+    "/cart/items",
+    { variantId, quantity },
+    opts,
+  );
   return dto.items.map(cartLineToUiItem);
 }
 
-export async function removeCartLine(variantId: string): Promise<CartItem[]> {
-  const dto = await apiDelete<CartDto>(`/cart/items/${variantId}`);
+export async function removeCartLine(
+  variantId: string,
+  opts?: CartRequestOpts,
+): Promise<CartItem[]> {
+  const dto = await apiDelete<CartDto>(`/cart/items/${variantId}`, opts);
   return dto.items.map(cartLineToUiItem);
 }
 
 export async function replaceCartLines(
   items: Array<{ variantId: string; quantity: number }>,
+  opts?: CartRequestOpts,
 ): Promise<CartItem[]> {
-  const dto = await apiPutJson<CartDto>("/cart", { items });
+  const dto = await apiPutJson<CartDto>("/cart", { items }, opts);
   return dto.items.map(cartLineToUiItem);
 }
 
-export async function clearCartApi(): Promise<CartItem[]> {
-  const dto = await apiDelete<CartDto>("/cart");
+export async function clearCartApi(
+  opts?: CartRequestOpts,
+): Promise<CartItem[]> {
+  const dto = await apiDelete<CartDto>("/cart", opts);
   return dto.items.map(cartLineToUiItem);
 }
 
