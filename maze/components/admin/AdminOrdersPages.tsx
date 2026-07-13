@@ -23,17 +23,12 @@ import type {
   ManagerStaffRow,
 } from "@/lib/admin/types";
 import { useStaffAuth } from "@/components/staff/StaffAuthProvider";
-import { requestPendingOrdersCountRefresh } from "@/features/admin-orders";
-
-const STATUS_LABEL: Record<string, string> = {
-  pending: "Новый",
-  confirmed: "Подтверждён",
-  awaiting_payment: "Ждёт оплату",
-  paid: "Оплачен",
-  shipping: "В доставке",
-  delivered: "Доставлен",
-  cancelled: "Отменён",
-};
+import {
+  ORDER_STATUS_LABEL,
+  OrderStatusText,
+  orderStatusLabel,
+  requestPendingOrdersCountRefresh,
+} from "@/features/admin-orders";
 
 const DELIVERY_LABEL: Record<string, string> = {
   pickup: "Самовывоз",
@@ -51,10 +46,6 @@ const STATUS_ACTIONS: ManagerOrderStatus[] = [
   "delivered",
   "cancelled",
 ];
-
-function statusLabel(status: string) {
-  return STATUS_LABEL[status] ?? status;
-}
 
 function deliveryLabel(type: string) {
   return DELIVERY_LABEL[type] ?? type;
@@ -132,9 +123,9 @@ export function OrdersListPage() {
             }}
             options={[
               { value: "", label: "Все" },
-              ...Object.entries(STATUS_LABEL).map(([value, label]) => ({
+              ...Object.entries(ORDER_STATUS_LABEL).map(([value, label]) => ({
                 value,
-                label,
+                label: label as string,
               })),
             ]}
           />
@@ -174,7 +165,9 @@ export function OrdersListPage() {
                   </p>
                   <p className="text-xs text-muted">{order.customer.phone}</p>
                 </AdminTd>
-                <AdminTd>{statusLabel(order.status)}</AdminTd>
+                <AdminTd>
+                  <OrderStatusText status={order.status} />
+                </AdminTd>
                 <AdminTd>{order.itemsCount}</AdminTd>
                 <AdminTd>{formatPrice(order.totalRub)}</AdminTd>
                 <AdminTd className="text-muted">{formatDate(order.createdAt)}</AdminTd>
@@ -322,7 +315,12 @@ export function OrderDetailPage() {
     <div className="mx-auto max-w-5xl space-y-6">
       <AdminPageHeader
         title={order.orderNumber}
-        description={`${statusLabel(order.status)} · ${formatDate(order.createdAt)}`}
+        description={
+          <>
+            <OrderStatusText status={order.status} className="text-sm" />
+            <span className="text-muted"> · {formatDate(order.createdAt)}</span>
+          </>
+        }
         actions={
           <Link href="/admin/orders">
             <AdminButton variant="secondary">Все заказы</AdminButton>
@@ -430,7 +428,7 @@ export function OrderDetailPage() {
               disabled={saving || order.status === s}
               onClick={() => void changeStatus(s)}
             >
-              {statusLabel(s)}
+              {orderStatusLabel(s)}
             </AdminButton>
           ))}
         </div>

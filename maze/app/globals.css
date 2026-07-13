@@ -23,6 +23,9 @@
   --color-violet: #8b5cf6;
   --color-magenta: #ff3d8b;
   --color-gold: #f5c451;
+  --color-success: #34d399;
+  --color-warning: #fb923c;
+  --color-danger: #f87171;
 
   /* — Fonts — */
   --font-sans: var(--font-exo);

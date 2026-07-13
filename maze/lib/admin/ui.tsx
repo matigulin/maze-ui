@@ -18,7 +18,7 @@ export function AdminPageHeader({
   actions,
 }: {
   title: string;
-  description?: string;
+  description?: ReactNode;
   actions?: ReactNode;
 }) {
   return (
@@ -103,7 +103,11 @@ export function AdminTh({ children, className }: { children?: ReactNode; classNa
 }
 
 export function AdminTd({ children, className }: { children?: ReactNode; className?: string }) {
-  return <td className={cn("border-b border-line/70 px-4 py-3 text-ink", className)}>{children}</td>;
+  return (
+    <td className={cn("border-b border-line/70 px-4 py-3 text-sm text-ink", className)}>
+      {children}
+    </td>
+  );
 }
 
 export function AdminModal({
