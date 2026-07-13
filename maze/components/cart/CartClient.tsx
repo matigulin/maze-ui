@@ -167,24 +167,44 @@ export function CartClient() {
                   {[it.color, it.memory].filter(Boolean).join(" · ")}
                 </p>
                 <div className="mt-auto flex items-center justify-between pt-2">
-                  <div className="flex items-center gap-1 rounded-full border border-line p-0.5">
-                    <button
-                      onClick={() => void updateQty(it.key, it.qty - 1)}
-                      aria-label="Меньше"
-                      className="grid h-8 w-8 place-items-center rounded-full text-muted transition-colors hover:bg-white/5 hover:text-ink cursor-pointer"
-                    >
-                      <Minus size={14} />
-                    </button>
-                    <span className="w-7 text-center text-sm tabular-nums">
-                      {it.qty}
-                    </span>
-                    <button
-                      onClick={() => void updateQty(it.key, it.qty + 1)}
-                      aria-label="Больше"
-                      className="grid h-8 w-8 place-items-center rounded-full text-muted transition-colors hover:bg-white/5 hover:text-ink cursor-pointer"
-                    >
-                      <Plus size={14} />
-                    </button>
+                  <div className="flex flex-col gap-1">
+                    <div className="flex items-center gap-1 rounded-full border border-line p-0.5">
+                      <button
+                        type="button"
+                        onClick={() => void updateQty(it.key, it.qty - 1)}
+                        aria-label="Меньше"
+                        className="grid h-8 w-8 place-items-center rounded-full text-muted transition-colors hover:bg-white/5 hover:text-ink cursor-pointer"
+                      >
+                        <Minus size={14} />
+                      </button>
+                      <span className="w-7 text-center text-sm tabular-nums">
+                        {it.qty}
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => void updateQty(it.key, it.qty + 1)}
+                        aria-label="Больше"
+                        disabled={it.qty >= (it.maxQuantity ?? 10)}
+                        title={
+                          it.qty >= (it.maxQuantity ?? 10)
+                            ? `На складе только ${it.maxQuantity} шт.`
+                            : undefined
+                        }
+                        className={cn(
+                          "grid h-8 w-8 place-items-center rounded-full transition-colors",
+                          it.qty >= (it.maxQuantity ?? 10)
+                            ? "cursor-not-allowed text-faint opacity-40"
+                            : "text-muted hover:bg-white/5 hover:text-ink cursor-pointer",
+                        )}
+                      >
+                        <Plus size={14} />
+                      </button>
+                    </div>
+                    {it.qty >= (it.maxQuantity ?? 10) && (
+                      <p className="pl-1 text-[11px] text-faint">
+                        Максимум {it.maxQuantity} шт.
+                      </p>
+                    )}
                   </div>
                   <span className="font-display font-semibold">
                     {formatPrice(it.product.price * it.qty)}
@@ -248,7 +268,10 @@ export function CartClient() {
                   err instanceof ApiError
                     ? err.message === "Cart is empty"
                       ? "Корзина на сервере пуста. Обновите страницу и добавьте товар снова."
-                      : err.message
+                      : err.message === "Insufficient stock for one or more items" ||
+                          err.message === "Insufficient stock"
+                        ? "Недостаточно товара на складе. Уменьшите количество."
+                        : err.message
                     : err instanceof Error
                       ? err.message
                       : "Не удалось оформить заказ";

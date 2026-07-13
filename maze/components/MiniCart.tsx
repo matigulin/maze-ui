@@ -5,7 +5,7 @@ import { AnimatePresence, motion } from "motion/react";
 import { Minus, Plus, ShoppingBag, Trash2, X } from "lucide-react";
 import { useCart } from "./store";
 import { ProductThumb } from "./ProductThumb";
-import { formatPrice, plural } from "@/lib/utils";
+import { formatPrice, plural, cn } from "@/lib/utils";
 
 export function MiniCart() {
   const { miniOpen, setMiniOpen, items, subtotal, count, updateQty, removeItem } =
@@ -89,6 +89,7 @@ export function MiniCart() {
                         <div className="mt-2 flex items-center justify-between">
                           <div className="flex items-center gap-1 rounded-full border border-line">
                             <button
+                              type="button"
                               aria-label="Меньше"
                               onClick={() => void updateQty(it.key, it.qty - 1)}
                               className="grid h-7 w-7 place-items-center rounded-full text-muted hover:text-ink cursor-pointer"
@@ -99,9 +100,21 @@ export function MiniCart() {
                               {it.qty}
                             </span>
                             <button
+                              type="button"
                               aria-label="Больше"
                               onClick={() => void updateQty(it.key, it.qty + 1)}
-                              className="grid h-7 w-7 place-items-center rounded-full text-muted hover:text-ink cursor-pointer"
+                              disabled={it.qty >= (it.maxQuantity ?? 10)}
+                              title={
+                                it.qty >= (it.maxQuantity ?? 10)
+                                  ? `На складе только ${it.maxQuantity} шт.`
+                                  : undefined
+                              }
+                              className={cn(
+                                "grid h-7 w-7 place-items-center rounded-full",
+                                it.qty >= (it.maxQuantity ?? 10)
+                                  ? "cursor-not-allowed text-faint opacity-40"
+                                  : "text-muted hover:text-ink cursor-pointer",
+                              )}
                             >
                               <Plus size={13} />
                             </button>

@@ -37,6 +37,8 @@ function cartLineToUiItem(line: CartItemDto): CartItem {
     key: line.variantId,
     variantId: line.variantId,
     qty: line.quantity,
+    maxQuantity: line.maxQuantity,
+    inStock: line.inStock,
     color,
     memory,
     product: {

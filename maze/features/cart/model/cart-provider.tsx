@@ -195,7 +195,15 @@ export function CartProvider({ children }: { children: ReactNode }) {
             const found = prev.find((i) => i.key === key);
             if (found) {
               return prev.map((i) =>
-                i.key === key ? { ...i, qty: i.qty + (opts.qty ?? 1) } : i,
+                i.key === key
+                  ? {
+                      ...i,
+                      qty: Math.min(
+                        i.qty + (opts.qty ?? 1),
+                        i.maxQuantity ?? 10,
+                      ),
+                    }
+                  : i,
               );
             }
             return [
@@ -204,6 +212,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
                 key,
                 product,
                 qty: opts.qty ?? 1,
+                maxQuantity: 10,
                 color: opts.color,
                 memory: opts.memory,
                 variantId: opts.variantId,
@@ -225,12 +234,16 @@ export function CartProvider({ children }: { children: ReactNode }) {
       updateQty: async (key, qty) => {
         if (!requireAuthForCart()) return;
 
+        const line = items.find((i) => i.key === key);
+        const maxQty = line?.maxQuantity ?? 10;
+        const nextQty = Math.min(Math.max(0, qty), maxQty);
+
         if (useApi) {
-          const nextQty = Math.max(0, qty);
           if (nextQty === 0) {
             setItems(await removeCartLine(key, await cartAuth()));
             return;
           }
+          if (line && nextQty === line.qty) return;
           const lines = items.map((i) => ({
             variantId: i.variantId ?? i.key,
             quantity: i.key === key ? nextQty : i.qty,
@@ -240,7 +253,11 @@ export function CartProvider({ children }: { children: ReactNode }) {
         }
         setItems((prev) =>
           prev
-            .map((i) => (i.key === key ? { ...i, qty: Math.max(0, qty) } : i))
+            .map((i) => {
+              if (i.key !== key) return i;
+              const cap = i.maxQuantity ?? 10;
+              return { ...i, qty: Math.min(Math.max(0, qty), cap) };
+            })
             .filter((i) => i.qty > 0),
         );
       },

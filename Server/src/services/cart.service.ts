@@ -192,9 +192,14 @@ async function enrichCart(lines: CartLine[]): Promise<{ cart: CartDto; validLine
     const available =
       (variant.stock?.quantity ?? 0) - (variant.stock?.reserved_quantity ?? 0);
     const maxQuantity = Math.min(CART_MAX_QTY_PER_ITEM, Math.max(available, 0));
-    const quantity = Math.min(line.quantity, CART_MAX_QTY_PER_ITEM);
+    const quantity = Math.min(line.quantity, Math.max(maxQuantity, 0));
     const unitPrice = toNumber(variant.price);
     const inStock = variant.is_available && available > 0;
+
+    // Не отдаём и не храним qty выше склада — иначе checkout падает с Insufficient stock
+    if (quantity < 1) {
+      continue;
+    }
 
     validLines.push({ ...line, quantity });
     items.push({
@@ -206,7 +211,7 @@ async function enrichCart(lines: CartLine[]): Promise<{ cart: CartDto; validLine
       quantity,
       unitPrice,
       lineTotal: unitPrice * quantity,
-      maxQuantity: inStock ? Math.max(maxQuantity, 1) : 0,
+      maxQuantity,
       inStock,
     });
   }
@@ -231,7 +236,14 @@ export async function getCart(owner: CartOwner): Promise<CartDto> {
   const lines = await loadCartLines(owner);
   const { cart, validLines } = await enrichCart(lines);
 
-  if (validLines.length !== lines.length) {
+  const needsSave =
+    validLines.length !== lines.length ||
+    validLines.some((line) => {
+      const prev = lines.find((l) => l.variantId === line.variantId);
+      return !prev || prev.quantity !== line.quantity;
+    });
+
+  if (needsSave) {
     await saveCartLines(owner, validLines);
   }
 
