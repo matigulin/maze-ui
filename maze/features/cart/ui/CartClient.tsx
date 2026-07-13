@@ -20,6 +20,10 @@ import { Field } from "@/components/Field";
 import { formatPrice, plural, cn } from "@/lib/utils";
 import { checkoutCart } from "@/features/checkout";
 import { ApiError } from "@/lib/api";
+import {
+  maskNationalPhoneInput,
+  nationalPhoneToE164,
+} from "@/lib/phone";
 import { useCart } from "../model/cart-provider";
 
 const DELIVERY = [
@@ -74,7 +78,8 @@ export function CartClient() {
   const [delivery, setDelivery] = useState<DeliveryId>(DELIVERY[0].id);
   const [payment, setPayment] = useState(PAYMENT[0].id);
   const [firstName, setFirstName] = useState("");
-  const [phone, setPhone] = useState("");
+  const [phoneNational, setPhoneNational] = useState("");
+  const phoneFieldId = useId();
   const [submitting, setSubmitting] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
   const [doneOrder, setDoneOrder] = useState<string | null>(null);
@@ -257,6 +262,13 @@ export function CartClient() {
                   throw new Error("В корзине нет вариантов товара");
                 }
 
+                let phone: string;
+                try {
+                  phone = nationalPhoneToE164(phoneNational);
+                } catch {
+                  throw new Error("Введите корректный номер телефона");
+                }
+
                 const accessToken = await ensureAccessToken();
                 const order = await checkoutCart({
                   deliveryUiId: delivery,
@@ -335,14 +347,31 @@ export function CartClient() {
             value={firstName}
             onChange={(e) => setFirstName(e.target.value)}
           />
-          <Field
-            label="Телефон"
-            type="tel"
-            required
-            placeholder="+7 (999) 123-45-67"
-            value={phone}
-            onChange={(e) => setPhone(e.target.value)}
-          />
+          <div className="space-y-1.5">
+            <label
+              htmlFor={phoneFieldId}
+              className="block text-xs font-medium uppercase tracking-wider text-muted"
+            >
+              Телефон
+            </label>
+            <div className="flex w-full items-center gap-1.5 rounded-xl border border-line bg-bg-2/60 px-4 transition-colors outline-none focus-within:border-cyan/70 focus-within:outline-none">
+              <span className="shrink-0 text-[15px] text-ink">+7</span>
+              <input
+                id={phoneFieldId}
+                type="tel"
+                inputMode="tel"
+                autoComplete="tel-national"
+                required
+                placeholder="(999) 123-45-67"
+                value={phoneNational}
+                onChange={(e) =>
+                  setPhoneNational(maskNationalPhoneInput(e.target.value))
+                }
+                disabled={submitting}
+                className="input-inset min-w-0 flex-1 border-0 bg-transparent py-3 text-[15px] text-ink placeholder:text-faint shadow-none outline-none"
+              />
+            </div>
+          </div>
 
           {formError && (
             <p
