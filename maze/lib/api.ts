@@ -112,15 +112,16 @@ async function apiMutate<T>(
   opts?: { accessToken?: string | null },
 ): Promise<T> {
   const url = buildUrl(endpoint);
+  const hasBody = body !== undefined;
   const res = await fetch(url, {
     method,
     headers: {
-      "Content-Type": "application/json",
+      ...(hasBody ? { "Content-Type": "application/json" } : {}),
       "X-Requested-With": "maze-web",
       ...authHeaders(opts?.accessToken),
     },
     credentials: "include",
-    body: body !== undefined ? JSON.stringify(body) : undefined,
+    body: hasBody ? JSON.stringify(body) : undefined,
   });
   const parsed = await parseEnvelope<T>(res);
   return parsed.data;
@@ -158,10 +159,11 @@ export async function apiPostJson<T>(
   },
 ): Promise<T> {
   const url = buildUrl(endpoint);
+  const hasBody = body !== undefined;
   const res = await fetch(url, {
     method: "POST",
     headers: {
-      "Content-Type": "application/json",
+      ...(hasBody ? { "Content-Type": "application/json" } : {}),
       "X-Requested-With": "maze-web",
       ...authHeaders(opts?.accessToken),
       ...(opts?.csrfHeader
@@ -169,7 +171,7 @@ export async function apiPostJson<T>(
         : null),
     },
     credentials: "include",
-    body: body !== undefined ? JSON.stringify(body) : undefined,
+    body: hasBody ? JSON.stringify(body) : undefined,
   });
   const parsed = await parseEnvelope<T>(res);
   return parsed.data;
