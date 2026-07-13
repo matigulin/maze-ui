@@ -1,5 +1,5 @@
 import { apiDelete, apiGet, apiPostJson, apiPutJson } from "@/lib/api";
-import type { Product } from "@/lib/data";
+import type { Product, ProductVariant } from "@/lib/data";
 import type { CartItem } from "../model/types";
 
 export type CartItemDto = {
@@ -107,24 +107,54 @@ export async function clearCartApi(
   return dto.items.map(cartLineToUiItem);
 }
 
+/** Вариант по цвету/памяти (без фолбэка на «любой в наличии»). */
+export function findProductVariant(
+  product: Product,
+  opts?: { color?: string; memory?: string; variantId?: string },
+): ProductVariant | undefined {
+  if (opts?.variantId) {
+    return product.variants?.find((v) => v.id === opts.variantId);
+  }
+  const variants = product.variants ?? [];
+  if (variants.length === 0) return undefined;
+
+  return variants.find((v) => {
+    if (opts?.color && v.color !== opts.color) return false;
+    if (opts?.memory) {
+      if (v.memory !== opts.memory) return false;
+    } else if (product.memory?.length && v.memory) {
+      return false;
+    }
+    return true;
+  });
+}
+
+export function isProductSelectionInStock(
+  product: Product,
+  opts?: { color?: string; memory?: string; variantId?: string },
+): boolean {
+  const variants = product.variants ?? [];
+  if (variants.length > 0) {
+    const selected = findProductVariant(product, opts);
+    return selected?.inStock === true;
+  }
+  return product.inStock !== false;
+}
+
 export function resolveVariantId(
   product: Product,
   opts?: { color?: string; memory?: string; variantId?: string },
 ): string | undefined {
   if (opts?.variantId) return opts.variantId;
-  if (product.defaultVariantId) return product.defaultVariantId;
 
   const variants = product.variants ?? [];
-  if (variants.length === 0) return undefined;
+  if (variants.length === 0) return product.defaultVariantId;
 
-  const match = variants.find((v) => {
-    if (opts?.memory && v.memory !== opts.memory) return false;
-    if (opts?.color && v.color !== opts.color) return false;
-    return v.inStock;
-  });
+  const match = findProductVariant(product, opts);
+  if (match) return match.id;
 
   return (
-    match?.id ??
+    product.defaultVariantId ??
     variants.find((v) => v.inStock)?.id ??
     variants[0]?.id
   );
