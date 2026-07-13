@@ -8,7 +8,7 @@ import {
 import { toNumber } from '../lib/decimal.js';
 import { ConflictError, NotFoundError, ValidationError } from '../lib/errors.js';
 import type { CartOwner } from '../lib/cart-owner.js';
-import { Product, ProductVariant, Stock } from '../models/catalog.js';
+import { Product, ProductImage, ProductVariant, Stock } from '../models/catalog.js';
 
 export interface CartLine {
   variantId: string;
@@ -27,6 +27,8 @@ export interface CartItemDto {
   lineTotal: number;
   maxQuantity: number;
   inStock: boolean;
+  /** Primary product image — same source as catalog cards. */
+  mainImageUrl: string | null;
 }
 
 export interface CartDto {
@@ -169,6 +171,15 @@ async function enrichCart(lines: CartLine[]): Promise<{ cart: CartDto; validLine
         as: 'product',
         attributes: ['id', 'slug', 'name', 'is_published'],
         required: true,
+        include: [
+          {
+            model: ProductImage,
+            as: 'images',
+            attributes: ['url', 'is_primary', 'sort_order'],
+            separate: true,
+            order: [['sort_order', 'ASC']],
+          },
+        ],
       },
       {
         model: Stock,
@@ -201,6 +212,10 @@ async function enrichCart(lines: CartLine[]): Promise<{ cart: CartDto; validLine
       continue;
     }
 
+    const images = variant.product.images ?? [];
+    const mainImageUrl =
+      images.find((img) => img.is_primary)?.url ?? images[0]?.url ?? null;
+
     validLines.push({ ...line, quantity });
     items.push({
       variantId: variant.id,
@@ -213,6 +228,7 @@ async function enrichCart(lines: CartLine[]): Promise<{ cart: CartDto; validLine
       lineTotal: unitPrice * quantity,
       maxQuantity,
       inStock,
+      mainImageUrl,
     });
   }
 

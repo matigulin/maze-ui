@@ -13,6 +13,7 @@ export type CartItemDto = {
   lineTotal: number;
   maxQuantity: number;
   inStock: boolean;
+  mainImageUrl: string | null;
 };
 
 export type CartDto = {
@@ -51,6 +52,7 @@ function cartLineToUiItem(line: CartItemDto): CartItem {
       reviews: 0,
       tint: ["#22d3ee", "#a78bfa"],
       glyph: line.title,
+      imageUrl: line.mainImageUrl,
       colors: [],
       specs: [],
       short: line.variantLabel,
