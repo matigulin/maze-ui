@@ -58,7 +58,7 @@ function parseIdempotencyKey(request: FastifyRequest): string {
 const ordersRoutes: FastifyPluginAsync = async (fastify) => {
   fastify.post('/', async (request, reply) => {
     const owner = await withCartOwner(request, reply);
-    await consumeRateLimit(`rate:checkout:${ownerKey(owner)}`, 5, 60 * 60);
+    await consumeRateLimit(`rate:checkout:${ownerKey(owner)}`, 15, 60 * 60);
 
     const idempotencyKey = parseIdempotencyKey(request);
     const body = checkoutSchema.parse(request.body);
