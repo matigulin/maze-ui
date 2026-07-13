@@ -6,7 +6,7 @@ import { Modal } from "@/components/modals";
 import { Field } from "@/components/Field";
 import { sendSmsCode } from "@/entities/user";
 import { ApiError } from "@/lib/api";
-import { formatPhoneDisplay, normalizePhone } from "../lib/phone";
+import { formatPhoneDisplay, normalizePhone } from "@/lib/phone";
 import { useUserAuth } from "../model/user-auth-provider";
 
 type Step = "phone" | "code";

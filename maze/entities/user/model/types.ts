@@ -1,3 +1,6 @@
+/** Пол из профиля (совпадает с ENUM на бэке). */
+export type UserGender = "male" | "female";
+
 /** Покупатель после SMS-авторизации (ответ /auth/sms/verify). */
 export type AuthUser = {
   id: string;
@@ -14,10 +17,22 @@ export type UserProfile = {
   lastName: string | null;
   middleName: string | null;
   email: string | null;
-  gender: string | null;
+  gender: UserGender | null;
   birthDate: string | null;
   subscribeEmail: boolean;
   subscribeSms: boolean;
+};
+
+/** Тело PATCH /me */
+export type UpdateUserProfileBody = {
+  firstName?: string;
+  lastName?: string;
+  middleName?: string | null;
+  email?: string;
+  gender?: UserGender | null;
+  birthDate?: string | null;
+  subscribeEmail?: boolean;
+  subscribeSms?: boolean;
 };
 
 export type SmsSendResponse = {

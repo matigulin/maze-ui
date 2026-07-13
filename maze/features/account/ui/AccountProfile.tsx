@@ -5,31 +5,49 @@ import { Field } from "@/components/Field";
 import {
   fetchUserProfile,
   updateUserProfile,
+  type UserGender,
   type UserProfile,
 } from "@/entities/user";
-import { formatPhoneDisplay } from "@/features/auth/lib/phone";
 import { useUserAuth } from "@/features/auth";
 import { ApiError } from "@/lib/api";
+import { formatPhoneDisplay } from "@/lib/phone";
+import {
+  formatBirthDateDisplay,
+  maskBirthDateInput,
+  parseBirthDateInput,
+} from "../lib/birth-date";
+
+type Gender = "" | UserGender;
 
 export function AccountProfile() {
   const { getAccessToken } = useUserAuth();
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(() => Boolean(getAccessToken()));
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [saved, setSaved] = useState(false);
 
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
+  const [middleName, setMiddleName] = useState("");
+  const [gender, setGender] = useState<Gender>("");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
+  const [birthDate, setBirthDate] = useState("");
   const [subscribeEmail, setSubscribeEmail] = useState(false);
   const [subscribeSms, setSubscribeSms] = useState(false);
 
   function applyProfile(profile: UserProfile) {
     setFirstName(profile.firstName ?? "");
     setLastName(profile.lastName ?? "");
+    setMiddleName(profile.middleName ?? "");
+    setGender(
+      profile.gender === "male" || profile.gender === "female"
+        ? profile.gender
+        : "",
+    );
     setEmail(profile.email ?? "");
     setPhone(profile.phone ? formatPhoneDisplay(profile.phone) : "");
+    setBirthDate(formatBirthDateDisplay(profile.birthDate));
     setSubscribeEmail(profile.subscribeEmail);
     setSubscribeSms(profile.subscribeSms);
   }
@@ -37,12 +55,10 @@ export function AccountProfile() {
   useEffect(() => {
     let cancelled = false;
     const token = getAccessToken();
-    if (!token) {
-      setLoading(false);
-      return;
-    }
+    if (!token) return;
 
     void (async () => {
+      setLoading(true);
       try {
         const profile = await fetchUserProfile(token);
         if (cancelled) return;
@@ -72,12 +88,23 @@ export function AccountProfile() {
     const token = getAccessToken();
     if (!token) return;
 
+    let parsedBirthDate: string | null;
+    try {
+      parsedBirthDate = parseBirthDateInput(birthDate);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Некорректная дата рождения");
+      return;
+    }
+
     setSaving(true);
     try {
       const profile = await updateUserProfile(token, {
         firstName: firstName.trim() || undefined,
         lastName: lastName.trim() || undefined,
+        middleName: middleName.trim() ? middleName.trim() : null,
         email: email.trim() || undefined,
+        gender: gender || null,
+        birthDate: parsedBirthDate,
         subscribeEmail,
         subscribeSms,
       });
@@ -103,40 +130,97 @@ export function AccountProfile() {
   return (
     <form
       onSubmit={onSubmit}
-      className="glass max-w-3xl space-y-5 rounded-3xl p-6 sm:p-8"
+      className="glass max-w-3xl space-y-8 rounded-3xl p-6 sm:p-8"
     >
-      <div className="grid gap-5 sm:grid-cols-2">
-        <Field
-          label="Имя"
-          value={firstName}
-          onChange={(e) => setFirstName(e.target.value)}
-          autoComplete="given-name"
-        />
-        <Field
-          label="Фамилия"
-          value={lastName}
-          onChange={(e) => setLastName(e.target.value)}
-          autoComplete="family-name"
-        />
-        <Field
-          label="Телефон"
-          type="tel"
-          value={phone}
-          readOnly
-          disabled
-          hint="Номер MAZE ID · изменить нельзя"
-        />
-        <Field
-          label="E-mail"
-          type="email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          autoComplete="email"
-          placeholder="you@example.com"
-        />
-      </div>
+      <section className="space-y-5">
+        <h2 className="eyebrow">Обо мне</h2>
+        <div className="grid gap-5 sm:grid-cols-2">
+          <Field
+            label="Имя"
+            value={firstName}
+            onChange={(e) => setFirstName(e.target.value)}
+            autoComplete="given-name"
+          />
+          <Field
+            label="Фамилия"
+            value={lastName}
+            onChange={(e) => setLastName(e.target.value)}
+            autoComplete="family-name"
+          />
+          <Field
+            label="Отчество"
+            value={middleName}
+            onChange={(e) => setMiddleName(e.target.value)}
+            autoComplete="additional-name"
+          />
+          <div className="space-y-1.5">
+            <span className="block text-xs font-medium uppercase tracking-wider text-muted">
+              Пол
+            </span>
+            <div className="flex gap-4 pt-2">
+              {(
+                [
+                  { value: "male", label: "М" },
+                  { value: "female", label: "Ж" },
+                ] as const
+              ).map((opt) => (
+                <label
+                  key={opt.value}
+                  className="flex cursor-pointer items-center gap-2 text-sm text-muted"
+                >
+                  <input
+                    type="radio"
+                    name="gender"
+                    value={opt.value}
+                    checked={gender === opt.value}
+                    onChange={() => setGender(opt.value)}
+                    className="maze-check"
+                  />
+                  {opt.label}
+                </label>
+              ))}
+              {gender && (
+                <button
+                  type="button"
+                  onClick={() => setGender("")}
+                  className="text-xs text-faint transition-colors hover:text-muted cursor-pointer"
+                >
+                  Сбросить
+                </button>
+              )}
+            </div>
+          </div>
+          <Field
+            label="Мобильный телефон"
+            type="tel"
+            value={phone}
+            readOnly
+            disabled
+            hint="Номер MAZE ID · изменить нельзя"
+          />
+          <Field
+            label="E-mail"
+            type="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            autoComplete="email"
+            placeholder="you@example.com"
+          />
+          <Field
+            label="Дата рождения"
+            value={birthDate}
+            onChange={(e) => setBirthDate(maskBirthDateInput(e.target.value))}
+            placeholder="ДД.ММ.ГГГГ"
+            inputMode="numeric"
+            autoComplete="bday"
+            maxLength={10}
+            hint="Только цифры, точки подставятся автоматически"
+          />
+        </div>
+      </section>
 
-      <div className="space-y-2 pt-1">
+      <section className="space-y-3">
+        <h2 className="eyebrow">Коммуникации</h2>
         <label className="flex items-center gap-2.5 text-sm text-muted">
           <input
             type="checkbox"
@@ -144,7 +228,7 @@ export function AccountProfile() {
             onChange={(e) => setSubscribeEmail(e.target.checked)}
             className="maze-check"
           />
-          Согласен на e-mail рассылку
+          Согласие на e-mail рассылку
         </label>
         <label className="flex items-center gap-2.5 text-sm text-muted">
           <input
@@ -153,9 +237,9 @@ export function AccountProfile() {
             onChange={(e) => setSubscribeSms(e.target.checked)}
             className="maze-check"
           />
-          Согласен на SMS рассылку
+          Согласие на SMS рассылку
         </label>
-      </div>
+      </section>
 
       {error && (
         <p

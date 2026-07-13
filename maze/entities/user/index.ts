@@ -3,6 +3,8 @@ import type { AuthUser, UserProfile } from "./model/types";
 export type {
   AuthUser,
   UserProfile,
+  UserGender,
+  UpdateUserProfileBody,
   SmsSendResponse,
   SmsVerifyResponse,
   AuthRefreshResponse,
