@@ -77,7 +77,7 @@ async function loadVariantId(
 
 export function CartProvider({ children }: { children: ReactNode }) {
   const useApi = !shouldUseMocks();
-  const { ready, isAuthenticated, user, getAccessToken } = useUserAuth();
+  const { ready, isAuthenticated, user, ensureAccessToken } = useUserAuth();
   const { open } = useModal();
   const [items, setItems] = useState<CartItem[]>([]);
   const [wishlist, setWishlist] = useState<string[]>([]);
@@ -85,22 +85,26 @@ export function CartProvider({ children }: { children: ReactNode }) {
   const [hydrated, setHydrated] = useState(false);
   const [cartLoading, setCartLoading] = useState(false);
 
-  const cartAuth = useCallback(
-    () => ({ accessToken: getAccessToken() }),
-    [getAccessToken],
-  );
+  const cartAuth = useCallback(async () => {
+    const accessToken = await ensureAccessToken();
+    return { accessToken };
+  }, [ensureAccessToken]);
 
   const refreshApiCart = useCallback(async () => {
     const userId = user?.id;
-    const token = getAccessToken();
 
-    if (!useApi || !isAuthenticated || !userId || !token) {
+    if (!useApi || !isAuthenticated || !userId) {
       setItems([]);
       return;
     }
 
     setCartLoading(true);
     try {
+      const token = await ensureAccessToken();
+      if (!token) {
+        setItems([]);
+        return;
+      }
       const next = await fetchCart(token);
       setItems(next);
       writeCachedCart(userId, next);
@@ -110,7 +114,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
     } finally {
       setCartLoading(false);
     }
-  }, [useApi, isAuthenticated, user?.id, getAccessToken]);
+  }, [useApi, isAuthenticated, user?.id, ensureAccessToken]);
 
   const loadLocalCart = useCallback(() => {
     const userId = user?.id;
@@ -181,7 +185,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
         if (useApi) {
           const variantId = await loadVariantId(product, opts);
           if (!variantId) return;
-          const next = await addCartLine(variantId, opts.qty ?? 1, cartAuth());
+          const next = await addCartLine(variantId, opts.qty ?? 1, await cartAuth());
           setItems(next);
         } else {
           const key = [product.slug, opts.color, opts.memory]
@@ -213,7 +217,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
         if (!requireAuthForCart()) return;
 
         if (useApi) {
-          setItems(await removeCartLine(key, cartAuth()));
+          setItems(await removeCartLine(key, await cartAuth()));
           return;
         }
         setItems((prev) => prev.filter((i) => i.key !== key));
@@ -224,14 +228,14 @@ export function CartProvider({ children }: { children: ReactNode }) {
         if (useApi) {
           const nextQty = Math.max(0, qty);
           if (nextQty === 0) {
-            setItems(await removeCartLine(key, cartAuth()));
+            setItems(await removeCartLine(key, await cartAuth()));
             return;
           }
           const lines = items.map((i) => ({
             variantId: i.variantId ?? i.key,
             quantity: i.key === key ? nextQty : i.qty,
           }));
-          setItems(await replaceCartLines(lines, cartAuth()));
+          setItems(await replaceCartLines(lines, await cartAuth()));
           return;
         }
         setItems((prev) =>
@@ -244,7 +248,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
         if (!requireAuthForCart()) return;
 
         if (useApi) {
-          setItems(await clearCartApi(cartAuth()));
+          setItems(await clearCartApi(await cartAuth()));
           return;
         }
         setItems([]);

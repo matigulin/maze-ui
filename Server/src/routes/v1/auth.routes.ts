@@ -20,7 +20,7 @@ const phoneBodySchema = z.object({
 
 const verifyBodySchema = z.object({
   phone: z.string().min(10).max(20),
-  code: z.string().regex(/^\d{6}$/),
+  code: z.string().regex(/^\d{4}$/),
 });
 
 const staffLoginSchema = z.object({

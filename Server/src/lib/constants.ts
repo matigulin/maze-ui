@@ -1,6 +1,7 @@
 export const ACCESS_TOKEN_TTL_SEC = 15 * 60;
 export const REFRESH_TOKEN_TTL_SEC = 7 * 24 * 60 * 60;
 export const OTP_TTL_SEC = 5 * 60;
+export const OTP_LENGTH = 4;
 export const OTP_MAX_ATTEMPTS = 5;
 export const CART_TTL_SEC = 7 * 24 * 60 * 60;
 export const CART_MAX_ITEMS = 30;

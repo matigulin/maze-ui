@@ -100,8 +100,8 @@ export function AuthModal({
     }
 
     const trimmed = code.replace(/\D/g, "");
-    if (trimmed.length !== 6) {
-      setError("Введите 6-значный код из SMS");
+    if (trimmed.length !== 4) {
+      setError("Введите 4-значный код из SMS");
       return;
     }
 
@@ -202,15 +202,15 @@ export function AuthModal({
           </p>
           <Field
             label="Код из SMS"
-            labelNote="6 цифр"
+            labelNote="4 цифры"
             type="text"
             inputMode="numeric"
             autoComplete="one-time-code"
-            maxLength={6}
-            placeholder="000000"
+            maxLength={4}
+            placeholder="0000"
             autoFocus={open}
             value={code}
-            onChange={(e) => setCode(e.target.value.replace(/\D/g, "").slice(0, 6))}
+            onChange={(e) => setCode(e.target.value.replace(/\D/g, "").slice(0, 4))}
             disabled={pending}
           />
           {devCode && (

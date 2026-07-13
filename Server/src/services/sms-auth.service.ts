@@ -3,6 +3,7 @@ import { Op } from 'sequelize';
 import { getSequelize } from '../config/database.js';
 import {
   ACCESS_TOKEN_TTL_SEC,
+  OTP_LENGTH,
   OTP_MAX_ATTEMPTS,
   OTP_TTL_SEC,
 } from '../lib/constants.js';
@@ -41,7 +42,8 @@ function mapUser(user: User): AuthUserDto {
 }
 
 function generateOtpCode(): string {
-  return String(randomInt(0, 1_000_000)).padStart(6, '0');
+  const max = 10 ** OTP_LENGTH;
+  return String(randomInt(0, max)).padStart(OTP_LENGTH, '0');
 }
 
 async function checkRateLimitOnly(

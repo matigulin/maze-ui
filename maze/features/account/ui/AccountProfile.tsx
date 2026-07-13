@@ -20,8 +20,8 @@ import {
 type Gender = "" | UserGender;
 
 export function AccountProfile() {
-  const { getAccessToken } = useUserAuth();
-  const [loading, setLoading] = useState(() => Boolean(getAccessToken()));
+  const { ensureAccessToken, isAuthenticated } = useUserAuth();
+  const [loading, setLoading] = useState(isAuthenticated);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [saved, setSaved] = useState(false);
@@ -54,17 +54,36 @@ export function AccountProfile() {
 
   useEffect(() => {
     let cancelled = false;
-    const token = getAccessToken();
-    if (!token) return;
+    if (!isAuthenticated) return;
 
     void (async () => {
       setLoading(true);
+      setError(null);
       try {
+        const token = await ensureAccessToken();
+        if (cancelled || !token) {
+          if (!cancelled) setError("Сессия истекла. Войдите снова.");
+          return;
+        }
         const profile = await fetchUserProfile(token);
         if (cancelled) return;
         applyProfile(profile);
       } catch (err) {
         if (cancelled) return;
+        if (err instanceof ApiError && err.status === 401) {
+          const next = await ensureAccessToken();
+          if (cancelled) return;
+          if (next) {
+            try {
+              applyProfile(await fetchUserProfile(next));
+              return;
+            } catch {
+              /* fall through */
+            }
+          }
+          setError("Сессия истекла. Войдите снова.");
+          return;
+        }
         setError(
           err instanceof ApiError
             ? err.message
@@ -78,15 +97,12 @@ export function AccountProfile() {
     return () => {
       cancelled = true;
     };
-  }, [getAccessToken]);
+  }, [ensureAccessToken, isAuthenticated]);
 
   async function onSubmit(e: FormEvent) {
     e.preventDefault();
     setError(null);
     setSaved(false);
-
-    const token = getAccessToken();
-    if (!token) return;
 
     let parsedBirthDate: string | null;
     try {
@@ -98,7 +114,13 @@ export function AccountProfile() {
 
     setSaving(true);
     try {
-      const profile = await updateUserProfile(token, {
+      let token = await ensureAccessToken();
+      if (!token) {
+        setError("Сессия истекла. Войдите снова.");
+        return;
+      }
+
+      const body = {
         firstName: firstName.trim() || undefined,
         lastName: lastName.trim() || undefined,
         middleName: middleName.trim() ? middleName.trim() : null,
@@ -107,8 +129,16 @@ export function AccountProfile() {
         birthDate: parsedBirthDate,
         subscribeEmail,
         subscribeSms,
-      });
-      applyProfile(profile);
+      };
+
+      try {
+        applyProfile(await updateUserProfile(token, body));
+      } catch (err) {
+        if (!(err instanceof ApiError && err.status === 401)) throw err;
+        token = await ensureAccessToken();
+        if (!token) throw err;
+        applyProfile(await updateUserProfile(token, body));
+      }
       setSaved(true);
     } catch (err) {
       setError(
@@ -249,9 +279,7 @@ export function AccountProfile() {
           {error}
         </p>
       )}
-      {saved && (
-        <p className="text-sm text-cyan">Изменения сохранены</p>
-      )}
+      {saved && <p className="text-sm text-cyan">Изменения сохранены</p>}
 
       <button type="submit" className="btn-primary" disabled={saving}>
         {saving ? "Сохраняем…" : "Сохранить изменения"}

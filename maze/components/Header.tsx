@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion } from "motion/react";
 import {
@@ -14,6 +14,7 @@ import {
   X,
 } from "lucide-react";
 import { HeaderAuthActions, MobileAuthActions } from "@/features/auth";
+import { ACCOUNT_TAB_EVENT } from "@/lib/account-tab";
 import { Logo } from "./Logo";
 import { Icon } from "./Icon";
 import { useCart } from "./store";
@@ -22,6 +23,7 @@ import { cn } from "@/lib/utils";
 
 export function Header() {
   const router = useRouter();
+  const pathname = usePathname();
   const { count, wishlist, setMiniOpen } = useCart();
   const { categories, store: STORE } = useSiteData();
   const [scrolled, setScrolled] = useState(false);
@@ -139,6 +141,16 @@ export function Header() {
             label="Избранное"
             badge={wishlist.length}
             href="/account?tab=wishlist"
+            onClick={(e) => {
+              // На /account soft-nav по query часто «глотается» — переключаем явно
+              if (pathname === "/account") {
+                e.preventDefault();
+                window.dispatchEvent(
+                  new CustomEvent(ACCOUNT_TAB_EVENT, { detail: "wishlist" }),
+                );
+                router.replace("/account?tab=wishlist", { scroll: false });
+              }
+            }}
           >
             <Heart size={19} />
           </IconButton>
@@ -250,7 +262,7 @@ function IconButton({
   children: React.ReactNode;
   label: string;
   badge?: number;
-  onClick?: () => void;
+  onClick?: (e: React.MouseEvent<HTMLAnchorElement | HTMLButtonElement>) => void;
   href?: string;
 }) {
   const cls =
@@ -259,7 +271,7 @@ function IconButton({
     <>
       {children}
       {badge != null && badge > 0 && (
-        <span className="absolute -right-0.5 -top-0.5 grid h-[18px] min-w-[18px] place-items-center rounded-full bg-gradient-to-br from-cyan to-blue px-1 text-[10px] font-bold text-[#04121a]">
+        <span className="pointer-events-none absolute -right-0.5 -top-0.5 grid h-[18px] min-w-[18px] place-items-center rounded-full bg-gradient-to-br from-cyan to-blue px-1 text-[10px] font-bold text-[#04121a]">
           {badge}
         </span>
       )}
@@ -267,12 +279,18 @@ function IconButton({
   );
   if (href)
     return (
-      <Link href={href} aria-label={label} className={cls}>
+      <Link
+        href={href}
+        scroll={false}
+        aria-label={label}
+        className={cls}
+        onClick={onClick}
+      >
         {inner}
       </Link>
     );
   return (
-    <button onClick={onClick} aria-label={label} className={cls}>
+    <button type="button" onClick={onClick} aria-label={label} className={cls}>
       {inner}
     </button>
   );

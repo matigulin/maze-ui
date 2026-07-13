@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { useRouter, useSearchParams } from "next/navigation";
 import { motion } from "motion/react";
 import { MapPin, Package, Plus, Building2, Heart } from "lucide-react";
 import { useCart } from "@/components/store";
@@ -17,6 +18,7 @@ import {
   type ProductListItemDto,
 } from "@/lib/mappers/catalog";
 import { formatPrice, cn } from "@/lib/utils";
+import { ACCOUNT_TAB_EVENT } from "@/lib/account-tab";
 
 type Tab = "profile" | "orders" | "wishlist" | "addresses" | "company";
 
@@ -28,23 +30,55 @@ const TABS: { id: Tab; label: string }[] = [
   { id: "company", label: "Компания" },
 ];
 
+const VALID_TABS: Tab[] = TABS.map((t) => t.id);
+
+function parseTab(raw: string | null | undefined): Tab {
+  return VALID_TABS.includes(raw as Tab) ? (raw as Tab) : "profile";
+}
+
+function tabHref(id: Tab) {
+  return id === "profile" ? "/account" : `/account?tab=${id}`;
+}
+
 export function AccountClient({ initialTab = "profile" }: { initialTab?: Tab }) {
-  const [tab, setTab] = useState<Tab>(initialTab);
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const urlTab = parseTab(searchParams.get("tab"));
+  const [tab, setTab] = useState<Tab>(() =>
+    parseTab(searchParams.get("tab") ?? initialTab),
+  );
+  const [seenUrlTab, setSeenUrlTab] = useState(urlTab);
   const { wishlist } = useCart();
   const { ready, isAuthenticated } = useUserAuth();
   const { open } = useModal();
   const [wished, setWished] = useState<Product[]>([]);
+  const useMocks = shouldUseMocks();
+  const wishedItems = useMocks
+    ? products.filter((p) => wishlist.includes(p.id))
+    : wishlist.length === 0
+      ? []
+      : wished;
+
+  if (urlTab !== seenUrlTab) {
+    setSeenUrlTab(urlTab);
+    setTab(urlTab);
+  }
+
+  function selectTab(next: Tab) {
+    setTab(next);
+    router.replace(tabHref(next), { scroll: false });
+  }
 
   useEffect(() => {
-    if (wishlist.length === 0) {
-      setWished([]);
-      return;
+    function onAccountTab(e: Event) {
+      setTab(parseTab((e as CustomEvent<string>).detail));
     }
+    window.addEventListener(ACCOUNT_TAB_EVENT, onAccountTab);
+    return () => window.removeEventListener(ACCOUNT_TAB_EVENT, onAccountTab);
+  }, []);
 
-    if (shouldUseMocks()) {
-      setWished(products.filter((p) => wishlist.includes(p.id)));
-      return;
-    }
+  useEffect(() => {
+    if (useMocks || wishlist.length === 0) return;
 
     let cancelled = false;
     void (async () => {
@@ -66,7 +100,7 @@ export function AccountClient({ initialTab = "profile" }: { initialTab?: Tab }) 
     return () => {
       cancelled = true;
     };
-  }, [wishlist]);
+  }, [wishlist, useMocks]);
 
   if (!ready) {
     return (
@@ -105,12 +139,12 @@ export function AccountClient({ initialTab = "profile" }: { initialTab?: Tab }) 
         </div>
       </div>
 
-      {/* Табы */}
       <div className="mb-8 flex flex-wrap gap-1.5">
         {TABS.map((t) => (
           <button
             key={t.id}
-            onClick={() => setTab(t.id)}
+            type="button"
+            onClick={() => selectTab(t.id)}
             className={cn(
               "relative rounded-full px-4 py-2 text-sm font-medium transition-colors cursor-pointer",
               tab === t.id ? "text-ink" : "text-muted hover:text-ink",
@@ -119,13 +153,13 @@ export function AccountClient({ initialTab = "profile" }: { initialTab?: Tab }) 
             {tab === t.id && (
               <motion.span
                 layoutId="acc-tab"
-                className="absolute inset-0 -z-10 rounded-full bg-white/10"
+                className="pointer-events-none absolute inset-0 -z-10 rounded-full bg-white/10"
                 transition={{ type: "spring", stiffness: 380, damping: 30 }}
               />
             )}
             {t.label}
-            {t.id === "wishlist" && wished.length > 0 && (
-              <span className="ml-1.5 text-xs text-cyan">{wished.length}</span>
+            {t.id === "wishlist" && wishedItems.length > 0 && (
+              <span className="ml-1.5 text-xs text-cyan">{wishedItems.length}</span>
             )}
           </button>
         ))}
@@ -139,7 +173,7 @@ export function AccountClient({ initialTab = "profile" }: { initialTab?: Tab }) 
       >
         {tab === "profile" && <AccountProfile />}
         {tab === "orders" && <Orders />}
-        {tab === "wishlist" && <Wishlist items={wished} />}
+        {tab === "wishlist" && <Wishlist items={wishedItems} />}
         {tab === "addresses" && <Addresses />}
         {tab === "company" && <Company />}
       </motion.div>
@@ -216,7 +250,7 @@ function Addresses() {
           <p className="text-xs text-faint">Основной адрес · кв. 12</p>
         </div>
       </div>
-      <button className="btn-ghost">
+      <button type="button" className="btn-ghost">
         <Plus size={16} />
         Добавить адрес
       </button>
@@ -262,7 +296,7 @@ function Empty({
           Перейти в каталог
         </Link>
       ) : ctaLabel ? (
-        <button className="btn-ghost">
+        <button type="button" className="btn-ghost">
           <Plus size={16} />
           {ctaLabel}
         </button>
