@@ -123,11 +123,24 @@ body {
   border: 3px solid var(--color-bg);
 }
 
-/* Focus ring — visible for a11y */
-:focus-visible {
+/* Focus ring — visible for a11y (кнопки, ссылки; не поля ввода) */
+:focus-visible:not(input):not(textarea):not(select) {
   outline: 2px solid var(--color-cyan);
   outline-offset: 2px;
   border-radius: 4px;
+}
+
+/* Поля ввода — одна рамка через border на самом input / обёртке */
+input:focus-visible,
+textarea:focus-visible,
+select:focus-visible {
+  outline: none;
+}
+
+/* Вложенный input в составном поле — рамка только на обёртке */
+.input-inset:focus,
+.input-inset:focus-visible {
+  outline: none;
 }
 
 /* ---------------- Components / utilities ---------------- */

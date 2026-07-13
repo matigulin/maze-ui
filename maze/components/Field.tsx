@@ -4,15 +4,20 @@ import { cn } from "@/lib/utils";
 import { type InputHTMLAttributes, type ReactNode, useId } from "react";
 
 export const fieldCls =
-  "w-full rounded-xl border border-line bg-bg-2/60 px-4 py-3 text-[15px] text-ink placeholder:text-faint outline-none transition-colors focus:border-cyan/70 focus:ring-2 focus:ring-cyan/20";
+  "w-full rounded-xl border border-line bg-bg-2/60 px-4 py-3 text-[15px] text-ink placeholder:text-faint outline-none transition-colors focus:border-cyan/70 focus-visible:outline-none";
 
 export function Field({
   label,
+  labelNote,
   hint,
   className,
   id,
   ...props
-}: { label: string; hint?: ReactNode } & InputHTMLAttributes<HTMLInputElement>) {
+}: {
+  label: string;
+  labelNote?: ReactNode;
+  hint?: ReactNode;
+} & InputHTMLAttributes<HTMLInputElement>) {
   const gen = useId();
   const fid = id ?? gen;
   return (
@@ -22,6 +27,11 @@ export function Field({
         className="block text-xs font-medium uppercase tracking-wider text-muted"
       >
         {label}
+        {labelNote && (
+          <span className="ml-1.5 font-normal normal-case tracking-normal text-faint">
+            · {labelNote}
+          </span>
+        )}
       </label>
       <input id={fid} className={cn(fieldCls, className)} {...props} />
       {hint && <p className="text-xs text-faint">{hint}</p>}

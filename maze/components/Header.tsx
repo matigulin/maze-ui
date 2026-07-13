@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion } from "motion/react";
 import {
@@ -11,20 +11,20 @@ import {
   Phone,
   Search,
   ShoppingCart,
-  User,
   X,
 } from "lucide-react";
+import { HeaderAuthActions, MobileAuthActions } from "@/features/auth";
+import { ACCOUNT_TAB_EVENT } from "@/lib/account-tab";
 import { Logo } from "./Logo";
 import { Icon } from "./Icon";
 import { useCart } from "./store";
-import { useModal } from "./modals";
 import { useSiteData } from "./site-data";
 import { cn } from "@/lib/utils";
 
 export function Header() {
   const router = useRouter();
+  const pathname = usePathname();
   const { count, wishlist, setMiniOpen } = useCart();
-  const { open } = useModal();
   const { categories, store: STORE } = useSiteData();
   const [scrolled, setScrolled] = useState(false);
   const [catOpen, setCatOpen] = useState(false);
@@ -63,7 +63,7 @@ export function Header() {
           : "border-b border-transparent",
       )}
     >
-      <div className="container-x flex h-16 items-center gap-3 md:h-[4.5rem] md:gap-5">
+      <div className="container-x flex h-16 shrink-0 flex-nowrap items-center gap-3 md:h-[4.5rem] md:gap-5">
         <Logo />
 
         {/* Каталог dropdown */}
@@ -136,11 +136,21 @@ export function Header() {
           />
         </form>
 
-        <div className="ml-auto flex items-center gap-1 md:gap-1.5">
+        <div className="ml-auto flex shrink-0 flex-nowrap items-center gap-1 md:gap-1.5">
           <IconButton
             label="Избранное"
             badge={wishlist.length}
             href="/account?tab=wishlist"
+            onClick={(e) => {
+              // На /account soft-nav по query часто «глотается» — переключаем явно
+              if (pathname === "/account") {
+                e.preventDefault();
+                window.dispatchEvent(
+                  new CustomEvent(ACCOUNT_TAB_EVENT, { detail: "wishlist" }),
+                );
+                router.replace("/account?tab=wishlist", { scroll: false });
+              }
+            }}
           >
             <Heart size={19} />
           </IconButton>
@@ -151,9 +161,7 @@ export function Header() {
           >
             <ShoppingCart size={19} />
           </IconButton>
-          <IconButton label="Личный кабинет" onClick={() => open("auth")}>
-            <User size={19} />
-          </IconButton>
+          <HeaderAuthActions />
           <a
             href={`tel:${STORE.phone.replace(/[^+\d]/g, "")}`}
             className="ml-1 hidden items-center gap-2 rounded-full border border-line px-3 py-2 text-sm text-muted transition-colors hover:border-cyan/50 hover:text-ink xl:flex"
@@ -235,6 +243,7 @@ export function Header() {
                   </Link>
                 ))}
               </nav>
+              <MobileAuthActions onNavigate={() => setMobileOpen(false)} />
             </motion.div>
           </motion.div>
         )}
@@ -253,7 +262,7 @@ function IconButton({
   children: React.ReactNode;
   label: string;
   badge?: number;
-  onClick?: () => void;
+  onClick?: (e: React.MouseEvent<HTMLAnchorElement | HTMLButtonElement>) => void;
   href?: string;
 }) {
   const cls =
@@ -262,7 +271,7 @@ function IconButton({
     <>
       {children}
       {badge != null && badge > 0 && (
-        <span className="absolute -right-0.5 -top-0.5 grid h-[18px] min-w-[18px] place-items-center rounded-full bg-gradient-to-br from-cyan to-blue px-1 text-[10px] font-bold text-[#04121a]">
+        <span className="pointer-events-none absolute -right-0.5 -top-0.5 grid h-[18px] min-w-[18px] place-items-center rounded-full bg-gradient-to-br from-cyan to-blue px-1 text-[10px] font-bold text-[#04121a]">
           {badge}
         </span>
       )}
@@ -270,12 +279,18 @@ function IconButton({
   );
   if (href)
     return (
-      <Link href={href} aria-label={label} className={cls}>
+      <Link
+        href={href}
+        scroll={false}
+        aria-label={label}
+        className={cls}
+        onClick={onClick}
+      >
         {inner}
       </Link>
     );
   return (
-    <button onClick={onClick} aria-label={label} className={cls}>
+    <button type="button" onClick={onClick} aria-label={label} className={cls}>
       {inner}
     </button>
   );

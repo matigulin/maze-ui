@@ -1,7 +1,7 @@
 "use client";
 
 import { MiniCart } from "./MiniCart";
-import { AuthModal } from "./AuthModal";
+import { AuthModal } from "@/features/auth";
 import { TradeInModal } from "./TradeInModal";
 import { useModal } from "./modals";
 

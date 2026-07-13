@@ -62,7 +62,10 @@ export async function updateMe(
   input: {
     firstName?: string;
     lastName?: string;
+    middleName?: string | null;
     email?: string;
+    gender?: 'male' | 'female' | null;
+    birthDate?: string | null;
     subscribeEmail?: boolean;
     subscribeSms?: boolean;
   },
@@ -76,7 +79,12 @@ export async function updateMe(
   const updates: Record<string, unknown> = {};
   if (input.firstName !== undefined) updates.first_name = input.firstName;
   if (input.lastName !== undefined) updates.last_name = input.lastName;
+  if (input.middleName !== undefined) {
+    updates.middle_name = input.middleName?.trim() ? input.middleName.trim() : null;
+  }
   if (input.email !== undefined) updates.email = input.email;
+  if (input.gender !== undefined) updates.gender = input.gender;
+  if (input.birthDate !== undefined) updates.birth_date = input.birthDate;
 
   if (input.subscribeEmail !== undefined && input.subscribeEmail !== user.get('subscribe_email')) {
     updates.subscribe_email = input.subscribeEmail;

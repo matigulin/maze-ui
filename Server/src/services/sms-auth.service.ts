@@ -3,6 +3,7 @@ import { Op } from 'sequelize';
 import { getSequelize } from '../config/database.js';
 import {
   ACCESS_TOKEN_TTL_SEC,
+  OTP_LENGTH,
   OTP_MAX_ATTEMPTS,
   OTP_TTL_SEC,
 } from '../lib/constants.js';
@@ -17,9 +18,12 @@ import { getQueue, QUEUE_NAMES } from '../queues/index.js';
 import { mergeGuestCartToUser } from './cart.service.js';
 import { publishOutboxEvent } from './outbox.service.js';
 import { createRefreshSession } from './token.service.js';
+import { loadEnv } from '../config/env.js';
 
 const SEND_MESSAGE = 'Если номер корректен, код отправлен';
 const RATE_WINDOW_SEC = 15 * 60;
+const DEV_OTP_SEND_PHONE_LIMIT = 50;
+const DEV_OTP_SEND_IP_LIMIT = 200;
 
 export interface AuthUserDto {
   id: string;
@@ -38,7 +42,8 @@ function mapUser(user: User): AuthUserDto {
 }
 
 function generateOtpCode(): string {
-  return String(randomInt(0, 1_000_000)).padStart(6, '0');
+  const max = 10 ** OTP_LENGTH;
+  return String(randomInt(0, max)).padStart(OTP_LENGTH, '0');
 }
 
 async function checkRateLimitOnly(
@@ -57,7 +62,11 @@ async function checkRateLimitOnly(
   }
 }
 
-export async function sendSmsCode(phoneRaw: string, ip: string): Promise<{ message: string }> {
+export async function sendSmsCode(
+  phoneRaw: string,
+  ip: string,
+): Promise<{ message: string; devCode?: string }> {
+  const env = loadEnv();
   let phone: string;
 
   try {
@@ -66,10 +75,24 @@ export async function sendSmsCode(phoneRaw: string, ip: string): Promise<{ messa
     return { message: SEND_MESSAGE };
   }
 
-  const phoneLimited = await checkRateLimitOnly(`rate:otp-send:phone:${phone}`, 3, RATE_WINDOW_SEC);
-  const ipLimited = await checkRateLimitOnly(`rate:otp-send:ip:${ip}`, 10, RATE_WINDOW_SEC);
+  const phoneLimit = env.NODE_ENV === 'development' ? DEV_OTP_SEND_PHONE_LIMIT : 3;
+  const ipLimit = env.NODE_ENV === 'development' ? DEV_OTP_SEND_IP_LIMIT : 10;
+
+  const phoneLimited = await checkRateLimitOnly(
+    `rate:otp-send:phone:${phone}`,
+    phoneLimit,
+    RATE_WINDOW_SEC,
+  );
+  const ipLimited = await checkRateLimitOnly(
+    `rate:otp-send:ip:${ip}`,
+    ipLimit,
+    RATE_WINDOW_SEC,
+  );
 
   if (phoneLimited || ipLimited) {
+    if (env.NODE_ENV === 'development') {
+      console.warn(`[dev][sms] send rate-limited for ${maskPhone(phone)}`);
+    }
     return { message: SEND_MESSAGE };
   }
 
@@ -98,11 +121,27 @@ export async function sendSmsCode(phoneRaw: string, ip: string): Promise<{ messa
     );
   });
 
-  await getQueue(QUEUE_NAMES.sms).add(
-    'otp',
-    { phone: maskPhone(phone), code },
-    { jobId: `otp:${phone}:${Date.now()}` },
-  );
+  if (env.NODE_ENV === 'development' && !env.SMS_API_KEY) {
+    console.info(`[dev][sms] OTP for ${maskPhone(phone)}: ${code}`);
+  }
+
+  try {
+    await getQueue(QUEUE_NAMES.sms).add(
+      'otp',
+      { phone: maskPhone(phone), code },
+      { jobId: `otp:${phone}:${Date.now()}` },
+    );
+  } catch (error) {
+    if (env.NODE_ENV === 'development') {
+      console.warn('[dev][sms] queue unavailable, OTP logged above only', error);
+    } else {
+      throw error;
+    }
+  }
+
+  if (env.NODE_ENV === 'development' && !env.SMS_API_KEY) {
+    return { message: SEND_MESSAGE, devCode: code };
+  }
 
   return { message: SEND_MESSAGE };
 }

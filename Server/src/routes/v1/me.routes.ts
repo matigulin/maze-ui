@@ -25,7 +25,14 @@ import {
 const patchMeSchema = z.object({
   firstName: z.string().min(1).max(100).optional(),
   lastName: z.string().min(1).max(100).optional(),
+  middleName: z.string().max(100).nullable().optional(),
   email: z.string().email().max(255).optional(),
+  gender: z.enum(['male', 'female']).nullable().optional(),
+  birthDate: z
+    .string()
+    .regex(/^\d{4}-\d{2}-\d{2}$/, 'birthDate must be YYYY-MM-DD')
+    .nullable()
+    .optional(),
   subscribeEmail: z.boolean().optional(),
   subscribeSms: z.boolean().optional(),
 });

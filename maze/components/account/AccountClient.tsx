@@ -2,11 +2,14 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { useRouter, useSearchParams } from "next/navigation";
 import { motion } from "motion/react";
-import { LogOut, MapPin, Package, Plus, Building2, Heart } from "lucide-react";
+import { MapPin, Package, Plus, Building2, Heart } from "lucide-react";
 import { useCart } from "@/components/store";
 import { ProductCard } from "@/components/ProductCard";
-import { Field, fieldCls } from "@/components/Field";
+import { AccountProfile } from "@/features/account";
+import { useUserAuth } from "@/features/auth";
+import { useModal } from "@/components/modals";
 import { products, type Product } from "@/lib/data";
 import { apiGet } from "@/lib/api";
 import { shouldUseMocks } from "@/lib/mocks";
@@ -15,6 +18,7 @@ import {
   type ProductListItemDto,
 } from "@/lib/mappers/catalog";
 import { formatPrice, cn } from "@/lib/utils";
+import { ACCOUNT_TAB_EVENT } from "@/lib/account-tab";
 
 type Tab = "profile" | "orders" | "wishlist" | "addresses" | "company";
 
@@ -26,21 +30,55 @@ const TABS: { id: Tab; label: string }[] = [
   { id: "company", label: "Компания" },
 ];
 
+const VALID_TABS: Tab[] = TABS.map((t) => t.id);
+
+function parseTab(raw: string | null | undefined): Tab {
+  return VALID_TABS.includes(raw as Tab) ? (raw as Tab) : "profile";
+}
+
+function tabHref(id: Tab) {
+  return id === "profile" ? "/account" : `/account?tab=${id}`;
+}
+
 export function AccountClient({ initialTab = "profile" }: { initialTab?: Tab }) {
-  const [tab, setTab] = useState<Tab>(initialTab);
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const urlTab = parseTab(searchParams.get("tab"));
+  const [tab, setTab] = useState<Tab>(() =>
+    parseTab(searchParams.get("tab") ?? initialTab),
+  );
+  const [seenUrlTab, setSeenUrlTab] = useState(urlTab);
   const { wishlist } = useCart();
+  const { ready, isAuthenticated } = useUserAuth();
+  const { open } = useModal();
   const [wished, setWished] = useState<Product[]>([]);
+  const useMocks = shouldUseMocks();
+  const wishedItems = useMocks
+    ? products.filter((p) => wishlist.includes(p.id))
+    : wishlist.length === 0
+      ? []
+      : wished;
+
+  if (urlTab !== seenUrlTab) {
+    setSeenUrlTab(urlTab);
+    setTab(urlTab);
+  }
+
+  function selectTab(next: Tab) {
+    setTab(next);
+    router.replace(tabHref(next), { scroll: false });
+  }
 
   useEffect(() => {
-    if (wishlist.length === 0) {
-      setWished([]);
-      return;
+    function onAccountTab(e: Event) {
+      setTab(parseTab((e as CustomEvent<string>).detail));
     }
+    window.addEventListener(ACCOUNT_TAB_EVENT, onAccountTab);
+    return () => window.removeEventListener(ACCOUNT_TAB_EVENT, onAccountTab);
+  }, []);
 
-    if (shouldUseMocks()) {
-      setWished(products.filter((p) => wishlist.includes(p.id)));
-      return;
-    }
+  useEffect(() => {
+    if (useMocks || wishlist.length === 0) return;
 
     let cancelled = false;
     void (async () => {
@@ -62,7 +100,33 @@ export function AccountClient({ initialTab = "profile" }: { initialTab?: Tab }) 
     return () => {
       cancelled = true;
     };
-  }, [wishlist]);
+  }, [wishlist, useMocks]);
+
+  if (!ready) {
+    return (
+      <div className="glass rounded-3xl p-10 text-sm text-muted">
+        Загружаем личный кабинет…
+      </div>
+    );
+  }
+
+  if (!isAuthenticated) {
+    return (
+      <div className="glass flex max-w-lg flex-col items-start gap-4 rounded-3xl p-8">
+        <p className="eyebrow">MAZE ID</p>
+        <h1 className="font-display text-3xl font-bold tracking-tight">
+          Войдите в аккаунт
+        </h1>
+        <p className="text-sm text-muted">
+          Профиль, заказы и сохранённая корзина доступны после входа по номеру
+          телефона.
+        </p>
+        <button type="button" onClick={() => open("auth")} className="btn-primary">
+          Войти
+        </button>
+      </div>
+    );
+  }
 
   return (
     <div>
@@ -73,18 +137,14 @@ export function AccountClient({ initialTab = "profile" }: { initialTab?: Tab }) 
             Личный кабинет
           </h1>
         </div>
-        <button className="flex items-center gap-2 rounded-full border border-line px-4 py-2 text-sm text-muted transition-colors hover:border-magenta/50 hover:text-magenta cursor-pointer">
-          <LogOut size={15} />
-          Выйти
-        </button>
       </div>
 
-      {/* Табы */}
       <div className="mb-8 flex flex-wrap gap-1.5">
         {TABS.map((t) => (
           <button
             key={t.id}
-            onClick={() => setTab(t.id)}
+            type="button"
+            onClick={() => selectTab(t.id)}
             className={cn(
               "relative rounded-full px-4 py-2 text-sm font-medium transition-colors cursor-pointer",
               tab === t.id ? "text-ink" : "text-muted hover:text-ink",
@@ -93,13 +153,13 @@ export function AccountClient({ initialTab = "profile" }: { initialTab?: Tab }) 
             {tab === t.id && (
               <motion.span
                 layoutId="acc-tab"
-                className="absolute inset-0 -z-10 rounded-full bg-white/10"
+                className="pointer-events-none absolute inset-0 -z-10 rounded-full bg-white/10"
                 transition={{ type: "spring", stiffness: 380, damping: 30 }}
               />
             )}
             {t.label}
-            {t.id === "wishlist" && wished.length > 0 && (
-              <span className="ml-1.5 text-xs text-cyan">{wished.length}</span>
+            {t.id === "wishlist" && wishedItems.length > 0 && (
+              <span className="ml-1.5 text-xs text-cyan">{wishedItems.length}</span>
             )}
           </button>
         ))}
@@ -111,9 +171,9 @@ export function AccountClient({ initialTab = "profile" }: { initialTab?: Tab }) 
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.3 }}
       >
-        {tab === "profile" && <Profile />}
+        {tab === "profile" && <AccountProfile />}
         {tab === "orders" && <Orders />}
-        {tab === "wishlist" && <Wishlist items={wished} />}
+        {tab === "wishlist" && <Wishlist items={wishedItems} />}
         {tab === "addresses" && <Addresses />}
         {tab === "company" && <Company />}
       </motion.div>
@@ -121,46 +181,18 @@ export function AccountClient({ initialTab = "profile" }: { initialTab?: Tab }) 
   );
 }
 
-function Profile() {
-  return (
-    <form
-      onSubmit={(e) => e.preventDefault()}
-      className="glass max-w-3xl space-y-5 rounded-3xl p-6 sm:p-8"
-    >
-      <div className="grid gap-5 sm:grid-cols-2">
-        <Field label="Имя" defaultValue="Демо" />
-        <Field label="Фамилия" defaultValue="Пользователь" />
-        <Field label="Отчество" defaultValue="Тестович" />
-        <div className="space-y-1.5">
-          <label className="block text-xs font-medium uppercase tracking-wider text-muted">
-            Пол
-          </label>
-          <select className={`${fieldCls} cursor-pointer appearance-none`}>
-            <option className="bg-panel">Мужской</option>
-            <option className="bg-panel">Женский</option>
-          </select>
-        </div>
-        <Field label="Телефон" type="tel" defaultValue="+7 (999) 123-45-67" />
-        <Field label="E-mail" type="email" defaultValue="demo@maze.ru" />
-        <Field label="Дата рождения" type="date" defaultValue="1996-05-15" />
-      </div>
-      <div className="space-y-2 pt-1">
-        <label className="flex items-center gap-2.5 text-sm text-muted">
-          <input type="checkbox" defaultChecked className="maze-check" />
-          Согласен на e-mail рассылку
-        </label>
-        <label className="flex items-center gap-2.5 text-sm text-muted">
-          <input type="checkbox" className="maze-check" />
-          Согласен на SMS рассылку
-        </label>
-      </div>
-      <button className="btn-primary">Сохранить изменения</button>
-    </form>
-  );
-}
-
 function Orders() {
-  const p = products.find((x) => x.slug === "iphone-15-pro-max")!;
+  const p = products.find((x) => x.slug === "iphone-15-pro-max");
+  if (!p) {
+    return (
+      <Empty
+        icon={<Package size={30} />}
+        title="Заказов пока нет"
+        text="Оформите первый заказ — он появится здесь."
+        cta
+      />
+    );
+  }
   return (
     <div className="max-w-2xl space-y-4">
       <div className="glass rounded-2xl p-5">
@@ -218,7 +250,7 @@ function Addresses() {
           <p className="text-xs text-faint">Основной адрес · кв. 12</p>
         </div>
       </div>
-      <button className="btn-ghost">
+      <button type="button" className="btn-ghost">
         <Plus size={16} />
         Добавить адрес
       </button>
@@ -264,7 +296,7 @@ function Empty({
           Перейти в каталог
         </Link>
       ) : ctaLabel ? (
-        <button className="btn-ghost">
+        <button type="button" className="btn-ghost">
           <Plus size={16} />
           {ctaLabel}
         </button>
