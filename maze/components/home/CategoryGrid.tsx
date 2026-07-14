@@ -5,6 +5,11 @@ import { Icon } from "@/components/Icon";
 import type { NavCategory } from "@/lib/site-source";
 import { cn } from "@/lib/utils";
 
+/** Стрелка ~18px в углу с padding p-5 → центр ≈ 1.25rem + 9px от краёв. */
+const ARROW_CENTER = "calc(1.25rem + 9px)";
+const GLOW_SIZE = "22rem";
+const GLOW_RADIUS = "11rem";
+
 export function CategoryGrid({ categories }: { categories: NavCategory[] }) {
   return (
     <div className="grid auto-rows-[8.5rem] grid-cols-2 gap-4 md:grid-cols-4">
@@ -23,20 +28,20 @@ export function CategoryGrid({ categories }: { categories: NavCategory[] }) {
                 background: `linear-gradient(140deg, ${c.tint[0]}22, ${c.tint[1]}14)`,
               }}
             >
-              {/* очень мягкое свечение только на hover */}
+              {/* Центр круга = центр стрелки → часть glow выходит за край карточки */}
               <div
-                className="pointer-events-none absolute -right-20 -top-20 h-56 w-56 opacity-0 transition-opacity duration-500 group-hover:opacity-100"
+                className="pointer-events-none absolute z-0 rounded-full opacity-0 transition-opacity duration-500 group-hover:opacity-100"
                 aria-hidden
-              >
-                <div
-                  className="h-full w-full rounded-full"
-                  style={{
-                    background: `radial-gradient(circle, ${c.tint[0]}40 0%, ${c.tint[0]}18 38%, transparent 72%)`,
-                  }}
-                />
-              </div>
+                style={{
+                  width: GLOW_SIZE,
+                  height: GLOW_SIZE,
+                  top: `calc(${ARROW_CENTER} - ${GLOW_RADIUS})`,
+                  right: `calc(${ARROW_CENTER} - ${GLOW_RADIUS})`,
+                  background: `radial-gradient(circle at center, ${c.tint[0]}cc 0%, ${c.tint[0]}66 32%, ${c.tint[0]}28 52%, transparent 72%)`,
+                }}
+              />
 
-              <div className="flex items-start justify-between">
+              <div className="relative z-[1] flex items-start justify-between">
                 <span
                   className={cn(
                     "grid place-items-center rounded-2xl text-white shadow-lg",
@@ -55,7 +60,7 @@ export function CategoryGrid({ categories }: { categories: NavCategory[] }) {
                 />
               </div>
 
-              <div>
+              <div className="relative z-[1]">
                 <h3
                   className={cn(
                     "font-display font-semibold text-ink",
