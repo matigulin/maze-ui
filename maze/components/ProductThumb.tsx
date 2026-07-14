@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import Image from "next/image";
 import { cn } from "@/lib/utils";
 import type { Product } from "@/lib/data";
@@ -9,10 +10,7 @@ type ThumbProduct = Pick<
   "tint" | "glyph" | "brand" | "imageUrl" | "name"
 >;
 
-/**
- * Фото с API или градиентный плейсхолдер (моки / нет картинки).
- */
-export function ProductThumb({
+function Placeholder({
   product,
   className,
   glyphClassName,
@@ -23,25 +21,6 @@ export function ProductThumb({
   glyphClassName?: string;
   angle?: number;
 }) {
-  if (product.imageUrl) {
-    return (
-      <div
-        className={cn(
-          "relative overflow-hidden rounded-2xl bg-white/5",
-          className,
-        )}
-      >
-        <Image
-          src={product.imageUrl}
-          alt={product.name ?? product.glyph}
-          fill
-          className="object-cover"
-          sizes="(max-width: 768px) 50vw, 25vw"
-        />
-      </div>
-    );
-  }
-
   const [c1, c2] = product.tint;
   return (
     <div
@@ -85,6 +64,53 @@ export function ProductThumb({
           {product.glyph}
         </span>
       </div>
+    </div>
+  );
+}
+
+/**
+ * Фото с API или градиентный плейсхолдер (моки / нет картинки / битый URL).
+ */
+export function ProductThumb({
+  product,
+  className,
+  glyphClassName,
+  angle = 135,
+}: {
+  product: ThumbProduct;
+  className?: string;
+  glyphClassName?: string;
+  angle?: number;
+}) {
+  const [failed, setFailed] = useState(false);
+  const showPhoto = Boolean(product.imageUrl) && !failed;
+
+  if (!showPhoto) {
+    return (
+      <Placeholder
+        product={product}
+        className={className}
+        glyphClassName={glyphClassName}
+        angle={angle}
+      />
+    );
+  }
+
+  return (
+    <div
+      className={cn(
+        "relative overflow-hidden rounded-2xl bg-white/5",
+        className,
+      )}
+    >
+      <Image
+        src={product.imageUrl!}
+        alt={product.name ?? product.glyph}
+        fill
+        className="object-cover"
+        sizes="(max-width: 768px) 50vw, 25vw"
+        onError={() => setFailed(true)}
+      />
     </div>
   );
 }

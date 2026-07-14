@@ -10,7 +10,7 @@
     "images": [
       "https://images.unsplash.com/photo-1695048133142-1a20484d2569?w=800&q=80",
       "https://images.unsplash.com/photo-1695048133142-1a20484d2569?w=800&q=80&sat=-100",
-      "https://images.unsplash.com/photo-1592286927505-c0223a9e4b36?w=800&q=80"
+      "https://images.unsplash.com/photo-1678685888221-cda773a3dcdb?w=800&q=80"
     ],
     "badge": { "type": "sale", "text": "-11%" },
     "inStock": true,
@@ -53,8 +53,8 @@
     "subcategory": "galaxy-phone",
     "price": 109990,
     "images": [
-      "https://images.unsplash.com/photo-1610945265064-0e34e55182fa?w=800&q=80",
-      "https://images.unsplash.com/photo-1610945415295-d9bbf067e59c?w=800&q=80"
+      "https://images.unsplash.com/photo-1610945415295-d9bbf067e59c?w=800&q=80",
+      "https://images.unsplash.com/photo-1580910051074-3eb694886505?w=800&q=80"
     ],
     "badge": { "type": "new", "text": "NEW" },
     "inStock": true,
@@ -92,7 +92,7 @@
     "price": 114990,
     "images": [
       "https://images.unsplash.com/photo-1517336714731-489689fd1ca8?w=800&q=80",
-      "https://images.unsplash.com/photo-1611186874428-7e0d67a3ae52?w=800&q=80"
+      "https://images.unsplash.com/photo-1496181133206-80ce9b88a853?w=800&q=80"
     ],
     "inStock": true,
     "stock": 5,
