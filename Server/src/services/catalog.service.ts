@@ -133,12 +133,6 @@ function mapListItem(
     product.images?.[0]?.url ??
     null;
 
-  const anyVariantInStock = variants.some((variant) => {
-    const available =
-      (variant.stock?.quantity ?? 0) - (variant.stock?.reserved_quantity ?? 0);
-    return variant.is_available && available > 0;
-  });
-
   return {
     id: product.id,
     slug: product.slug,
@@ -149,7 +143,7 @@ function mapListItem(
     priceFrom,
     oldPriceFrom: product.old_price ? toNumber(product.old_price) : null,
     mainImageUrl: primaryImage,
-    inStock: variants.length > 0 ? anyVariantInStock : product.in_stock,
+    inStock: product.in_stock,
     badges,
   };
 }
@@ -408,22 +402,6 @@ async function loadProductBySlug(slug: string): Promise<ProductDetailDto> {
   const badges: string[] = [];
   if (product.badge_type) badges.push(product.badge_type);
 
-  const mappedVariants = (product.variants ?? []).map((variant) => {
-    const available =
-      (variant.stock?.quantity ?? 0) - (variant.stock?.reserved_quantity ?? 0);
-    return {
-      id: variant.id,
-      sku: variant.sku,
-      memory: variant.memory,
-      color: variant.color_name,
-      colorHex: variant.color_hex,
-      price: toNumber(variant.price),
-      oldPrice: product.old_price ? toNumber(product.old_price) : null,
-      inStock: variant.is_available && available > 0,
-      quantityAvailable: Math.max(available, 0),
-    };
-  });
-
   return {
     id: product.id,
     slug: product.slug,
@@ -440,14 +418,25 @@ async function loadProductBySlug(slug: string): Promise<ProductDetailDto> {
       icon: f.icon_url,
     })),
     specifications,
-    variants: mappedVariants,
+    variants: (product.variants ?? []).map((variant) => {
+      const available =
+        (variant.stock?.quantity ?? 0) - (variant.stock?.reserved_quantity ?? 0);
+      return {
+        id: variant.id,
+        sku: variant.sku,
+        memory: variant.memory,
+        color: variant.color_name,
+        colorHex: variant.color_hex,
+        price: toNumber(variant.price),
+        oldPrice: product.old_price ? toNumber(product.old_price) : null,
+        inStock: variant.is_available && available > 0,
+        quantityAvailable: Math.max(available, 0),
+      };
+    }),
     badges,
     rating: toNumber(product.rating_avg),
     reviewsCount: product.reviews_count,
-    inStock:
-      mappedVariants.length > 0
-        ? mappedVariants.some((v) => v.inStock)
-        : product.in_stock,
+    inStock: product.in_stock,
   };
 }
 

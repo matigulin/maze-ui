@@ -5,6 +5,29 @@ import { ArrowRight, Repeat, CreditCard } from "lucide-react";
 import { Reveal } from "@/components/Reveal";
 import { useModal } from "@/components/modals";
 
+/** Свечение без filter+transform на одном узле — иначе браузер рисует резкий «квадрат» blur. */
+function GlowOrb({
+  className,
+  color,
+}: {
+  className?: string;
+  color: string;
+}) {
+  return (
+    <div
+      className={`pointer-events-none absolute -right-24 -top-24 h-72 w-72 transition-transform duration-700 group-hover:scale-125 ${className ?? ""}`}
+      aria-hidden
+    >
+      <div
+        className="h-full w-full rounded-full"
+        style={{
+          background: `radial-gradient(circle, ${color} 0%, transparent 68%)`,
+        }}
+      />
+    </div>
+  );
+}
+
 export function Promo() {
   const { open } = useModal();
   return (
@@ -12,7 +35,7 @@ export function Promo() {
       <Reveal>
         <div className="group relative h-full overflow-hidden rounded-3xl border border-line p-8 sm:p-10">
           <div className="absolute inset-0 -z-10 bg-[linear-gradient(130deg,#0b1a3a,#140b30)]" />
-          <div className="absolute -right-16 -top-16 h-56 w-56 rounded-full bg-cyan/25 blur-3xl transition-transform duration-700 group-hover:scale-125" />
+          <GlowOrb color="rgba(53, 228, 240, 0.4)" />
           <Repeat className="mb-5 text-cyan" size={28} />
           <h3 className="font-display text-2xl font-bold sm:text-3xl">
             Трейд-ин до 30%
@@ -22,6 +45,7 @@ export function Promo() {
             приятным сюрпризом.
           </p>
           <button
+            type="button"
             onClick={() => open("tradein")}
             className="btn-primary mt-7 group/btn"
           >
@@ -37,7 +61,7 @@ export function Promo() {
       <Reveal delay={0.1}>
         <div className="group relative h-full overflow-hidden rounded-3xl border border-line p-8 sm:p-10">
           <div className="absolute inset-0 -z-10 bg-[linear-gradient(130deg,#2a0b2c,#140b30)]" />
-          <div className="absolute -right-16 -top-16 h-56 w-56 rounded-full bg-magenta/25 blur-3xl transition-transform duration-700 group-hover:scale-125" />
+          <GlowOrb color="rgba(255, 61, 139, 0.4)" />
           <CreditCard className="mb-5 text-magenta" size={28} />
           <h3 className="font-display text-2xl font-bold sm:text-3xl">
             Рассрочка 0%

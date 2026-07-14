@@ -12,7 +12,5 @@ export {
   replaceCartLines,
   clearCartApi,
   resolveVariantId,
-  findProductVariant,
-  isProductSelectionInStock,
 } from "./api/cart-api";
 export type { CartItemDto, CartDto } from "./api/cart-api";

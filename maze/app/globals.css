@@ -126,11 +126,12 @@ body {
   border: 3px solid var(--color-bg);
 }
 
-/* Focus ring — visible for a11y (кнопки, ссылки; не поля ввода) */
+/* Focus ring — visible for a11y (кнопки, ссылки; не поля ввода).
+   Не задаём border-radius здесь: иначе на карточках с rounded-3xl
+   при :focus-visible углы схлопываются в «квадратик» outline. */
 :focus-visible:not(input):not(textarea):not(select) {
   outline: 2px solid var(--color-cyan);
   outline-offset: 2px;
-  border-radius: 4px;
 }
 
 /* Поля ввода — одна рамка через border на самом input / обёртке */

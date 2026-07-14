@@ -31,8 +31,6 @@ export type Product = {
   glyph: string; // короткая подпись поверх картинки
   imageUrl?: string | null;
   images?: string[];
-  /** Список/карточка: есть ли хотя бы один вариант в наличии. */
-  inStock?: boolean;
   defaultVariantId?: string;
   variants?: ProductVariant[];
   colors: ColorOption[];

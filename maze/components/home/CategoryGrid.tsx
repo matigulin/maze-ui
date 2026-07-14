@@ -18,15 +18,24 @@ export function CategoryGrid({ categories }: { categories: NavCategory[] }) {
           >
             <Link
               href={`/catalog?cat=${c.slug}`}
-              className="group relative flex h-full flex-col justify-between overflow-hidden rounded-3xl border border-line p-5 transition-colors duration-300 hover:border-white/25"
+              className="group relative flex h-full flex-col justify-between overflow-hidden rounded-3xl border border-line p-5 transition-[border-color,box-shadow] duration-300 hover:border-white/20 hover:shadow-[0_18px_48px_-30px_rgba(53,228,240,0.28)] focus-visible:border-cyan/45 focus-visible:outline-none"
               style={{
                 background: `linear-gradient(140deg, ${c.tint[0]}22, ${c.tint[1]}14)`,
               }}
             >
+              {/* очень мягкое свечение только на hover */}
               <div
-                className="pointer-events-none absolute -right-10 -top-10 h-32 w-32 rounded-full opacity-0 blur-2xl transition-opacity duration-500 group-hover:opacity-70"
-                style={{ background: c.tint[0] }}
-              />
+                className="pointer-events-none absolute -right-20 -top-20 h-56 w-56 opacity-0 transition-opacity duration-500 group-hover:opacity-100"
+                aria-hidden
+              >
+                <div
+                  className="h-full w-full rounded-full"
+                  style={{
+                    background: `radial-gradient(circle, ${c.tint[0]}40 0%, ${c.tint[0]}18 38%, transparent 72%)`,
+                  }}
+                />
+              </div>
+
               <div className="flex items-start justify-between">
                 <span
                   className={cn(
@@ -41,9 +50,11 @@ export function CategoryGrid({ categories }: { categories: NavCategory[] }) {
                 </span>
                 <ArrowUpRight
                   size={18}
-                  className="text-muted transition-all duration-300 group-hover:-translate-y-0.5 group-hover:translate-x-0.5 group-hover:text-ink"
+                  className="shrink-0 text-muted transition-[color,transform] duration-300 group-hover:-translate-y-0.5 group-hover:translate-x-0.5 group-hover:text-ink"
+                  aria-hidden
                 />
               </div>
+
               <div>
                 <h3
                   className={cn(

@@ -94,7 +94,6 @@ export function mapProductListItemToUiProduct(item: ProductListItemDto): Product
     tint: ["#22d3ee", "#a78bfa"],
     glyph: pickGlyph(item.title, item.slug),
     imageUrl: item.mainImageUrl,
-    inStock: item.inStock,
     colors: [],
     memory: undefined,
     specs: [],
@@ -143,7 +142,6 @@ export function mapProductDetailToUiProduct(dto: ProductDetailDto): Product {
     glyph: pickGlyph(dto.title, dto.deviceType || dto.slug),
     imageUrl: dto.images?.[0] ?? null,
     images: dto.images?.length ? dto.images : undefined,
-    inStock: dto.inStock,
     defaultVariantId: cheapestInStock?.id ?? first?.id,
     variants: variants.map((v) => ({
       id: v.id,
