@@ -1,26 +1,18 @@
 "use client";
 
 import Link from "next/link";
-import { useId } from "react";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { scrollWindowToTop } from "@/lib/scroll";
 
-export function Logo({
-  className,
-  wordmark = true,
-}: {
-  className?: string;
-  wordmark?: boolean;
-}) {
+export function Logo({ className }: { className?: string }) {
   const pathname = usePathname();
   const onHome = pathname === "/";
-  const gradId = useId().replace(/:/g, "");
 
   return (
     <Link
       href="/"
-      className={cn("group flex items-center gap-2.5", className)}
+      className={cn("inline-flex items-center", className)}
       aria-label={onHome ? "MAZE — наверх" : "MAZE — на главную"}
       onClick={(e) => {
         if (!onHome) return;
@@ -28,44 +20,37 @@ export function Logo({
         scrollWindowToTop();
       }}
     >
-      <span className="relative inline-grid h-9 w-9 place-items-center">
-        <svg viewBox="0 0 40 40" className="h-9 w-9" fill="none">
-          <defs>
-            <linearGradient id={gradId} x1="0" y1="0" x2="40" y2="40">
-              <stop stopColor="#35e4f0" />
-              <stop offset="0.5" stopColor="#8b5cf6" />
-              <stop offset="1" stopColor="#ff3d8b" />
-            </linearGradient>
-          </defs>
-          <path
-            d="M20 4 L35 31 H5 Z"
-            stroke={`url(#${gradId})`}
-            strokeWidth="2"
-            strokeLinejoin="round"
-          />
-          <path
-            d="M20 13 L27.5 26 H12.5 Z"
-            stroke={`url(#${gradId})`}
-            strokeWidth="1.6"
-            strokeLinejoin="round"
-            opacity="0.7"
-          />
-          <circle cx="20" cy="21" r="1.8" fill="#35e4f0" />
-        </svg>
-        <span
-          className="pointer-events-none absolute inset-0 -z-10 rounded-full opacity-0 transition-opacity duration-300 group-hover:opacity-100"
-          style={{
-            background:
-              "radial-gradient(circle, rgba(53,228,240,0.35) 0%, transparent 70%)",
-          }}
-          aria-hidden
+      <svg
+        width="140"
+        height="40"
+        viewBox="0 0 140 40"
+        fill="none"
+        xmlns="http://www.w3.org/2000/svg"
+        className="h-9 w-auto"
+        aria-hidden
+      >
+        <path
+          d="M23.65 33 H35 L23.65 9.5 L12.3 33 H16.85 L23.65 19.5 L30.45 33"
+          stroke="white"
+          strokeWidth="3"
+          strokeLinecap="round"
+          strokeLinejoin="round"
         />
-      </span>
-      {wordmark && (
-        <span className="font-display text-lg font-semibold tracking-[0.35em] text-ink">
+
+        <text
+          x="48"
+          y="29"
+          fill="white"
+          style={{
+            fontFamily: "var(--font-orbitron), sans-serif",
+            fontSize: 24,
+            fontWeight: 700,
+            letterSpacing: "0.28em",
+          }}
+        >
           maze
-        </span>
-      )}
+        </text>
+      </svg>
     </Link>
   );
 }
