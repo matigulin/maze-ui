@@ -7,11 +7,13 @@ import { Check, ChevronDown } from "lucide-react";
 import {
   useEffect,
   useId,
+  useLayoutEffect,
   useRef,
   useState,
   type ButtonHTMLAttributes,
   type ReactNode,
 } from "react";
+import { createPortal } from "react-dom";
 
 export function AdminPageHeader({
   title,
@@ -23,12 +25,16 @@ export function AdminPageHeader({
   actions?: ReactNode;
 }) {
   return (
-    <div className="mb-6 flex flex-wrap items-start justify-between gap-4">
-      <div>
+    <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:flex-wrap sm:items-start sm:justify-between">
+      <div className="min-w-0 flex-1">
         <h2 className="font-display text-xl tracking-wide text-ink">{title}</h2>
         {description && <p className="mt-1 text-sm text-muted">{description}</p>}
       </div>
-      {actions && <div className="flex flex-wrap items-center gap-2">{actions}</div>}
+      {actions && (
+        <div className="flex w-full shrink-0 justify-end sm:w-auto">
+          {actions}
+        </div>
+      )}
     </div>
   );
 }
@@ -288,29 +294,121 @@ export function AdminSelect({
   className?: string;
 }) {
   const [open, setOpen] = useState(false);
+  const [menuPos, setMenuPos] = useState({ top: 0, left: 0, width: 224 });
   const rootRef = useRef<HTMLDivElement>(null);
+  const buttonRef = useRef<HTMLButtonElement>(null);
+  const menuRef = useRef<HTMLUListElement>(null);
   const listId = useId();
   const selected =
     options.find((opt) => opt.value === value) ??
     options[0] ?? { value: "", label: "—" };
 
+  function updateMenuPosition() {
+    const btn = buttonRef.current;
+    if (!btn) return;
+    const rect = btn.getBoundingClientRect();
+    // Не уже кнопки; чуть шире длинных статусов вроде «Подтверждён»
+    const width = Math.max(rect.width, 184);
+    setMenuPos({
+      top: rect.bottom + 8,
+      left: Math.min(rect.left, window.innerWidth - width - 8),
+      width,
+    });
+  }
+
+  useLayoutEffect(() => {
+    if (!open) return;
+    updateMenuPosition();
+  }, [open]);
+
   useEffect(() => {
     if (!open) return;
 
     function onPointerDown(e: MouseEvent) {
-      if (!rootRef.current?.contains(e.target as Node)) setOpen(false);
+      const t = e.target as Node;
+      if (rootRef.current?.contains(t) || menuRef.current?.contains(t)) return;
+      setOpen(false);
     }
     function onKeyDown(e: KeyboardEvent) {
       if (e.key === "Escape") setOpen(false);
     }
+    function onReposition() {
+      updateMenuPosition();
+    }
 
     document.addEventListener("mousedown", onPointerDown);
     document.addEventListener("keydown", onKeyDown);
+    window.addEventListener("resize", onReposition);
+    window.addEventListener("scroll", onReposition, true);
     return () => {
       document.removeEventListener("mousedown", onPointerDown);
       document.removeEventListener("keydown", onKeyDown);
+      window.removeEventListener("resize", onReposition);
+      window.removeEventListener("scroll", onReposition, true);
     };
   }, [open]);
+
+  const menu =
+    open &&
+    typeof document !== "undefined" &&
+    createPortal(
+      <AnimatePresence>
+        <motion.ul
+          ref={menuRef}
+          id={listId}
+          role="listbox"
+          aria-labelledby={`${listId}-label`}
+          initial={{ opacity: 0, y: -6, scale: 0.98 }}
+          animate={{ opacity: 1, y: 0, scale: 1 }}
+          exit={{ opacity: 0, y: -4, scale: 0.98 }}
+          transition={{ duration: 0.16, ease: "easeOut" }}
+          style={{
+            position: "fixed",
+            top: menuPos.top,
+            left: menuPos.left,
+            width: menuPos.width,
+            zIndex: 200,
+          }}
+          className="max-h-64 overflow-y-auto rounded-2xl border border-line bg-panel p-1.5 shadow-[0_18px_50px_-20px_rgba(0,0,0,0.85)]"
+        >
+          {options.map((option) => {
+            const active = option.value === value;
+            return (
+              <li
+                key={option.value || "__empty"}
+                role="option"
+                aria-selected={active}
+              >
+                <button
+                  type="button"
+                  onClick={() => {
+                    onChange(option.value);
+                    setOpen(false);
+                  }}
+                  className={cn(
+                    "flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left transition-colors cursor-pointer",
+                    active
+                      ? "bg-cyan/10 text-ink"
+                      : "text-ink hover:bg-white/[0.04]",
+                  )}
+                >
+                  <span className="flex-1 text-sm font-medium leading-snug">
+                    {option.label}
+                  </span>
+                  {option.detail && (
+                    <span className="shrink-0 text-xs text-faint">
+                      {option.detail}
+                    </span>
+                  )}
+                  {active && <Check size={15} className="shrink-0 text-cyan" />}
+                </button>
+              </li>
+            );
+          })}
+        </motion.ul>
+      </AnimatePresence>,
+      document.body,
+    );
 
   return (
     <div className={cn("relative space-y-1.5", className)} ref={rootRef}>
@@ -336,88 +434,37 @@ export function AdminSelect({
         ))}
       </select>
 
-      <div className="relative">
-        <button
-          type="button"
-          aria-haspopup="listbox"
-          aria-expanded={open}
-          aria-labelledby={`${listId}-label`}
-          aria-controls={listId}
-          onClick={() => setOpen((v) => !v)}
+      <button
+        ref={buttonRef}
+        type="button"
+        aria-haspopup="listbox"
+        aria-expanded={open}
+        aria-labelledby={`${listId}-label`}
+        aria-controls={listId}
+        onClick={() => setOpen((v) => !v)}
+        className={cn(
+          "flex w-full items-center gap-3 rounded-xl border bg-bg-2/60 px-3.5 py-3 text-left text-[15px] outline-none transition-colors cursor-pointer",
+          open
+            ? "border-cyan/70 ring-2 ring-cyan/20"
+            : "border-line hover:border-white/20 focus:border-cyan/70 focus:ring-2 focus:ring-cyan/20",
+        )}
+      >
+        <span className="min-w-0 flex-1">
+          <span className="block truncate font-medium text-ink">{selected.label}</span>
+          {selected.detail && (
+            <span className="block truncate text-xs text-faint">{selected.detail}</span>
+          )}
+        </span>
+        <ChevronDown
+          size={16}
           className={cn(
-            "flex w-full items-center gap-3 rounded-xl border bg-bg-2/60 px-3.5 py-3 text-left text-[15px] outline-none transition-colors cursor-pointer",
-            open
-              ? "border-cyan/70 ring-2 ring-cyan/20"
-              : "border-line hover:border-white/20 focus:border-cyan/70 focus:ring-2 focus:ring-cyan/20",
+            "shrink-0 text-faint transition-transform duration-200",
+            open && "rotate-180 text-cyan",
           )}
-        >
-          <span className="min-w-0 flex-1">
-            <span className="block truncate font-medium text-ink">{selected.label}</span>
-            {selected.detail && (
-              <span className="block truncate text-xs text-faint">{selected.detail}</span>
-            )}
-          </span>
-          <ChevronDown
-            size={16}
-            className={cn(
-              "shrink-0 text-faint transition-transform duration-200",
-              open && "rotate-180 text-cyan",
-            )}
-          />
-        </button>
+        />
+      </button>
 
-        <AnimatePresence>
-          {open && (
-            <motion.ul
-              id={listId}
-              role="listbox"
-              aria-labelledby={`${listId}-label`}
-              initial={{ opacity: 0, y: -6, scale: 0.98 }}
-              animate={{ opacity: 1, y: 0, scale: 1 }}
-              exit={{ opacity: 0, y: -4, scale: 0.98 }}
-              transition={{ duration: 0.16, ease: "easeOut" }}
-              className="absolute left-0 right-0 z-40 mt-2 max-h-64 overflow-y-auto rounded-2xl border border-line bg-panel/95 p-1.5 shadow-[0_18px_50px_-20px_rgba(0,0,0,0.75)] backdrop-blur-xl"
-            >
-              {options.map((option) => {
-                const active = option.value === value;
-                return (
-                  <li
-                    key={option.value || "__empty"}
-                    role="option"
-                    aria-selected={active}
-                  >
-                    <button
-                      type="button"
-                      onClick={() => {
-                        onChange(option.value);
-                        setOpen(false);
-                      }}
-                      className={cn(
-                        "flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left transition-colors cursor-pointer",
-                        active
-                          ? "bg-cyan/10 text-ink"
-                          : "text-ink hover:bg-white/[0.04]",
-                      )}
-                    >
-                      <span className="min-w-0 flex-1">
-                        <span className="block truncate text-sm font-medium">
-                          {option.label}
-                        </span>
-                        {option.detail && (
-                          <span className="block truncate text-xs text-faint">
-                            {option.detail}
-                          </span>
-                        )}
-                      </span>
-                      {active && <Check size={15} className="shrink-0 text-cyan" />}
-                    </button>
-                  </li>
-                );
-              })}
-            </motion.ul>
-          )}
-        </AnimatePresence>
-      </div>
+      {menu}
     </div>
   );
 }

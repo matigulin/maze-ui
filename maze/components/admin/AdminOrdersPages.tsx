@@ -140,7 +140,7 @@ export function OrdersListPage() {
         actions={
           <AdminSelect
             label="Статус"
-            className="w-full sm:w-[200px]"
+            className="w-[11.5rem]"
             value={status}
             onChange={(v) => {
               setPage(1);
