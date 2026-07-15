@@ -62,19 +62,21 @@ export function ProductsListPage() {
       />
       {error && <AdminAlert>{error}</AdminAlert>}
       <form
-        className="mb-4 flex flex-col gap-2 sm:flex-row"
+        className="mb-4 flex items-end gap-2"
         onSubmit={(e) => {
           e.preventDefault();
           setPage(1);
           void load();
         }}
       >
-        <Field
-          label="Поиск"
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-        />
-        <AdminButton type="submit" className="self-stretch py-3 text-[15px] sm:self-end">
+        <div className="min-w-0 flex-1">
+          <Field
+            label="Поиск"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+          />
+        </div>
+        <AdminButton type="submit" className="shrink-0 px-3 py-3 text-sm">
           Найти
         </AdminButton>
       </form>

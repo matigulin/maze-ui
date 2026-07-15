@@ -1,10 +1,69 @@
 "use client";
 
+import { ChevronDown, ChevronUp } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Field } from "@/components/Field";
 import { useAdminApi } from "@/lib/admin/client";
 import type { AdminProductSummary } from "@/lib/admin/types";
-import { AdminAlert, AdminButton, AdminCheckbox, AdminPageHeader, AdminTable, AdminTd, AdminTh, errorMessage } from "@/lib/admin/ui";
+import {
+  AdminAlert,
+  AdminButton,
+  AdminCard,
+  AdminCardList,
+  AdminCardRow,
+  AdminCheckbox,
+  AdminPageHeader,
+  AdminTable,
+  AdminTd,
+  AdminTh,
+  errorMessage,
+} from "@/lib/admin/ui";
+
+function StockQtyInput({
+  label,
+  value,
+  onChange,
+}: {
+  label: string;
+  value: number;
+  onChange: (n: number) => void;
+}) {
+  function bump(delta: number) {
+    onChange(Math.max(0, value + delta));
+  }
+
+  return (
+    <div className="inline-flex h-8 overflow-hidden rounded-lg border border-line bg-bg-2 focus-within:border-cyan/50">
+      <input
+        aria-label={label}
+        type="number"
+        min={0}
+        inputMode="numeric"
+        className="h-full w-10 appearance-none bg-transparent pl-2.5 text-center text-sm text-ink outline-none [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
+        value={value}
+        onChange={(e) => onChange(Math.max(0, Number(e.target.value) || 0))}
+      />
+      <div className="flex w-6 shrink-0 flex-col border-l border-line/70">
+        <button
+          type="button"
+          aria-label="Больше"
+          className="grid flex-1 place-items-center text-ink/70 transition hover:bg-white/[0.08] hover:text-ink active:bg-white/[0.12]"
+          onClick={() => bump(1)}
+        >
+          <ChevronUp size={12} strokeWidth={2.5} />
+        </button>
+        <button
+          type="button"
+          aria-label="Меньше"
+          className="grid flex-1 place-items-center text-ink/70 transition hover:bg-white/[0.08] hover:text-ink active:bg-white/[0.12]"
+          onClick={() => bump(-1)}
+        >
+          <ChevronDown size={12} strokeWidth={2.5} />
+        </button>
+      </div>
+    </div>
+  );
+}
 
 export function StockPage() {
   const api = useAdminApi();
@@ -63,69 +122,113 @@ export function StockPage() {
 
   return (
     <div>
-      <AdminPageHeader title="Склад" description="Сохранение назначает одинаковый остаток всем вариантам товара." />
+      <AdminPageHeader
+        title="Склад"
+        description="Сохранение назначает одинаковый остаток всем вариантам товара."
+      />
       {error && <AdminAlert>{error}</AdminAlert>}
       <form
-        className="mb-4 flex gap-2"
+        className="mb-4 flex items-end gap-2"
         onSubmit={(e) => {
           e.preventDefault();
           void load();
         }}
       >
-        <Field
-          label="Поиск"
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          placeholder="Название товара"
-        />
-        <AdminButton type="submit" className="self-end py-3 text-[15px]" disabled={loading}>
+        <div className="min-w-0 flex-1">
+          <Field
+            label="Поиск"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Название товара"
+          />
+        </div>
+        <AdminButton
+          type="submit"
+          className="shrink-0 px-3 py-3 text-sm"
+          disabled={loading}
+        >
           {loading ? "…" : "Найти"}
         </AdminButton>
       </form>
-      <AdminTable>
-        <thead>
-          <tr>
-            <AdminTh>Товар</AdminTh>
-            <AdminTh>Статус</AdminTh>
-            <AdminTh>Количество на все варианты</AdminTh>
-            <AdminTh />
-          </tr>
-        </thead>
-        <tbody>
-          {items.length === 0 && !loading ? (
-            <tr>
-              <td colSpan={4} className="border-b border-line/70 px-4 py-6 text-sm text-muted">
-                Ничего не найдено.
-              </td>
-            </tr>
-          ) : (
-            items.map((p) => (
-              <tr key={p.id}>
-                <AdminTd>
-                  <p>{p.name}</p>
-                  <p className="text-xs text-muted">{p.slug}</p>
-                </AdminTd>
-                <AdminTd>{p.inStock ? "В наличии" : "Нет в наличии"}</AdminTd>
-                <AdminTd>
-                  <input
-                    aria-label={`Остаток ${p.name}`}
-                    type="number"
-                    min="0"
-                    className="w-28 rounded-xl border border-line bg-bg-2 px-3 py-2 text-ink"
-                    value={quantities[p.id] ?? 0}
-                    onChange={(e) => setQuantities({ ...quantities, [p.id]: Number(e.target.value) })}
-                  />
-                </AdminTd>
-                <AdminTd>
-                  <AdminButton disabled={saving === p.id} onClick={() => void save(p.id)}>
+
+      {!loading && items.length === 0 ? (
+        <p className="rounded-2xl border border-line bg-panel/50 p-8 text-sm text-muted">
+          Ничего не найдено.
+        </p>
+      ) : (
+        <>
+          <AdminCardList>
+            {items.map((p) => (
+              <AdminCard key={p.id}>
+                <p className="font-medium text-ink">{p.name}</p>
+                <p className="mt-1 text-xs text-muted">{p.slug}</p>
+                <div className="mt-3 space-y-2">
+                  <AdminCardRow label="Статус">
+                    {p.inStock ? "В наличии" : "Нет в наличии"}
+                  </AdminCardRow>
+                  <AdminCardRow label="Количество">
+                    <StockQtyInput
+                      label={`Остаток ${p.name}`}
+                      value={quantities[p.id] ?? 0}
+                      onChange={(n) =>
+                        setQuantities({ ...quantities, [p.id]: n })
+                      }
+                    />
+                  </AdminCardRow>
+                </div>
+                <div className="mt-3 flex justify-end border-t border-line/60 pt-3">
+                  <AdminButton
+                    className="rounded-lg px-2.5 py-1.5 text-xs"
+                    disabled={saving === p.id}
+                    onClick={() => void save(p.id)}
+                  >
                     {saving === p.id ? "…" : "Сохранить"}
                   </AdminButton>
-                </AdminTd>
+                </div>
+              </AdminCard>
+            ))}
+          </AdminCardList>
+
+          <AdminTable desktopOnly>
+            <thead>
+              <tr>
+                <AdminTh>Товар</AdminTh>
+                <AdminTh>Статус</AdminTh>
+                <AdminTh>Количество на все варианты</AdminTh>
+                <AdminTh />
               </tr>
-            ))
-          )}
-        </tbody>
-      </AdminTable>
+            </thead>
+            <tbody>
+              {items.map((p) => (
+                <tr key={p.id}>
+                  <AdminTd>
+                    <p>{p.name}</p>
+                    <p className="text-xs text-muted">{p.slug}</p>
+                  </AdminTd>
+                  <AdminTd>{p.inStock ? "В наличии" : "Нет в наличии"}</AdminTd>
+                  <AdminTd>
+                    <StockQtyInput
+                      label={`Остаток ${p.name}`}
+                      value={quantities[p.id] ?? 0}
+                      onChange={(n) =>
+                        setQuantities({ ...quantities, [p.id]: n })
+                      }
+                    />
+                  </AdminTd>
+                  <AdminTd>
+                    <AdminButton
+                      disabled={saving === p.id}
+                      onClick={() => void save(p.id)}
+                    >
+                      {saving === p.id ? "…" : "Сохранить"}
+                    </AdminButton>
+                  </AdminTd>
+                </tr>
+              ))}
+            </tbody>
+          </AdminTable>
+        </>
+      )}
     </div>
   );
 }

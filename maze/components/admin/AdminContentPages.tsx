@@ -13,6 +13,9 @@ import type {
 import {
   AdminAlert,
   AdminButton,
+  AdminCard,
+  AdminCardList,
+  AdminCardRow,
   AdminCheckbox,
   AdminModal,
   AdminPageHeader,
@@ -122,6 +125,25 @@ export function BannersPage() {
       setError(errorMessage(err));
     }
   }
+  function openEdit(b: AdminBanner) {
+    setEditing(b);
+    setForm({
+      title: b.title,
+      subtitle: b.subtitle ?? "",
+      imageUrl: b.imageUrl,
+      link: b.link,
+      size: b.size,
+      sortOrder: b.sortOrder,
+      isActive: b.isActive,
+    });
+    setOpen(true);
+  }
+  function removeBanner(id: string) {
+    void api
+      .deleteBanner(id)
+      .then(load)
+      .catch((e) => setError(errorMessage(e)));
+  }
   return (
     <div>
       <AdminPageHeader
@@ -140,7 +162,37 @@ export function BannersPage() {
         }
       />
       {error && <AdminAlert>{error}</AdminAlert>}
-      <AdminTable>
+      <AdminCardList>
+        {items.map((b) => (
+          <AdminCard key={b.id}>
+            <p className="font-medium text-ink">{b.title}</p>
+            <p className="mt-1 text-xs text-muted">{b.link}</p>
+            <div className="mt-3 space-y-2">
+              <AdminCardRow label="Размер">{b.size}</AdminCardRow>
+              <AdminCardRow label="Статус">
+                {b.isActive ? "Активен" : "Скрыт"}
+              </AdminCardRow>
+            </div>
+            <div className="mt-3 flex justify-end gap-1.5 border-t border-line/60 pt-3">
+              <AdminButton
+                variant="ghost"
+                className="rounded-lg px-2.5 py-1.5 text-xs"
+                onClick={() => openEdit(b)}
+              >
+                Изменить
+              </AdminButton>
+              <AdminButton
+                variant="danger"
+                className="rounded-lg px-2.5 py-1.5 text-xs"
+                onClick={() => removeBanner(b.id)}
+              >
+                Удалить
+              </AdminButton>
+            </div>
+          </AdminCard>
+        ))}
+      </AdminCardList>
+      <AdminTable desktopOnly>
         <thead>
           <tr>
             <AdminTh>Баннер</AdminTh>
@@ -159,32 +211,12 @@ export function BannersPage() {
               <AdminTd>{b.size}</AdminTd>
               <AdminTd>{b.isActive ? "Активен" : "Скрыт"}</AdminTd>
               <AdminTd className="space-x-2">
-                <AdminButton
-                  variant="ghost"
-                  onClick={() => {
-                    setEditing(b);
-                    setForm({
-                      title: b.title,
-                      subtitle: b.subtitle ?? "",
-                      imageUrl: b.imageUrl,
-                      link: b.link,
-                      size: b.size,
-                      sortOrder: b.sortOrder,
-                      isActive: b.isActive,
-                    });
-                    setOpen(true);
-                  }}
-                >
+                <AdminButton variant="ghost" onClick={() => openEdit(b)}>
                   Изменить
                 </AdminButton>
                 <AdminButton
                   variant="danger"
-                  onClick={() =>
-                    void api
-                      .deleteBanner(b.id)
-                      .then(load)
-                      .catch((e) => setError(errorMessage(e)))
-                  }
+                  onClick={() => removeBanner(b.id)}
                 >
                   Удалить
                 </AdminButton>
@@ -279,6 +311,23 @@ export function SlidesPage() {
       setError(errorMessage(err));
     }
   }
+  function openEdit(s: AdminInfoSlide) {
+    setEditing(s);
+    setForm({
+      icon: s.icon,
+      title: s.title,
+      description: s.description,
+      sortOrder: s.sortOrder,
+      isActive: s.isActive,
+    });
+    setOpen(true);
+  }
+  function removeSlide(id: string) {
+    void api
+      .deleteSlide(id)
+      .then(load)
+      .catch((e) => setError(errorMessage(e)));
+  }
   return (
     <div>
       <AdminPageHeader
@@ -296,7 +345,39 @@ export function SlidesPage() {
         }
       />
       {error && <AdminAlert>{error}</AdminAlert>}
-      <AdminTable>
+      <AdminCardList>
+        {items.map((s) => (
+          <AdminCard key={s.id}>
+            <p className="font-medium text-ink">
+              {s.icon} {s.title}
+            </p>
+            <p className="mt-1 text-xs text-muted">{s.description}</p>
+            <div className="mt-3 space-y-2">
+              <AdminCardRow label="Порядок">{s.sortOrder}</AdminCardRow>
+              <AdminCardRow label="Статус">
+                {s.isActive ? "Активен" : "Скрыт"}
+              </AdminCardRow>
+            </div>
+            <div className="mt-3 flex justify-end gap-1.5 border-t border-line/60 pt-3">
+              <AdminButton
+                variant="ghost"
+                className="rounded-lg px-2.5 py-1.5 text-xs"
+                onClick={() => openEdit(s)}
+              >
+                Изменить
+              </AdminButton>
+              <AdminButton
+                variant="danger"
+                className="rounded-lg px-2.5 py-1.5 text-xs"
+                onClick={() => removeSlide(s.id)}
+              >
+                Удалить
+              </AdminButton>
+            </div>
+          </AdminCard>
+        ))}
+      </AdminCardList>
+      <AdminTable desktopOnly>
         <thead>
           <tr>
             <AdminTh>Слайд</AdminTh>
@@ -317,31 +398,10 @@ export function SlidesPage() {
               <AdminTd>{s.sortOrder}</AdminTd>
               <AdminTd>{s.isActive ? "Активен" : "Скрыт"}</AdminTd>
               <AdminTd className="space-x-2">
-                <AdminButton
-                  variant="ghost"
-                  onClick={() => {
-                    setEditing(s);
-                    setForm({
-                      icon: s.icon,
-                      title: s.title,
-                      description: s.description,
-                      sortOrder: s.sortOrder,
-                      isActive: s.isActive,
-                    });
-                    setOpen(true);
-                  }}
-                >
+                <AdminButton variant="ghost" onClick={() => openEdit(s)}>
                   Изменить
                 </AdminButton>
-                <AdminButton
-                  variant="danger"
-                  onClick={() =>
-                    void api
-                      .deleteSlide(s.id)
-                      .then(load)
-                      .catch((e) => setError(errorMessage(e)))
-                  }
-                >
+                <AdminButton variant="danger" onClick={() => removeSlide(s.id)}>
                   Удалить
                 </AdminButton>
               </AdminTd>
@@ -412,6 +472,12 @@ export function CmsListPage() {
   useEffect(() => {
     void load(); 
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  function removePage(id: string) {
+    void api
+      .deleteCmsPage(id)
+      .then(load)
+      .catch((e) => setError(errorMessage(e)));
+  }
   return (
     <div>
       <AdminPageHeader
@@ -423,7 +489,37 @@ export function CmsListPage() {
         }
       />
       {error && <AdminAlert>{error}</AdminAlert>}
-      <AdminTable>
+      <AdminCardList>
+        {items.map((p) => (
+          <AdminCard key={p.id}>
+            <p className="font-medium text-ink">{p.title}</p>
+            <p className="mt-1 text-xs text-muted">{p.slug}</p>
+            <div className="mt-3 space-y-2">
+              <AdminCardRow label="Статус">
+                {p.isPublished ? "Опубликована" : "Черновик"}
+              </AdminCardRow>
+            </div>
+            <div className="mt-3 flex justify-end gap-1.5 border-t border-line/60 pt-3">
+              <Link href={`/admin/content/cms/${p.id}`}>
+                <AdminButton
+                  variant="ghost"
+                  className="rounded-lg px-2.5 py-1.5 text-xs"
+                >
+                  Изменить
+                </AdminButton>
+              </Link>
+              <AdminButton
+                variant="danger"
+                className="rounded-lg px-2.5 py-1.5 text-xs"
+                onClick={() => removePage(p.id)}
+              >
+                Удалить
+              </AdminButton>
+            </div>
+          </AdminCard>
+        ))}
+      </AdminCardList>
+      <AdminTable desktopOnly>
         <thead>
           <tr>
             <AdminTh>Название</AdminTh>
@@ -442,15 +538,7 @@ export function CmsListPage() {
                 <Link href={`/admin/content/cms/${p.id}`}>
                   <AdminButton variant="ghost">Изменить</AdminButton>
                 </Link>
-                <AdminButton
-                  variant="danger"
-                  onClick={() =>
-                    void api
-                      .deleteCmsPage(p.id)
-                      .then(load)
-                      .catch((e) => setError(errorMessage(e)))
-                  }
-                >
+                <AdminButton variant="danger" onClick={() => removePage(p.id)}>
                   Удалить
                 </AdminButton>
               </AdminTd>
