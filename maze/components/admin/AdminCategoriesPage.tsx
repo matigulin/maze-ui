@@ -5,6 +5,8 @@ import { Field } from "@/components/Field";
 import { useAdminApi } from "@/lib/admin/client";
 import type { AdminCategory, CategoryBody } from "@/lib/admin/types";
 import {
+  AdminActionsTd,
+  AdminActionsTh,
   AdminAlert,
   AdminButton,
   AdminCard,
@@ -159,7 +161,7 @@ export function AdminCategoriesPage() {
               <p className="font-medium text-ink">{item.name}</p>
               <p className="mt-1 text-xs text-muted">{item.slug}</p>
               <div className="mt-3 space-y-2">
-                <AdminCardRow label="Родитель">
+                <AdminCardRow label="Производитель">
                   {parent?.name ?? "—"}
                 </AdminCardRow>
                 <AdminCardRow label="Тип">
@@ -202,10 +204,10 @@ export function AdminCategoriesPage() {
         <thead>
           <tr>
             <AdminTh>Название</AdminTh>
-            <AdminTh>Родитель</AdminTh>
+            <AdminTh>Производитель</AdminTh>
             <AdminTh>Тип</AdminTh>
             <AdminTh>Статус</AdminTh>
-            <AdminTh />
+            <AdminActionsTh />
           </tr>
         </thead>
         <tbody>
@@ -221,7 +223,7 @@ export function AdminCategoriesPage() {
                 <AdminTd>{parent?.name ?? "—"}</AdminTd>
                 <AdminTd>{item.isBrand ? "Бренд" : "Категория"}</AdminTd>
                 <AdminTd>{statusLabel(item)}</AdminTd>
-                <AdminTd className="space-x-2">
+                <AdminActionsTd>
                   <AdminButton variant="ghost" onClick={() => edit(item)}>
                     Изменить
                   </AdminButton>
@@ -240,7 +242,7 @@ export function AdminCategoriesPage() {
                       Удалить
                     </AdminButton>
                   )}
-                </AdminTd>
+                </AdminActionsTd>
               </tr>
             );
           })}

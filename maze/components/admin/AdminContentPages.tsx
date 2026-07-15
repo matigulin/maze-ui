@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState, type FormEvent } from "react";
+import { useEffect, useState, type FormEvent, type ReactNode } from "react";
 import { Field, fieldCls } from "@/components/Field";
 import { useAdminApi } from "@/lib/admin/client";
 import type {
@@ -11,18 +11,21 @@ import type {
   PublicSettings,
 } from "@/lib/admin/types";
 import {
+  AdminActionsTd,
+  AdminActionsTh,
   AdminAlert,
   AdminButton,
-  AdminCard,
   AdminCardList,
   AdminCardRow,
   AdminCheckbox,
+  AdminListCard,
   AdminModal,
   AdminPageHeader,
   AdminTable,
   AdminTd,
   AdminTextarea,
   AdminTh,
+  adminCardActionCls,
   errorMessage,
 } from "@/lib/admin/ui";
 
@@ -164,32 +167,40 @@ export function BannersPage() {
       {error && <AdminAlert>{error}</AdminAlert>}
       <AdminCardList>
         {items.map((b) => (
-          <AdminCard key={b.id}>
-            <p className="font-medium text-ink">{b.title}</p>
-            <p className="mt-1 text-xs text-muted">{b.link}</p>
-            <div className="mt-3 space-y-2">
-              <AdminCardRow label="Размер">{b.size}</AdminCardRow>
-              <AdminCardRow label="Статус">
+          <AdminListCard
+            key={b.id}
+            title={b.title}
+            subtitle={b.link}
+            actions={
+              <>
+                <AdminButton
+                  variant="ghost"
+                  className={adminCardActionCls}
+                  onClick={() => openEdit(b)}
+                >
+                  Изменить
+                </AdminButton>
+                <AdminButton
+                  variant="danger"
+                  className={adminCardActionCls}
+                  onClick={() => removeBanner(b.id)}
+                >
+                  Удалить
+                </AdminButton>
+              </>
+            }
+            fieldsClassName="grid-cols-2 sm:grid-cols-2"
+          >
+            <AdminCardRow stacked label="Размер">
+              {b.size}
+            </AdminCardRow>
+            <div className="min-w-0 text-right">
+              <p className="text-[11px] leading-tight text-faint">Статус</p>
+              <div className="mt-0.5 text-sm leading-snug text-ink">
                 {b.isActive ? "Активен" : "Скрыт"}
-              </AdminCardRow>
+              </div>
             </div>
-            <div className="mt-3 flex justify-end gap-1.5 border-t border-line/60 pt-3">
-              <AdminButton
-                variant="ghost"
-                className="rounded-lg px-2.5 py-1.5 text-xs"
-                onClick={() => openEdit(b)}
-              >
-                Изменить
-              </AdminButton>
-              <AdminButton
-                variant="danger"
-                className="rounded-lg px-2.5 py-1.5 text-xs"
-                onClick={() => removeBanner(b.id)}
-              >
-                Удалить
-              </AdminButton>
-            </div>
-          </AdminCard>
+          </AdminListCard>
         ))}
       </AdminCardList>
       <AdminTable desktopOnly>
@@ -198,7 +209,7 @@ export function BannersPage() {
             <AdminTh>Баннер</AdminTh>
             <AdminTh>Размер</AdminTh>
             <AdminTh>Статус</AdminTh>
-            <AdminTh />
+            <AdminActionsTh />
           </tr>
         </thead>
         <tbody>
@@ -210,7 +221,7 @@ export function BannersPage() {
               </AdminTd>
               <AdminTd>{b.size}</AdminTd>
               <AdminTd>{b.isActive ? "Активен" : "Скрыт"}</AdminTd>
-              <AdminTd className="space-x-2">
+              <AdminActionsTd>
                 <AdminButton variant="ghost" onClick={() => openEdit(b)}>
                   Изменить
                 </AdminButton>
@@ -220,7 +231,7 @@ export function BannersPage() {
                 >
                   Удалить
                 </AdminButton>
-              </AdminTd>
+              </AdminActionsTd>
             </tr>
           ))}
         </tbody>
@@ -347,34 +358,41 @@ export function SlidesPage() {
       {error && <AdminAlert>{error}</AdminAlert>}
       <AdminCardList>
         {items.map((s) => (
-          <AdminCard key={s.id}>
-            <p className="font-medium text-ink">
-              {s.icon} {s.title}
-            </p>
-            <p className="mt-1 text-xs text-muted">{s.description}</p>
-            <div className="mt-3 space-y-2">
-              <AdminCardRow label="Порядок">{s.sortOrder}</AdminCardRow>
-              <AdminCardRow label="Статус">
-                {s.isActive ? "Активен" : "Скрыт"}
-              </AdminCardRow>
-            </div>
-            <div className="mt-3 flex justify-end gap-1.5 border-t border-line/60 pt-3">
-              <AdminButton
-                variant="ghost"
-                className="rounded-lg px-2.5 py-1.5 text-xs"
-                onClick={() => openEdit(s)}
-              >
-                Изменить
-              </AdminButton>
-              <AdminButton
-                variant="danger"
-                className="rounded-lg px-2.5 py-1.5 text-xs"
-                onClick={() => removeSlide(s.id)}
-              >
-                Удалить
-              </AdminButton>
-            </div>
-          </AdminCard>
+          <AdminListCard
+            key={s.id}
+            title={
+              <>
+                {s.icon} {s.title}
+              </>
+            }
+            subtitle={s.description}
+            actions={
+              <>
+                <AdminButton
+                  variant="ghost"
+                  className={adminCardActionCls}
+                  onClick={() => openEdit(s)}
+                >
+                  Изменить
+                </AdminButton>
+                <AdminButton
+                  variant="danger"
+                  className={adminCardActionCls}
+                  onClick={() => removeSlide(s.id)}
+                >
+                  Удалить
+                </AdminButton>
+              </>
+            }
+            fieldsClassName="sm:grid-cols-2"
+          >
+            <AdminCardRow stacked label="Порядок">
+              {s.sortOrder}
+            </AdminCardRow>
+            <AdminCardRow stacked label="Статус">
+              {s.isActive ? "Активен" : "Скрыт"}
+            </AdminCardRow>
+          </AdminListCard>
         ))}
       </AdminCardList>
       <AdminTable desktopOnly>
@@ -383,7 +401,7 @@ export function SlidesPage() {
             <AdminTh>Слайд</AdminTh>
             <AdminTh>Порядок</AdminTh>
             <AdminTh>Статус</AdminTh>
-            <AdminTh />
+            <AdminActionsTh />
           </tr>
         </thead>
         <tbody>
@@ -397,14 +415,14 @@ export function SlidesPage() {
               </AdminTd>
               <AdminTd>{s.sortOrder}</AdminTd>
               <AdminTd>{s.isActive ? "Активен" : "Скрыт"}</AdminTd>
-              <AdminTd className="space-x-2">
+              <AdminActionsTd>
                 <AdminButton variant="ghost" onClick={() => openEdit(s)}>
                   Изменить
                 </AdminButton>
                 <AdminButton variant="danger" onClick={() => removeSlide(s.id)}>
                   Удалить
                 </AdminButton>
-              </AdminTd>
+              </AdminActionsTd>
             </tr>
           ))}
         </tbody>
@@ -491,32 +509,31 @@ export function CmsListPage() {
       {error && <AdminAlert>{error}</AdminAlert>}
       <AdminCardList>
         {items.map((p) => (
-          <AdminCard key={p.id}>
-            <p className="font-medium text-ink">{p.title}</p>
-            <p className="mt-1 text-xs text-muted">{p.slug}</p>
-            <div className="mt-3 space-y-2">
-              <AdminCardRow label="Статус">
-                {p.isPublished ? "Опубликована" : "Черновик"}
-              </AdminCardRow>
-            </div>
-            <div className="mt-3 flex justify-end gap-1.5 border-t border-line/60 pt-3">
-              <Link href={`/admin/content/cms/${p.id}`}>
+          <AdminListCard
+            key={p.id}
+            title={p.title}
+            subtitle={p.slug}
+            actions={
+              <>
+                <Link href={`/admin/content/cms/${p.id}`}>
+                  <AdminButton variant="ghost" className={adminCardActionCls}>
+                    Изменить
+                  </AdminButton>
+                </Link>
                 <AdminButton
-                  variant="ghost"
-                  className="rounded-lg px-2.5 py-1.5 text-xs"
+                  variant="danger"
+                  className={adminCardActionCls}
+                  onClick={() => removePage(p.id)}
                 >
-                  Изменить
+                  Удалить
                 </AdminButton>
-              </Link>
-              <AdminButton
-                variant="danger"
-                className="rounded-lg px-2.5 py-1.5 text-xs"
-                onClick={() => removePage(p.id)}
-              >
-                Удалить
-              </AdminButton>
-            </div>
-          </AdminCard>
+              </>
+            }
+          >
+            <AdminCardRow stacked label="Статус">
+              {p.isPublished ? "Опубликована" : "Черновик"}
+            </AdminCardRow>
+          </AdminListCard>
         ))}
       </AdminCardList>
       <AdminTable desktopOnly>
@@ -525,7 +542,7 @@ export function CmsListPage() {
             <AdminTh>Название</AdminTh>
             <AdminTh>Slug</AdminTh>
             <AdminTh>Статус</AdminTh>
-            <AdminTh />
+            <AdminActionsTh />
           </tr>
         </thead>
         <tbody>
@@ -534,14 +551,14 @@ export function CmsListPage() {
               <AdminTd>{p.title}</AdminTd>
               <AdminTd>{p.slug}</AdminTd>
               <AdminTd>{p.isPublished ? "Опубликована" : "Черновик"}</AdminTd>
-              <AdminTd className="space-x-2">
+              <AdminActionsTd>
                 <Link href={`/admin/content/cms/${p.id}`}>
                   <AdminButton variant="ghost">Изменить</AdminButton>
                 </Link>
                 <AdminButton variant="danger" onClick={() => removePage(p.id)}>
                   Удалить
                 </AdminButton>
-              </AdminTd>
+              </AdminActionsTd>
             </tr>
           ))}
         </tbody>
@@ -698,92 +715,131 @@ export function SiteSettingsPage() {
 
   return (
     <div className="max-w-3xl">
-      <AdminPageHeader title="Настройки сайта" />
+      <AdminPageHeader
+        title="Настройки сайта"
+        description="Контакты и данные витрины"
+      />
       {error && <AdminAlert>{error}</AdminAlert>}
       {success && <AdminAlert tone="ok">Настройки сохранены</AdminAlert>}
-      <form
-        onSubmit={save}
-        className="grid gap-4 rounded-2xl border border-line bg-panel/50 p-5 sm:grid-cols-2"
-      >
-        <Field
-          label="Название магазина"
-          value={form.storeName ?? ""}
-          onChange={(e) => setForm({ ...form, storeName: e.target.value })}
-        />
-        <Field
-          label="Телефон"
-          value={form.phone ?? ""}
-          onChange={(e) => setForm({ ...form, phone: e.target.value })}
-        />
-        <Field
-          label="Email"
-          value={form.email ?? ""}
-          onChange={(e) => setForm({ ...form, email: e.target.value })}
-        />
-        <Field
-          label="Метро"
-          value={form.metro ?? ""}
-          onChange={(e) => setForm({ ...form, metro: e.target.value })}
-        />
-        <Field
-          label="Адрес"
-          value={form.address ?? ""}
-          onChange={(e) => setForm({ ...form, address: e.target.value })}
-        />
-        <Field
-          label="Часы работы"
-          value={form.workingHours ?? ""}
-          onChange={(e) => setForm({ ...form, workingHours: e.target.value })}
-        />
-        {(["telegram", "vk", "youtube", "telegramUsed"] as const).map((key) => (
+      <form onSubmit={save} className="space-y-4">
+        <SettingsSection title="Магазин">
           <Field
-            key={key}
-            label={key}
-            value={social(key)}
+            label="Название магазина"
+            value={form.storeName ?? ""}
+            onChange={(e) => setForm({ ...form, storeName: e.target.value })}
+          />
+          <Field
+            label="Часы работы"
+            value={form.workingHours ?? ""}
+            onChange={(e) => setForm({ ...form, workingHours: e.target.value })}
+          />
+          <div className="sm:col-span-2">
+            <Field
+              label="Адрес"
+              value={form.address ?? ""}
+              onChange={(e) => setForm({ ...form, address: e.target.value })}
+            />
+          </div>
+          <Field
+            label="Метро"
+            value={form.metro ?? ""}
+            onChange={(e) => setForm({ ...form, metro: e.target.value })}
+          />
+        </SettingsSection>
+
+        <SettingsSection title="Контакты">
+          <Field
+            label="Телефон"
+            value={form.phone ?? ""}
+            onChange={(e) => setForm({ ...form, phone: e.target.value })}
+          />
+          <Field
+            label="Email"
+            type="email"
+            value={form.email ?? ""}
+            onChange={(e) => setForm({ ...form, email: e.target.value })}
+          />
+        </SettingsSection>
+
+        <SettingsSection title="Соцсети">
+          {(
+            [
+              ["telegram", "Telegram"],
+              ["vk", "VK"],
+              ["youtube", "YouTube"],
+              ["telegramUsed", "Telegram б/у"],
+            ] as const
+          ).map(([key, label]) => (
+            <Field
+              key={key}
+              label={label}
+              value={social(key)}
+              onChange={(e) =>
+                setForm({
+                  ...form,
+                  socialLinks: { ...form.socialLinks, [key]: e.target.value },
+                })
+              }
+            />
+          ))}
+        </SettingsSection>
+
+        <SettingsSection title="Карта">
+          <Field
+            type="number"
+            step="any"
+            label="Широта"
+            value={form.mapCoordinates?.lat ?? 0}
             onChange={(e) =>
               setForm({
                 ...form,
-                socialLinks: { ...form.socialLinks, [key]: e.target.value },
+                mapCoordinates: {
+                  lat: Number(e.target.value),
+                  lng: form.mapCoordinates?.lng ?? 0,
+                },
               })
             }
           />
-        ))}
-        <Field
-          type="number"
-          step="any"
-          label="Широта"
-          value={form.mapCoordinates?.lat ?? 0}
-          onChange={(e) =>
-            setForm({
-              ...form,
-              mapCoordinates: {
-                lat: Number(e.target.value),
-                lng: form.mapCoordinates?.lng ?? 0,
-              },
-            })
-          }
-        />
-        <Field
-          type="number"
-          step="any"
-          label="Долгота"
-          value={form.mapCoordinates?.lng ?? 0}
-          onChange={(e) =>
-            setForm({
-              ...form,
-              mapCoordinates: {
-                lat: form.mapCoordinates?.lat ?? 0,
-                lng: Number(e.target.value),
-              },
-            })
-          }
-        />
-        <div className="sm:col-span-2">
+          <Field
+            type="number"
+            step="any"
+            label="Долгота"
+            value={form.mapCoordinates?.lng ?? 0}
+            onChange={(e) =>
+              setForm({
+                ...form,
+                mapCoordinates: {
+                  lat: form.mapCoordinates?.lat ?? 0,
+                  lng: Number(e.target.value),
+                },
+              })
+            }
+          />
+        </SettingsSection>
+
+        <div className="flex justify-end pt-1">
           <AdminButton type="submit" disabled={saving}>
             {saving ? "Сохранение…" : "Сохранить"}
           </AdminButton>
         </div>
       </form>
     </div>
+  );
+}
+
+function SettingsSection({
+  title,
+  children,
+}: {
+  title: string;
+  children: ReactNode;
+}) {
+  return (
+    <section className="rounded-2xl border border-line bg-panel/50 p-4 sm:p-5">
+      <h3 className="mb-4 text-[11px] font-medium uppercase tracking-wider text-faint">
+        {title}
+      </h3>
+      <div className="grid gap-4 sm:grid-cols-2">{children}</div>
+    </section>
   );
 }

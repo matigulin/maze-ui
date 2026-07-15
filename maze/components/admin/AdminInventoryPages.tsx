@@ -1,21 +1,30 @@
 "use client";
 
 import { ChevronDown, ChevronUp } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Field } from "@/components/Field";
 import { useAdminApi } from "@/lib/admin/client";
 import type { AdminProductSummary } from "@/lib/admin/types";
+import { useAdminPagedList } from "@/lib/admin/use-paged-list";
 import {
+  AdminActionsTd,
+  AdminActionsTh,
   AdminAlert,
   AdminButton,
-  AdminCard,
   AdminCardList,
-  AdminCardRow,
   AdminCheckbox,
+  AdminDesktopPager,
+  AdminEmptyState,
+  AdminFilterPanel,
+  AdminInfiniteFooter,
+  AdminListCard,
   AdminPageHeader,
+  AdminResultCount,
+  AdminSelect,
   AdminTable,
   AdminTd,
   AdminTh,
+  adminCardActionCls,
   errorMessage,
 } from "@/lib/admin/ui";
 
@@ -67,54 +76,72 @@ function StockQtyInput({
 
 export function StockPage() {
   const api = useAdminApi();
-  const [items, setItems] = useState<AdminProductSummary[]>([]);
   const [quantities, setQuantities] = useState<Record<string, number>>({});
-  const [search, setSearch] = useState("");
-  const [error, setError] = useState("");
+  const emptyFilters = { name: "", slug: "", inStock: "" };
+  const [draft, setDraft] = useState(emptyFilters);
+  const [applied, setApplied] = useState(emptyFilters);
   const [saving, setSaving] = useState<string | null>(null);
-  const [loading, setLoading] = useState(true);
+  const resetKey = JSON.stringify(applied);
+  const activeCount = [applied.slug, applied.inStock].filter(Boolean).length;
 
-  async function load(query = search) {
-    setLoading(true);
-    setError("");
-    try {
-      const { items: list } = await api.listProducts({
-        limit: 48,
-        search: query.trim() || undefined,
+  const fetchPage = useCallback(
+    async (page: number, limit: number) => {
+      const { items: list, meta } = await api.listProducts({
+        page,
+        limit,
+        name: applied.name.trim() || undefined,
+        slug: applied.slug.trim() || undefined,
+        inStock: applied.inStock || undefined,
       });
       const details = await Promise.all(list.map((p) => api.getProduct(p.id)));
-      const nextQty: Record<string, number> = {};
-      for (const product of details) {
-        nextQty[product.id] = product.variants[0]?.quantity ?? 0;
-      }
-      setItems(list);
       setQuantities((prev) => {
-        const merged = { ...nextQty };
-        for (const [id, qty] of Object.entries(prev)) {
-          if (id in merged) merged[id] = qty;
+        const next = { ...prev };
+        for (const product of details) {
+          if (!(product.id in next)) {
+            next[product.id] = product.variants[0]?.quantity ?? 0;
+          }
         }
-        return merged;
+        return next;
       });
-    } catch (e) {
-      setError(errorMessage(e));
-    } finally {
-      setLoading(false);
-    }
+      return {
+        items: list,
+        total: meta?.total ?? list.length,
+        limit: meta?.limit ?? limit,
+      };
+    },
+    [api, applied],
+  );
+
+  const list = useAdminPagedList({
+    limit: 20,
+    resetKey,
+    fetchPage,
+  });
+
+  function applyFilters() {
+    setApplied({
+      name: draft.name.trim(),
+      slug: draft.slug.trim(),
+      inStock: draft.inStock,
+    });
   }
 
-  useEffect(() => {
-    void load("");
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  function resetFilters() {
+    setDraft(emptyFilters);
+    setApplied(emptyFilters);
+  }
 
   async function save(id: string) {
     setSaving(id);
-    setError("");
+    list.setError("");
     try {
       const quantity = quantities[id] ?? 0;
       await api.updateProductStock(id, quantity);
-      setItems((prev) => prev.map((p) => (p.id === id ? { ...p, inStock: quantity > 0 } : p)));
+      list.setItems((prev) =>
+        prev.map((p) => (p.id === id ? { ...p, inStock: quantity > 0 } : p)),
+      );
     } catch (e) {
-      setError(errorMessage(e));
+      list.setError(errorMessage(e));
     } finally {
       setSaving(null);
     }
@@ -126,117 +153,194 @@ export function StockPage() {
         title="Склад"
         description="Сохранение назначает одинаковый остаток всем вариантам товара."
       />
-      {error && <AdminAlert>{error}</AdminAlert>}
-      <form
-        className="mb-4 flex items-end gap-2"
-        onSubmit={(e) => {
-          e.preventDefault();
-          void load();
-        }}
-      >
-        <div className="min-w-0 flex-1">
+      {list.error && <AdminAlert>{list.error}</AdminAlert>}
+
+      <AdminFilterPanel
+        activeCount={activeCount}
+        onApply={applyFilters}
+        onReset={resetFilters}
+        leading={
           <Field
-            label="Поиск"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            placeholder="Название товара"
+            label="Название"
+            value={draft.name}
+            onChange={(e) => setDraft({ ...draft, name: e.target.value })}
+            placeholder="Поиск по названию"
+            onKeyDown={(e) => {
+              if (e.key === "Enter") {
+                e.preventDefault();
+                applyFilters();
+              }
+            }}
           />
-        </div>
-        <AdminButton
-          type="submit"
-          className="shrink-0 px-3 py-3 text-sm"
-          disabled={loading}
-        >
-          {loading ? "…" : "Найти"}
-        </AdminButton>
-      </form>
+        }
+      >
+        <Field
+          label="Slug"
+          value={draft.slug}
+          onChange={(e) => setDraft({ ...draft, slug: e.target.value })}
+          placeholder="iphone-15"
+        />
+        <AdminSelect
+          label="Наличие"
+          value={draft.inStock}
+          onChange={(v) => setDraft({ ...draft, inStock: v })}
+          options={[
+            { value: "", label: "Все" },
+            { value: "true", label: "В наличии" },
+            { value: "false", label: "Нет в наличии" },
+          ]}
+        />
+      </AdminFilterPanel>
 
-      {!loading && items.length === 0 ? (
-        <p className="rounded-2xl border border-line bg-panel/50 p-8 text-sm text-muted">
-          Ничего не найдено.
-        </p>
-      ) : (
-        <>
-          <AdminCardList>
-            {items.map((p) => (
-              <AdminCard key={p.id}>
-                <p className="font-medium text-ink">{p.name}</p>
-                <p className="mt-1 text-xs text-muted">{p.slug}</p>
-                <div className="mt-3 space-y-2">
-                  <AdminCardRow label="Статус">
-                    {p.inStock ? "В наличии" : "Нет в наличии"}
-                  </AdminCardRow>
-                  <AdminCardRow label="Количество">
-                    <StockQtyInput
-                      label={`Остаток ${p.name}`}
-                      value={quantities[p.id] ?? 0}
-                      onChange={(n) =>
-                        setQuantities({ ...quantities, [p.id]: n })
-                      }
-                    />
-                  </AdminCardRow>
-                </div>
-                <div className="mt-3 flex justify-end border-t border-line/60 pt-3">
-                  <AdminButton
-                    className="rounded-lg px-2.5 py-1.5 text-xs"
-                    disabled={saving === p.id}
-                    onClick={() => void save(p.id)}
-                  >
-                    {saving === p.id ? "…" : "Сохранить"}
-                  </AdminButton>
-                </div>
-              </AdminCard>
-            ))}
-          </AdminCardList>
+      <AdminResultCount total={list.total} loading={list.loading} />
 
-          <AdminTable desktopOnly>
-            <thead>
-              <tr>
-                <AdminTh>Товар</AdminTh>
-                <AdminTh>Статус</AdminTh>
-                <AdminTh>Количество на все варианты</AdminTh>
-                <AdminTh />
-              </tr>
-            </thead>
-            <tbody>
-              {items.map((p) => (
-                <tr key={p.id}>
-                  <AdminTd>
-                    <p>{p.name}</p>
-                    <p className="text-xs text-muted">{p.slug}</p>
-                  </AdminTd>
-                  <AdminTd>{p.inStock ? "В наличии" : "Нет в наличии"}</AdminTd>
-                  <AdminTd>
-                    <StockQtyInput
-                      label={`Остаток ${p.name}`}
-                      value={quantities[p.id] ?? 0}
-                      onChange={(n) =>
-                        setQuantities({ ...quantities, [p.id]: n })
-                      }
-                    />
-                  </AdminTd>
-                  <AdminTd>
-                    <AdminButton
-                      disabled={saving === p.id}
-                      onClick={() => void save(p.id)}
-                    >
-                      {saving === p.id ? "…" : "Сохранить"}
-                    </AdminButton>
-                  </AdminTd>
-                </tr>
-              ))}
-            </tbody>
-          </AdminTable>
-        </>
-      )}
+      <AdminCardList>
+        {list.items.map((p) => (
+          <AdminListCard
+            key={p.id}
+            title={p.name}
+            subtitle={p.slug}
+            actions={
+              <AdminButton
+                className={adminCardActionCls}
+                disabled={saving === p.id}
+                onClick={() => void save(p.id)}
+              >
+                {saving === p.id ? "…" : "Сохранить"}
+              </AdminButton>
+            }
+            fieldsClassName="!grid-cols-none !flex !items-center justify-between gap-3"
+          >
+            <div className="flex min-w-0 items-center gap-2 text-sm">
+              <span className="shrink-0 text-[11px] text-faint">Статус</span>
+              <span className="truncate text-ink">
+                {p.inStock ? "В наличии" : "Нет в наличии"}
+              </span>
+            </div>
+            <div className="flex shrink-0 items-center gap-2 text-sm">
+              <span className="text-[11px] text-faint">Количество</span>
+              <StockQtyInput
+                label={`Остаток ${p.name}`}
+                value={quantities[p.id] ?? 0}
+                onChange={(n) => setQuantities({ ...quantities, [p.id]: n })}
+              />
+            </div>
+          </AdminListCard>
+        ))}
+        {!list.loading && list.items.length === 0 && (
+          <AdminEmptyState>Ничего не найдено.</AdminEmptyState>
+        )}
+        <AdminInfiniteFooter
+          sentinelRef={list.sentinelRef}
+          hasMore={list.page < list.pages}
+          loading={list.loading}
+          onLoadMore={() => void list.loadMore()}
+        />
+      </AdminCardList>
+
+      <AdminTable desktopOnly>
+        <thead>
+          <tr>
+            <AdminTh>Товар</AdminTh>
+            <AdminTh>Статус</AdminTh>
+            <AdminTh>Количество на все варианты</AdminTh>
+            <AdminActionsTh>Действие</AdminActionsTh>
+          </tr>
+        </thead>
+        <tbody>
+          {list.items.map((p) => (
+            <tr key={p.id}>
+              <AdminTd>
+                <p>{p.name}</p>
+                <p className="text-xs text-muted">{p.slug}</p>
+              </AdminTd>
+              <AdminTd>{p.inStock ? "В наличии" : "Нет в наличии"}</AdminTd>
+              <AdminTd>
+                <StockQtyInput
+                  label={`Остаток ${p.name}`}
+                  value={quantities[p.id] ?? 0}
+                  onChange={(n) => setQuantities({ ...quantities, [p.id]: n })}
+                />
+              </AdminTd>
+              <AdminActionsTd>
+                <AdminButton
+                  disabled={saving === p.id}
+                  onClick={() => void save(p.id)}
+                >
+                  {saving === p.id ? "…" : "Сохранить"}
+                </AdminButton>
+              </AdminActionsTd>
+            </tr>
+          ))}
+        </tbody>
+      </AdminTable>
+
+      <AdminDesktopPager
+        page={list.page}
+        pages={list.pages}
+        loading={list.loading}
+        onPrev={() => void list.goToPage(list.page - 1)}
+        onNext={() => void list.goToPage(list.page + 1)}
+      />
     </div>
   );
 }
 
 export function EditorChoicePage() {
-  const api = useAdminApi(); const [items, setItems] = useState<AdminProductSummary[]>([]); const [selected, setSelected] = useState<string[]>([]); const [error, setError] = useState(""); const [success, setSuccess] = useState("");
-  useEffect(() => { void Promise.all([api.listProducts({ limit: 48 }), api.getHomeEditorChoice()]).then(([products, choice]) => { setItems(products.items); setSelected(choice.map((p) => p.id)); }).catch((e) => setError(errorMessage(e))); }, []); // eslint-disable-line react-hooks/exhaustive-deps
-  function toggle(id: string, checked: boolean) { setSelected((old) => checked ? [...old, id] : old.filter((x) => x !== id)); }
-  async function save() { if (selected.length < 8 || selected.length > 12) { setError("Выберите от 8 до 12 товаров."); return; } setError(""); try { await api.setEditorChoice(selected); setSuccess("Выбор редакции сохранён."); } catch (e) { setError(errorMessage(e)); } }
-  return <div className="max-w-4xl"><AdminPageHeader title="Выбор редакции" description={`Выбрано: ${selected.length}. Для главной нужно от 8 до 12 товаров.`} />{error && <AdminAlert>{error}</AdminAlert>}{success && <AdminAlert tone="ok">{success}</AdminAlert>}<div className="grid gap-2 rounded-2xl border border-line bg-panel/50 p-4 sm:grid-cols-2">{items.map((p) => <AdminCheckbox key={p.id} label={p.name} checked={selected.includes(p.id)} onChange={(v) => toggle(p.id, v)} />)}</div><AdminButton className="mt-4" onClick={() => void save()}>Сохранить выбор</AdminButton></div>;
+  const api = useAdminApi();
+  const [items, setItems] = useState<AdminProductSummary[]>([]);
+  const [selected, setSelected] = useState<string[]>([]);
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
+
+  useEffect(() => {
+    void Promise.all([api.listProducts({ limit: 48 }), api.getHomeEditorChoice()])
+      .then(([products, choice]) => {
+        setItems(products.items);
+        setSelected(choice.map((p) => p.id));
+      })
+      .catch((e) => setError(errorMessage(e)));
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  function toggle(id: string, checked: boolean) {
+    setSelected((old) => (checked ? [...old, id] : old.filter((x) => x !== id)));
+  }
+
+  async function save() {
+    if (selected.length < 8 || selected.length > 12) {
+      setError("Выберите от 8 до 12 товаров.");
+      return;
+    }
+    setError("");
+    try {
+      await api.setEditorChoice(selected);
+      setSuccess("Выбор редакции сохранён.");
+    } catch (e) {
+      setError(errorMessage(e));
+    }
+  }
+
+  return (
+    <div className="max-w-4xl">
+      <AdminPageHeader
+        title="Выбор редакции"
+        description={`Выбрано: ${selected.length}. Для главной нужно от 8 до 12 товаров.`}
+      />
+      {error && <AdminAlert>{error}</AdminAlert>}
+      {success && <AdminAlert tone="ok">{success}</AdminAlert>}
+      <div className="grid gap-2 rounded-2xl border border-line bg-panel/50 p-4 sm:grid-cols-2">
+        {items.map((p) => (
+          <AdminCheckbox
+            key={p.id}
+            label={p.name}
+            checked={selected.includes(p.id)}
+            onChange={(v) => toggle(p.id, v)}
+          />
+        ))}
+      </div>
+      <AdminButton className="mt-4" onClick={() => void save()}>
+        Сохранить выбор
+      </AdminButton>
+    </div>
+  );
 }

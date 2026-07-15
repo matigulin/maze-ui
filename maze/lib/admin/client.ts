@@ -86,7 +86,15 @@ export function useAdminApi() {
         ),
 
       // Products
-      listProducts: (query?: { page?: number; limit?: number; search?: string }) =>
+      listProducts: (query?: {
+        page?: number;
+        limit?: number;
+        search?: string;
+        name?: string;
+        slug?: string;
+        isPublished?: string;
+        inStock?: string;
+      }) =>
         withAuth(async (t) => {
           const res = await apiGetWithMeta<AdminProductSummary[]>("/admin/products", query, {
             accessToken: t,

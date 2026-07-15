@@ -5,6 +5,8 @@ import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import { useAdminApi } from "@/lib/admin/client";
 import {
+  AdminActionsTd,
+  AdminActionsTh,
   AdminAlert,
   AdminButton,
   AdminCard,
@@ -202,7 +204,7 @@ export function OrdersListPage() {
                 <AdminTh>Позиции</AdminTh>
                 <AdminTh>Сумма</AdminTh>
                 <AdminTh>Дата</AdminTh>
-                <AdminTh />
+                <AdminActionsTh />
               </tr>
             </thead>
             <tbody>
@@ -223,11 +225,11 @@ export function OrdersListPage() {
                   <AdminTd>{order.itemsCount}</AdminTd>
                   <AdminTd>{formatPrice(order.totalRub)}</AdminTd>
                   <AdminTd className="text-muted">{formatDate(order.createdAt)}</AdminTd>
-                  <AdminTd>
+                  <AdminActionsTd>
                     <Link href={`/admin/orders/${order.id}`}>
                       <AdminButton variant="ghost">Открыть</AdminButton>
                     </Link>
-                  </AdminTd>
+                  </AdminActionsTd>
                 </tr>
               ))}
             </tbody>

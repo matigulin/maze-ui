@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { AnimatePresence, motion } from "motion/react";
-import { Check, ChevronDown } from "lucide-react";
+import { Check, ChevronDown, SlidersHorizontal } from "lucide-react";
 import {
   useEffect,
   useId,
@@ -12,6 +12,7 @@ import {
   useState,
   type ButtonHTMLAttributes,
   type ReactNode,
+  type RefObject,
 } from "react";
 import { createPortal } from "react-dom";
 
@@ -102,7 +103,7 @@ export function AdminTable({
     <div
       className={cn(
         "overflow-x-auto rounded-2xl border border-line",
-        desktopOnly && "hidden md:block",
+        desktopOnly && "hidden lg:block",
         className,
       )}
     >
@@ -111,7 +112,7 @@ export function AdminTable({
   );
 }
 
-/** Mobile list of cards; hidden from md up. */
+/** Mobile/tablet list of cards; hidden from lg up. */
 export function AdminCardList({
   children,
   className,
@@ -120,7 +121,89 @@ export function AdminCardList({
   className?: string;
 }) {
   return (
-    <div className={cn("space-y-3 md:hidden", className)}>{children}</div>
+    <div className={cn("space-y-3 lg:hidden", className)}>{children}</div>
+  );
+}
+
+/**
+ * Filter panel: primary search always visible; extra fields behind
+ * «Показать/Скрыть фильтры» on mobile; open grid on lg+.
+ */
+export function AdminFilterPanel({
+  leading,
+  children,
+  activeCount = 0,
+  onApply,
+  onReset,
+}: {
+  leading?: ReactNode;
+  children?: ReactNode;
+  activeCount?: number;
+  onApply: () => void;
+  onReset?: () => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const hasExtra = children != null && children !== false;
+
+  return (
+    <div className="mb-4 rounded-2xl border border-line bg-panel/40 p-3 sm:p-4">
+      {leading && <div className={cn(hasExtra && "mb-3")}>{leading}</div>}
+
+      {hasExtra && (
+        <div
+          className={cn(
+            "grid gap-3 sm:grid-cols-2 lg:grid-cols-3",
+            open ? "mb-3" : "mb-0 hidden lg:mb-3 lg:grid",
+          )}
+        >
+          {children}
+        </div>
+      )}
+
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        {hasExtra && (
+          <button
+            type="button"
+            className="inline-flex items-center gap-2 rounded-xl px-2 py-1.5 text-sm text-muted transition hover:bg-bg-2 hover:text-ink lg:hidden"
+            onClick={() => setOpen((v) => !v)}
+            aria-expanded={open}
+          >
+            <SlidersHorizontal size={15} className="shrink-0 text-faint" />
+            <span>
+              {open ? "Скрыть фильтры" : "Показать фильтры"}
+              {!open && activeCount > 0 ? ` (${activeCount})` : ""}
+            </span>
+            <ChevronDown
+              size={14}
+              className={cn(
+                "shrink-0 text-faint transition-transform",
+                open && "rotate-180",
+              )}
+            />
+          </button>
+        )}
+
+        <div className="ml-auto flex flex-wrap gap-2">
+          {onReset && (
+            <AdminButton
+              type="button"
+              variant="ghost"
+              className="rounded-lg px-2.5 py-1.5 text-xs"
+              onClick={onReset}
+            >
+              Сбросить
+            </AdminButton>
+          )}
+          <AdminButton
+            type="button"
+            className="rounded-lg px-3 py-1.5 text-xs"
+            onClick={onApply}
+          >
+            Найти
+          </AdminButton>
+        </div>
+      </div>
+    </div>
   );
 }
 
@@ -153,14 +236,166 @@ export function AdminCard({
 export function AdminCardRow({
   label,
   children,
+  stacked = false,
 }: {
   label: string;
   children: ReactNode;
+  /** Label above value — closer to mobile list card patterns. */
+  stacked?: boolean;
 }) {
+  if (stacked) {
+    return (
+      <div className="min-w-0">
+        <p className="text-[11px] leading-tight text-faint">{label}</p>
+        <div className="mt-0.5 text-sm leading-snug text-ink">{children}</div>
+      </div>
+    );
+  }
+
   return (
     <div className="flex items-start justify-between gap-3 text-sm">
       <span className="shrink-0 text-faint">{label}</span>
       <span className="min-w-0 text-right text-ink">{children}</span>
+    </div>
+  );
+}
+
+/** Compact action button sizing used on mobile list cards. */
+export const adminCardActionCls = "rounded-lg px-2.5 py-1.5 text-xs";
+
+/** Standard list card: title/subtitle + actions, stacked fields below. */
+export function AdminListCard({
+  title,
+  subtitle,
+  titleClassName,
+  actions,
+  children,
+  href,
+  className,
+  fieldsClassName,
+}: {
+  title: ReactNode;
+  subtitle?: ReactNode;
+  titleClassName?: string;
+  actions?: ReactNode;
+  children?: ReactNode;
+  href?: string;
+  className?: string;
+  fieldsClassName?: string;
+}) {
+  return (
+    <AdminCard href={href} className={className}>
+      <div className="flex items-start justify-between gap-3">
+        <div className="min-w-0">
+          <div className={cn("font-medium leading-snug text-ink", titleClassName)}>
+            {title}
+          </div>
+          {subtitle != null && subtitle !== "" && (
+            <div className="mt-0.5 break-all text-xs text-muted">{subtitle}</div>
+          )}
+        </div>
+        {actions && <div className="flex shrink-0 flex-wrap justify-end gap-1">{actions}</div>}
+      </div>
+      {children != null && (
+        <div
+          className={cn(
+            "mt-3 grid gap-3 border-t border-line/60 pt-3 sm:grid-cols-3",
+            fieldsClassName,
+          )}
+        >
+          {children}
+        </div>
+      )}
+    </AdminCard>
+  );
+}
+
+export function AdminResultCount({
+  total,
+  loading,
+}: {
+  total: number;
+  loading?: boolean;
+}) {
+  return (
+    <p className="mb-3 text-xs text-muted">
+      Найдено: {total}
+      {loading ? " · загрузка…" : ""}
+    </p>
+  );
+}
+
+export function AdminEmptyState({ children }: { children: ReactNode }) {
+  return (
+    <p className="rounded-2xl border border-line bg-panel/50 p-6 text-sm text-muted lg:hidden">
+      {children}
+    </p>
+  );
+}
+
+/** Mobile infinite-scroll sentinel + optional «Ещё». Hidden on lg+. */
+export function AdminInfiniteFooter({
+  sentinelRef,
+  hasMore,
+  loading,
+  onLoadMore,
+}: {
+  sentinelRef: RefObject<HTMLDivElement | null>;
+  hasMore: boolean;
+  loading?: boolean;
+  onLoadMore: () => void;
+}) {
+  return (
+    <div className="lg:hidden">
+      <div ref={sentinelRef} className="h-4" aria-hidden />
+      {hasMore && (
+        <AdminButton
+          variant="secondary"
+          className="w-full"
+          disabled={loading}
+          onClick={onLoadMore}
+        >
+          {loading ? "Загрузка…" : "Ещё"}
+        </AdminButton>
+      )}
+    </div>
+  );
+}
+
+/** Desktop-only page controls. */
+export function AdminDesktopPager({
+  page,
+  pages,
+  loading,
+  onPrev,
+  onNext,
+}: {
+  page: number;
+  pages: number;
+  loading?: boolean;
+  onPrev: () => void;
+  onNext: () => void;
+}) {
+  if (pages <= 1) return null;
+  return (
+    <div className="mt-4 hidden items-center gap-3 text-sm text-muted lg:flex">
+      <AdminButton
+        variant="secondary"
+        disabled={page <= 1 || loading}
+        onClick={onPrev}
+      >
+        Назад
+      </AdminButton>
+      <span>
+        Страница {page} из {pages}
+      </span>
+      <AdminButton
+        variant="secondary"
+        disabled={page >= pages || loading}
+        onClick={onNext}
+      >
+        Вперёд
+      </AdminButton>
     </div>
   );
 }
@@ -183,6 +418,20 @@ export function AdminTd({ children, className }: { children?: ReactNode; classNa
     <td className={cn("border-b border-line/70 px-4 py-3 text-sm text-ink", className)}>
       {children}
     </td>
+  );
+}
+
+/** Desktop table action column header — keeps the column slim and right-aligned. */
+export function AdminActionsTh({ children }: { children?: ReactNode }) {
+  return <AdminTh className="w-[1%] text-right">{children}</AdminTh>;
+}
+
+/** Desktop table action cell — buttons flush to the right edge of the row. */
+export function AdminActionsTd({ children }: { children: ReactNode }) {
+  return (
+    <AdminTd className="w-[1%] whitespace-nowrap">
+      <div className="flex items-center justify-end gap-2">{children}</div>
+    </AdminTd>
   );
 }
 

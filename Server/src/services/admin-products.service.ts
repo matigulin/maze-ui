@@ -114,8 +114,31 @@ export async function listAdminProducts(query: Record<string, unknown>) {
   const offset = paginationOffset({ page, limit });
   const where: Record<string, unknown> = {};
 
-  if (typeof query.search === 'string' && query.search.trim()) {
-    where.name = { [Op.iLike]: `%${query.search.trim()}%` };
+  const name =
+    typeof query.name === 'string'
+      ? query.name.trim()
+      : typeof query.search === 'string'
+        ? query.search.trim()
+        : '';
+  const slug = typeof query.slug === 'string' ? query.slug.trim() : '';
+
+  if (name) {
+    where.name = { [Op.iLike]: `%${name}%` };
+  }
+  if (slug) {
+    where.slug = { [Op.iLike]: `%${slug}%` };
+  }
+
+  if (query.isPublished === 'true' || query.isPublished === true) {
+    where.is_published = true;
+  } else if (query.isPublished === 'false' || query.isPublished === false) {
+    where.is_published = false;
+  }
+
+  if (query.inStock === 'true' || query.inStock === true) {
+    where.in_stock = true;
+  } else if (query.inStock === 'false' || query.inStock === false) {
+    where.in_stock = false;
   }
 
   const { rows, count } = await Product.findAndCountAll({
