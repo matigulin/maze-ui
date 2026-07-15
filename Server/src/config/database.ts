@@ -3,6 +3,17 @@ import { loadEnv } from './env.js';
 
 let sequelize: Sequelize | null = null;
 
+function postgresDialectOptions(nodeEnv: string) {
+  // Railway / managed Postgres: TLS required; local docker/dev usually plain.
+  if (nodeEnv !== 'production') return undefined;
+  return {
+    ssl: {
+      require: true,
+      rejectUnauthorized: false,
+    },
+  };
+}
+
 export function getSequelize(): Sequelize {
   if (!sequelize) {
     const env = loadEnv();
@@ -10,6 +21,7 @@ export function getSequelize(): Sequelize {
       dialect: 'postgres',
       logging: false,
       pool: { max: 20, min: 2, acquire: 30000 },
+      dialectOptions: postgresDialectOptions(env.NODE_ENV),
       define: {
         underscored: true,
         timestamps: true,

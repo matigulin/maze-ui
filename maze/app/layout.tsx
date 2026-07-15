@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Exo_2, Orbitron } from "next/font/google";
 import "./globals.css";
 import { Providers } from "@/components/Providers";
@@ -20,6 +20,15 @@ export const metadata: Metadata = {
   title: "MAZE — Найди свой путь в мире технологий",
   description:
     "MAZE — премиальный магазин техники. Apple, Samsung, Sony, Marshall, Dyson, Harman Kardon. Трейд-ин, рассрочка, доставка по РФ.",
+};
+
+/** Без pinch / double-tap zoom на мобилке (витрина + админка). */
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
+  viewportFit: "cover",
 };
 
 export default async function RootLayout({

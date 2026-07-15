@@ -13,10 +13,10 @@ export default async function CatalogPage({
   });
 
   return (
-    <div className="container-x py-10 md:py-14">
-      <div className="mb-8">
+    <div className="container-x py-8 md:py-14">
+      <div className="mb-6 md:mb-8">
         <p className="eyebrow mb-2.5">Каталог MAZE</p>
-        <h1 className="font-display text-4xl font-bold tracking-tight sm:text-5xl">
+        <h1 className="font-display text-3xl font-bold tracking-tight sm:text-5xl">
           Вся техника
         </h1>
         <p className="mt-2 max-w-xl text-sm text-muted">

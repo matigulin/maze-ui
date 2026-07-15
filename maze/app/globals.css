@@ -94,11 +94,15 @@
 html {
   scroll-behavior: smooth;
   -webkit-tap-highlight-color: transparent;
+  /* Убрать double-tap zoom; pinch режется viewport maximumScale */
+  touch-action: manipulation;
 }
 
 body {
   background-color: var(--color-bg);
   color: var(--color-ink);
+  touch-action: manipulation;
+  overscroll-behavior-y: none;
   background-image:
     radial-gradient(60rem 60rem at 12% -10%, rgba(53, 228, 240, 0.1), transparent 60%),
     radial-gradient(55rem 55rem at 100% 8%, rgba(139, 92, 246, 0.12), transparent 55%),

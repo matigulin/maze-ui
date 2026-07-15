@@ -17,7 +17,9 @@ import {
 } from "lucide-react";
 import { ProductThumb } from "@/components/ProductThumb";
 import { Field } from "@/components/Field";
+import { Modal } from "@/components/modals";
 import { formatPrice, plural, cn } from "@/lib/utils";
+import { scrollWindowToTop } from "@/lib/scroll";
 import { checkoutCart } from "@/features/checkout";
 import { ApiError } from "@/lib/api";
 import {
@@ -81,19 +83,89 @@ export function CartClient() {
   const [phoneNational, setPhoneNational] = useState("");
   const phoneFieldId = useId();
   const [submitting, setSubmitting] = useState(false);
+  const [confirmOpen, setConfirmOpen] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
   const [doneOrder, setDoneOrder] = useState<string | null>(null);
+  const successRef = useRef<HTMLDivElement>(null);
 
   const deliveryPrice = DELIVERY.find((d) => d.id === delivery)?.price ?? 0;
   const surcharge = PAYMENT.find((p) => p.id === payment)?.surcharge ?? 0;
   const total = Math.round(subtotal * (1 + surcharge)) + deliveryPrice;
+  const deliveryLabel =
+    DELIVERY.find((d) => d.id === delivery)?.label ?? "Доставка";
+
+  useEffect(() => {
+    if (!doneOrder) return;
+    scrollWindowToTop();
+    // После смены вью — доскроллить к блоку успеха (на длинной странице / header)
+    const id = window.setTimeout(() => {
+      successRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+    }, 50);
+    return () => window.clearTimeout(id);
+  }, [doneOrder]);
+
+  async function placeOrder() {
+    if (submitting) return;
+    setFormError(null);
+    setSubmitting(true);
+    try {
+      const lines: Array<{ variantId: string; quantity: number }> = [];
+      for (const it of items) {
+        if (!it.variantId) continue;
+        lines.push({ variantId: it.variantId, quantity: it.qty });
+      }
+
+      if (lines.length === 0) {
+        throw new Error("В корзине нет вариантов товара");
+      }
+
+      let phone: string;
+      try {
+        phone = nationalPhoneToE164(phoneNational);
+      } catch {
+        throw new Error("Введите корректный номер телефона");
+      }
+
+      const accessToken = await ensureAccessToken();
+      const order = await checkoutCart({
+        deliveryUiId: delivery,
+        paymentUiId: payment,
+        firstName,
+        lastName: "Клиент",
+        phone,
+        items: lines,
+        accessToken,
+      });
+      setConfirmOpen(false);
+      setDoneOrder(order.orderNumber);
+      await clearCart();
+    } catch (err) {
+      const message =
+        err instanceof ApiError
+          ? err.message === "Cart is empty"
+            ? "Корзина на сервере пуста. Обновите страницу и добавьте товар снова."
+            : err.message === "Insufficient stock for one or more items" ||
+                err.message === "Insufficient stock"
+              ? "Недостаточно товара на складе. Уменьшите количество."
+              : err.message
+          : err instanceof Error
+            ? err.message
+            : "Не удалось оформить заказ";
+      setFormError(message);
+      setConfirmOpen(false);
+    } finally {
+      setSubmitting(false);
+    }
+  }
 
   if (doneOrder) {
     return (
       <motion.div
+        ref={successRef}
+        id="order-success"
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="glass mx-auto max-w-lg rounded-3xl p-10 text-center"
+        className="glass mx-auto max-w-lg scroll-mt-24 rounded-3xl p-8 text-center sm:p-10"
       >
         <motion.div
           initial={{ scale: 0 }}
@@ -103,7 +175,9 @@ export function CartClient() {
         >
           <Check size={40} strokeWidth={2.5} />
         </motion.div>
-        <h2 className="font-display text-2xl font-bold">Заказ оформлен!</h2>
+        <h1 className="font-display text-2xl font-bold sm:text-3xl">
+          Заказ оформлен!
+        </h1>
         <p className="mt-2 text-muted">
           Заказ <span className="text-cyan">#{doneOrder}</span>{" "}
           принят. Менеджер свяжется с вами в ближайшее время.
@@ -117,25 +191,69 @@ export function CartClient() {
 
   if (items.length === 0) {
     return (
-      <div className="glass mx-auto flex max-w-lg flex-col items-center gap-5 rounded-3xl p-12 text-center">
-        <div className="grid h-20 w-20 place-items-center rounded-3xl bg-white/5 text-muted">
-          <ShoppingBag size={34} />
+      <>
+        <h1 className="mb-8 font-display text-3xl font-bold tracking-tight sm:text-5xl">
+          Корзина
+        </h1>
+        <div className="glass mx-auto flex max-w-lg flex-col items-center gap-5 rounded-3xl p-12 text-center">
+          <div className="grid h-20 w-20 place-items-center rounded-3xl bg-white/5 text-muted">
+            <ShoppingBag size={34} />
+          </div>
+          <div>
+            <h2 className="font-display text-xl font-bold">Корзина пуста</h2>
+            <p className="mt-1 text-sm text-muted">
+              Добавьте товары, чтобы продолжить оформление.
+            </p>
+          </div>
+          <Link href="/catalog" className="btn-primary">
+            Перейти в каталог
+          </Link>
         </div>
-        <div>
-          <h2 className="font-display text-xl font-bold">Корзина пуста</h2>
-          <p className="mt-1 text-sm text-muted">
-            Добавьте товары, чтобы продолжить оформление.
-          </p>
-        </div>
-        <Link href="/catalog" className="btn-primary">
-          Перейти в каталог
-        </Link>
-      </div>
+      </>
     );
   }
 
   return (
+    <>
+      <h1 className="mb-8 font-display text-3xl font-bold tracking-tight sm:text-5xl">
+        Корзина
+      </h1>
     <div className="grid gap-6 lg:grid-cols-[1fr_22rem]">
+      <Modal
+        open={confirmOpen}
+        onClose={() => {
+          if (!submitting) setConfirmOpen(false);
+        }}
+        title="Подтверждение заказа"
+      >
+        <p className="text-sm leading-relaxed text-muted">
+          Точно хотите оформить заказ на{" "}
+          <span className="font-medium text-ink">{formatPrice(total)}</span>
+          {" "}({deliveryLabel})?
+        </p>
+        <p className="mt-2 text-sm text-muted">
+          {firstName}, {phoneNational ? `+7 ${phoneNational}` : "телефон не указан"}
+        </p>
+        <div className="mt-6 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
+          <button
+            type="button"
+            disabled={submitting}
+            onClick={() => setConfirmOpen(false)}
+            className="btn-ghost w-full sm:w-auto"
+          >
+            Нет, назад
+          </button>
+          <button
+            type="button"
+            disabled={submitting}
+            onClick={() => void placeOrder()}
+            className="btn-primary w-full sm:w-auto"
+          >
+            {submitting ? "Оформляем…" : "Да, заказать"}
+          </button>
+        </div>
+      </Modal>
+
       {/* Список товаров */}
       <div className="space-y-3">
         <div className="mb-1 flex items-center justify-between">
@@ -249,55 +367,17 @@ export function CartClient() {
             e.preventDefault();
             if (submitting) return;
             setFormError(null);
-            setSubmitting(true);
-            void (async () => {
-              try {
-                const lines: Array<{ variantId: string; quantity: number }> = [];
-                for (const it of items) {
-                  if (!it.variantId) continue;
-                  lines.push({ variantId: it.variantId, quantity: it.qty });
-                }
-
-                if (lines.length === 0) {
-                  throw new Error("В корзине нет вариантов товара");
-                }
-
-                let phone: string;
-                try {
-                  phone = nationalPhoneToE164(phoneNational);
-                } catch {
-                  throw new Error("Введите корректный номер телефона");
-                }
-
-                const accessToken = await ensureAccessToken();
-                const order = await checkoutCart({
-                  deliveryUiId: delivery,
-                  paymentUiId: payment,
-                  firstName,
-                  lastName: "Клиент",
-                  phone,
-                  items: lines,
-                  accessToken,
-                });
-                setDoneOrder(order.orderNumber);
-                await clearCart();
-              } catch (err) {
-                const message =
-                  err instanceof ApiError
-                    ? err.message === "Cart is empty"
-                      ? "Корзина на сервере пуста. Обновите страницу и добавьте товар снова."
-                      : err.message === "Insufficient stock for one or more items" ||
-                          err.message === "Insufficient stock"
-                        ? "Недостаточно товара на складе. Уменьшите количество."
-                        : err.message
-                    : err instanceof Error
-                      ? err.message
-                      : "Не удалось оформить заказ";
-                setFormError(message);
-              } finally {
-                setSubmitting(false);
-              }
-            })();
+            try {
+              nationalPhoneToE164(phoneNational);
+            } catch {
+              setFormError("Введите корректный номер телефона");
+              return;
+            }
+            if (!firstName.trim()) {
+              setFormError("Укажите имя");
+              return;
+            }
+            setConfirmOpen(true);
           }}
           className="glass space-y-5 rounded-3xl p-6"
         >
@@ -412,6 +492,7 @@ export function CartClient() {
         </form>
       </div>
     </div>
+    </>
   );
 }
 

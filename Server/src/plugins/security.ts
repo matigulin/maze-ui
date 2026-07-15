@@ -1,4 +1,5 @@
 import cors from '@fastify/cors';
+import type { FastifyCorsOptions } from '@fastify/cors';
 import helmet from '@fastify/helmet';
 import rateLimit from '@fastify/rate-limit';
 import type { FastifyPluginAsync } from 'fastify';
@@ -32,7 +33,7 @@ function isDevBrowserOrigin(origin: string): boolean {
 function buildCorsOriginOption(
   configured: string,
   nodeEnv: string,
-): boolean | string | string[] | ((origin: string | undefined, cb: (err: Error | null, allow?: boolean | string) => void) => void) {
+): FastifyCorsOptions['origin'] {
   const allowlist = parseCorsOrigins(configured);
 
   if (nodeEnv === 'production') {

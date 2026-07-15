@@ -18,7 +18,7 @@ import { getQueue, QUEUE_NAMES } from '../queues/index.js';
 import { mergeGuestCartToUser } from './cart.service.js';
 import { publishOutboxEvent } from './outbox.service.js';
 import { createRefreshSession } from './token.service.js';
-import { loadEnv } from '../config/env.js';
+import { isDevOtpEnabled, loadEnv } from '../config/env.js';
 
 const SEND_MESSAGE = 'Если номер корректен, код отправлен';
 const RATE_WINDOW_SEC = 15 * 60;
@@ -121,7 +121,9 @@ export async function sendSmsCode(
     );
   });
 
-  if (env.NODE_ENV === 'development' && !env.SMS_API_KEY) {
+  const devOtp = isDevOtpEnabled(env);
+
+  if (devOtp) {
     console.info(`[dev][sms] OTP for ${maskPhone(phone)}: ${code}`);
   }
 
@@ -132,14 +134,14 @@ export async function sendSmsCode(
       { jobId: `otp:${phone}:${Date.now()}` },
     );
   } catch (error) {
-    if (env.NODE_ENV === 'development') {
+    if (devOtp || env.NODE_ENV === 'development') {
       console.warn('[dev][sms] queue unavailable, OTP logged above only', error);
     } else {
       throw error;
     }
   }
 
-  if (env.NODE_ENV === 'development' && !env.SMS_API_KEY) {
+  if (devOtp) {
     return { message: SEND_MESSAGE, devCode: code };
   }
 

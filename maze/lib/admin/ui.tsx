@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { AnimatePresence, motion } from "motion/react";
 import { Check, ChevronDown } from "lucide-react";
@@ -81,10 +82,79 @@ export function AdminButton({
   );
 }
 
-export function AdminTable({ children }: { children: ReactNode }) {
+export function AdminTable({
+  children,
+  className,
+  desktopOnly = false,
+}: {
+  children: ReactNode;
+  className?: string;
+  /** Hide below md — use with AdminCardList for mobile cards. */
+  desktopOnly?: boolean;
+}) {
   return (
-    <div className="overflow-x-auto rounded-2xl border border-line">
+    <div
+      className={cn(
+        "overflow-x-auto rounded-2xl border border-line",
+        desktopOnly && "hidden md:block",
+        className,
+      )}
+    >
       <table className="w-full min-w-[640px] text-left text-sm">{children}</table>
+    </div>
+  );
+}
+
+/** Mobile list of cards; hidden from md up. */
+export function AdminCardList({
+  children,
+  className,
+}: {
+  children: ReactNode;
+  className?: string;
+}) {
+  return (
+    <div className={cn("space-y-3 md:hidden", className)}>{children}</div>
+  );
+}
+
+export function AdminCard({
+  children,
+  href,
+  className,
+}: {
+  children: ReactNode;
+  href?: string;
+  className?: string;
+}) {
+  const styles = cn(
+    "block rounded-2xl border border-line bg-panel/50 p-4 transition",
+    href && "active:border-cyan/40 active:bg-panel/80",
+    className,
+  );
+
+  if (href) {
+    return (
+      <Link href={href} className={styles}>
+        {children}
+      </Link>
+    );
+  }
+
+  return <div className={styles}>{children}</div>;
+}
+
+export function AdminCardRow({
+  label,
+  children,
+}: {
+  label: string;
+  children: ReactNode;
+}) {
+  return (
+    <div className="flex items-start justify-between gap-3 text-sm">
+      <span className="shrink-0 text-faint">{label}</span>
+      <span className="min-w-0 text-right text-ink">{children}</span>
     </div>
   );
 }

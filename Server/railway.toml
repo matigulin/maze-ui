@@ -1,0 +1,12 @@
+# Root Directory for this service should be `Server` (set in Railway UI),
+# or deploy with: railway up ./Server --path-as-root
+
+[build]
+builder = "NIXPACKS"
+buildCommand = "npm install && npm run build"
+
+[deploy]
+startCommand = "npm start"
+healthcheckPath = "/health/live"
+healthcheckTimeout = 30
+restartPolicyType = "ON_FAILURE"

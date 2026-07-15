@@ -1,0 +1,11 @@
+# Root Directory for this service should be `maze` (set in Railway UI),
+# or deploy with: railway up ./maze --path-as-root
+
+[build]
+builder = "NIXPACKS"
+buildCommand = "npm run build"
+nixpacksConfigPath = "nixpacks.toml"
+
+[deploy]
+startCommand = "npx next start -p $PORT"
+restartPolicyType = "ON_FAILURE"

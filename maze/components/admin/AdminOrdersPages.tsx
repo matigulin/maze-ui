@@ -7,6 +7,9 @@ import { useAdminApi } from "@/lib/admin/client";
 import {
   AdminAlert,
   AdminButton,
+  AdminCard,
+  AdminCardList,
+  AdminCardRow,
   AdminPageHeader,
   AdminSelect,
   AdminTable,
@@ -137,7 +140,7 @@ export function OrdersListPage() {
         actions={
           <AdminSelect
             label="Статус"
-            className="w-[200px]"
+            className="w-full sm:w-[200px]"
             value={status}
             onChange={(v) => {
               setPage(1);
@@ -163,45 +166,73 @@ export function OrdersListPage() {
           Заказов пока нет.
         </p>
       ) : (
-        <AdminTable>
-          <thead>
-            <tr>
-              <AdminTh>Номер</AdminTh>
-              <AdminTh>Клиент</AdminTh>
-              <AdminTh>Статус</AdminTh>
-              <AdminTh>Позиции</AdminTh>
-              <AdminTh>Сумма</AdminTh>
-              <AdminTh>Дата</AdminTh>
-              <AdminTh />
-            </tr>
-          </thead>
-          <tbody>
+        <>
+          <AdminCardList>
             {items.map((order) => (
-              <tr key={order.id}>
-                <AdminTd>
+              <AdminCard key={order.id} href={`/admin/orders/${order.id}`}>
+                <div className="mb-3 flex items-start justify-between gap-3">
                   <p className="font-medium text-cyan">{order.orderNumber}</p>
-                </AdminTd>
-                <AdminTd>
-                  <p>
-                    {order.customer.firstName} {order.customer.lastName}
-                  </p>
-                  <p className="text-xs text-muted">{order.customer.phone}</p>
-                </AdminTd>
-                <AdminTd>
-                  <OrderStatusText status={order.status} />
-                </AdminTd>
-                <AdminTd>{order.itemsCount}</AdminTd>
-                <AdminTd>{formatPrice(order.totalRub)}</AdminTd>
-                <AdminTd className="text-muted">{formatDate(order.createdAt)}</AdminTd>
-                <AdminTd>
-                  <Link href={`/admin/orders/${order.id}`}>
-                    <AdminButton variant="ghost">Открыть</AdminButton>
-                  </Link>
-                </AdminTd>
-              </tr>
+                  <OrderStatusText status={order.status} className="text-right text-xs" />
+                </div>
+                <div className="space-y-2">
+                  <AdminCardRow label="Клиент">
+                    <span className="block">
+                      {order.customer.firstName} {order.customer.lastName}
+                    </span>
+                    <span className="block text-xs text-muted">{order.customer.phone}</span>
+                  </AdminCardRow>
+                  <AdminCardRow label="Позиции">{order.itemsCount}</AdminCardRow>
+                  <AdminCardRow label="Сумма">
+                    <span className="font-medium">{formatPrice(order.totalRub)}</span>
+                  </AdminCardRow>
+                  <AdminCardRow label="Дата">
+                    <span className="text-muted">{formatDate(order.createdAt)}</span>
+                  </AdminCardRow>
+                </div>
+              </AdminCard>
             ))}
-          </tbody>
-        </AdminTable>
+          </AdminCardList>
+
+          <AdminTable desktopOnly>
+            <thead>
+              <tr>
+                <AdminTh>Номер</AdminTh>
+                <AdminTh>Клиент</AdminTh>
+                <AdminTh>Статус</AdminTh>
+                <AdminTh>Позиции</AdminTh>
+                <AdminTh>Сумма</AdminTh>
+                <AdminTh>Дата</AdminTh>
+                <AdminTh />
+              </tr>
+            </thead>
+            <tbody>
+              {items.map((order) => (
+                <tr key={order.id}>
+                  <AdminTd>
+                    <p className="font-medium text-cyan">{order.orderNumber}</p>
+                  </AdminTd>
+                  <AdminTd>
+                    <p>
+                      {order.customer.firstName} {order.customer.lastName}
+                    </p>
+                    <p className="text-xs text-muted">{order.customer.phone}</p>
+                  </AdminTd>
+                  <AdminTd>
+                    <OrderStatusText status={order.status} />
+                  </AdminTd>
+                  <AdminTd>{order.itemsCount}</AdminTd>
+                  <AdminTd>{formatPrice(order.totalRub)}</AdminTd>
+                  <AdminTd className="text-muted">{formatDate(order.createdAt)}</AdminTd>
+                  <AdminTd>
+                    <Link href={`/admin/orders/${order.id}`}>
+                      <AdminButton variant="ghost">Открыть</AdminButton>
+                    </Link>
+                  </AdminTd>
+                </tr>
+              ))}
+            </tbody>
+          </AdminTable>
+        </>
       )}
 
       {pages > 1 && (
@@ -393,7 +424,24 @@ export function OrderDetailPage() {
 
       <section className="rounded-2xl border border-line bg-panel/50 p-5">
         <h3 className="mb-4 font-display text-sm tracking-wide text-cyan">Состав заказа</h3>
-        <AdminTable>
+        <AdminCardList>
+          {order.items.map((item) => (
+            <AdminCard key={item.id}>
+              <p className="font-medium text-ink">{item.name}</p>
+              <p className="mt-1 text-xs text-muted">
+                {[item.color, item.memory].filter(Boolean).join(" · ")}
+              </p>
+              <div className="mt-3 space-y-2">
+                <AdminCardRow label="Цена">{formatPrice(item.unitPrice)}</AdminCardRow>
+                <AdminCardRow label="Кол-во">{item.quantity}</AdminCardRow>
+                <AdminCardRow label="Сумма">
+                  <span className="font-medium">{formatPrice(item.lineTotal)}</span>
+                </AdminCardRow>
+              </div>
+            </AdminCard>
+          ))}
+        </AdminCardList>
+        <AdminTable desktopOnly>
           <thead>
             <tr>
               <AdminTh>Товар</AdminTh>

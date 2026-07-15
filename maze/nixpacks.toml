@@ -1,0 +1,12 @@
+# Node 22 without Chromium (puppeteer removed from package.json).
+[variables]
+NIXPACKS_NODE_VERSION = "22"
+
+[phases.install]
+cmds = ["npm ci"]
+
+[phases.build]
+cmds = ["npm run build"]
+
+[start]
+cmd = "npx next start -p $PORT"

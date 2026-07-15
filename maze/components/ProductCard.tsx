@@ -37,6 +37,9 @@ export function ProductCard({ product }: { product: Product }) {
 
   function onMove(e: React.MouseEvent<HTMLDivElement>) {
     if (reduce) return;
+    if (typeof window !== "undefined" && window.matchMedia("(pointer: coarse)").matches) {
+      return;
+    }
     const r = e.currentTarget.getBoundingClientRect();
     mx.set((e.clientX - r.left) / r.width - 0.5);
     my.set((e.clientY - r.top) / r.height - 0.5);
@@ -47,20 +50,23 @@ export function ProductCard({ product }: { product: Product }) {
   }
 
   const wished = isWished(product.id);
+  const salePct =
+    product.badge === "SALE" && product.oldPrice
+      ? Math.round((1 - product.price / product.oldPrice) * 100)
+      : null;
 
   return (
     <motion.div
       onMouseMove={onMove}
       onMouseLeave={onLeave}
       style={reduce ? undefined : { rotateX: rx, rotateY: ry, transformPerspective: 900 }}
-      className="group relative"
+      className="group relative h-full"
     >
       <Link
         href={`/product/${product.slug}`}
-        className="glass block overflow-hidden rounded-3xl p-3 transition-[border-color,box-shadow] duration-300 hover:border-cyan/30 hover:shadow-[0_20px_60px_-24px_rgba(53,228,240,0.5)]"
+        className="glass flex h-full flex-col overflow-hidden rounded-2xl p-2 transition-[border-color,box-shadow] duration-300 hover:border-cyan/30 hover:shadow-[0_20px_60px_-24px_rgba(53,228,240,0.5)] sm:rounded-3xl sm:p-3"
       >
-        {/* верх: бейдж + сердце */}
-        <div className="relative">
+        <div className="relative shrink-0">
           <ProductThumb
             product={product}
             className="aspect-square w-full"
@@ -68,69 +74,68 @@ export function ProductCard({ product }: { product: Product }) {
           {product.badge && (
             <span
               className={cn(
-                "absolute left-3 top-3 rounded-full border px-2.5 py-1 text-[11px] font-semibold backdrop-blur-md",
+                "absolute left-2 top-2 rounded-full border px-1.5 py-0.5 text-[10px] font-semibold backdrop-blur-md sm:left-3 sm:top-3 sm:px-2.5 sm:py-1 sm:text-[11px]",
                 BADGE_STYLE[product.badge],
               )}
             >
-              {product.badge === "SALE" && product.oldPrice
-                ? `−${Math.round((1 - product.price / product.oldPrice) * 100)}%`
-                : product.badge}
+              {salePct != null ? `−${salePct}%` : product.badge}
             </span>
           )}
           <button
+            type="button"
             aria-label={wished ? "Убрать из избранного" : "В избранное"}
             onClick={(e) => {
               e.preventDefault();
               toggleWishlist(product.id);
             }}
-            className="absolute right-3 top-3 grid h-9 w-9 place-items-center rounded-full bg-black/30 text-white backdrop-blur-md transition-colors hover:bg-black/50 cursor-pointer"
+            className="absolute right-2 top-2 grid h-8 w-8 place-items-center rounded-full bg-black/35 text-white backdrop-blur-md transition-colors hover:bg-black/50 cursor-pointer sm:right-3 sm:top-3 sm:h-9 sm:w-9"
           >
             <Heart
-              size={16}
+              size={15}
               className={cn(
-                "transition-colors",
+                "transition-colors sm:size-4",
                 wished && "fill-magenta text-magenta",
               )}
             />
           </button>
         </div>
 
-        {/* инфо */}
-        <div className="space-y-2 p-2 pt-4">
-          <div className="flex items-center gap-1.5 text-xs text-faint">
-            <span>{product.brand}</span>
-            <span>·</span>
-            <span>{product.category}</span>
+        <div className="flex flex-1 flex-col space-y-1.5 p-1.5 pt-3 sm:space-y-2 sm:p-2 sm:pt-4">
+          <div className="flex min-w-0 items-center gap-1 text-[10px] text-faint sm:gap-1.5 sm:text-xs">
+            <span className="truncate">{product.brand}</span>
+            <span className="shrink-0">·</span>
+            <span className="truncate">{product.category}</span>
           </div>
-          <h3 className="line-clamp-2 min-h-[2.6rem] text-sm font-medium leading-snug text-ink">
+          <h3 className="line-clamp-2 min-h-[2.4rem] text-[13px] font-medium leading-snug text-ink sm:min-h-[2.6rem] sm:text-sm">
             {product.name}
           </h3>
-          <div className="flex items-center gap-1.5 text-xs text-muted">
-            <Star size={13} className="fill-gold text-gold" />
+          <div className="flex items-center gap-1 text-[11px] text-muted sm:gap-1.5 sm:text-xs">
+            <Star size={12} className="shrink-0 fill-gold text-gold sm:size-[13px]" />
             <span className="text-ink">{product.rating.toFixed(1)}</span>
-            <span className="text-faint">· {product.reviews} отзывов</span>
+            <span className="truncate text-faint">· {product.reviews}</span>
           </div>
 
-          <div className="flex items-end justify-between pt-1">
-            <div>
-              <div className="font-display text-lg font-semibold text-ink">
+          <div className="mt-auto flex items-end justify-between gap-2 pt-1">
+            <div className="min-w-0">
+              <div className="font-display text-[15px] font-semibold leading-tight text-ink sm:text-lg">
                 {formatPrice(product.price)}
               </div>
               {product.oldPrice && (
-                <div className="text-xs text-faint line-through">
+                <div className="truncate text-[10px] text-faint line-through sm:text-xs">
                   {formatPrice(product.oldPrice)}
                 </div>
               )}
             </div>
             <button
+              type="button"
               aria-label="В корзину"
               onClick={(e) => {
                 e.preventDefault();
                 void addItem(product);
               }}
-              className="grid h-10 w-10 place-items-center rounded-full bg-gradient-to-br from-cyan to-blue text-[#04121a] shadow-[0_8px_24px_-8px_rgba(53,228,240,0.7)] transition-transform hover:scale-105 active:scale-95 cursor-pointer"
+              className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-gradient-to-br from-cyan to-blue text-[#04121a] shadow-[0_8px_24px_-8px_rgba(53,228,240,0.7)] transition-transform hover:scale-105 active:scale-95 cursor-pointer sm:h-10 sm:w-10"
             >
-              <Plus size={18} strokeWidth={2.5} />
+              <Plus size={17} strokeWidth={2.5} className="sm:size-[18px]" />
             </button>
           </div>
         </div>

@@ -6,7 +6,7 @@ import { useParams, useRouter } from "next/navigation";
 import { Field } from "@/components/Field";
 import { useAdminApi } from "@/lib/admin/client";
 import { DEVICE_TYPES, type AdminCategory, type AdminProductDetail, type ProductBody, type VariantBody } from "@/lib/admin/types";
-import { AdminAlert, AdminButton, AdminCheckbox, AdminModal, AdminPageHeader, AdminSelect, AdminTable, AdminTd, AdminTextarea, AdminTh, errorMessage, formatPrice } from "@/lib/admin/ui";
+import { AdminAlert, AdminButton, AdminCard, AdminCardList, AdminCardRow, AdminCheckbox, AdminModal, AdminPageHeader, AdminSelect, AdminTable, AdminTd, AdminTextarea, AdminTh, errorMessage, formatPrice } from "@/lib/admin/ui";
 
 const productEmpty: ProductBody = { name: "", slug: "", categoryId: "", subcategoryId: "", deviceType: "smartphone", description: "", basePrice: 0, oldPrice: null, badgeType: null, badgeText: null, isPublished: false };
 const variantEmpty: VariantBody = { sku: "", colorName: "", colorHex: "#000000", memory: "", price: 0, quantity: 0, isAvailable: true };
@@ -21,10 +21,144 @@ function ProductForm({ initial, onSave, saving }: { initial: ProductBody; onSave
 }
 
 export function ProductsListPage() {
-  const api = useAdminApi(); const [items, setItems] = useState<AdminProductDetail[]>([]); const [search, setSearch] = useState(""); const [page, setPage] = useState(1); const [pages, setPages] = useState(1); const [error, setError] = useState("");
-  const load = async () => { try { const result = await api.listProducts({ page, limit: 20, search: search || undefined }); setItems(result.items as AdminProductDetail[]); setPages(result.meta ? Math.max(1, Math.ceil(result.meta.total / result.meta.limit)) : 1); } catch (e) { setError(errorMessage(e)); } };
-  useEffect(() => { void load(); }, [page]); // eslint-disable-line react-hooks/exhaustive-deps
-  return <div><AdminPageHeader title="Товары" actions={<Link href="/admin/catalog/products/new"><AdminButton>Добавить товар</AdminButton></Link>} />{error && <AdminAlert>{error}</AdminAlert>}<form className="mb-4 flex gap-2" onSubmit={(e) => { e.preventDefault(); setPage(1); void load(); }}><Field label="Поиск" value={search} onChange={(e) => setSearch(e.target.value)} /><AdminButton type="submit" className="self-end py-3 text-[15px]">Найти</AdminButton></form><AdminTable><thead><tr><AdminTh>Товар</AdminTh><AdminTh>Цена</AdminTh><AdminTh>Опубликован</AdminTh><AdminTh>Склад</AdminTh><AdminTh /></tr></thead><tbody>{items.map((p) => <tr key={p.id}><AdminTd><p>{p.name}</p><p className="text-xs text-muted">{p.slug}</p></AdminTd><AdminTd>{formatPrice(p.basePrice)}</AdminTd><AdminTd>{p.isPublished ? "Да" : "Нет"}</AdminTd><AdminTd>{p.inStock ? "В наличии" : "Нет"}</AdminTd><AdminTd className="space-x-2"><Link href={`/admin/catalog/products/${p.id}`}><AdminButton variant="ghost">Открыть</AdminButton></Link><AdminButton variant="danger" onClick={() => void api.deleteProduct(p.id).then(load).catch((e) => setError(errorMessage(e)))}>Удалить</AdminButton></AdminTd></tr>)}</tbody></AdminTable><div className="mt-4 flex items-center gap-3 text-sm text-muted"><AdminButton variant="secondary" disabled={page <= 1} onClick={() => setPage(page - 1)}>Назад</AdminButton><span>Страница {page} из {pages}</span><AdminButton variant="secondary" disabled={page >= pages} onClick={() => setPage(page + 1)}>Вперёд</AdminButton></div></div>;
+  const api = useAdminApi();
+  const [items, setItems] = useState<AdminProductDetail[]>([]);
+  const [search, setSearch] = useState("");
+  const [page, setPage] = useState(1);
+  const [pages, setPages] = useState(1);
+  const [error, setError] = useState("");
+
+  const load = async () => {
+    try {
+      const result = await api.listProducts({
+        page,
+        limit: 20,
+        search: search || undefined,
+      });
+      setItems(result.items as AdminProductDetail[]);
+      setPages(
+        result.meta
+          ? Math.max(1, Math.ceil(result.meta.total / result.meta.limit))
+          : 1,
+      );
+    } catch (e) {
+      setError(errorMessage(e));
+    }
+  };
+
+  useEffect(() => {
+    void load();
+  }, [page]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  return (
+    <div>
+      <AdminPageHeader
+        title="Товары"
+        actions={
+          <Link href="/admin/catalog/products/new">
+            <AdminButton>Добавить товар</AdminButton>
+          </Link>
+        }
+      />
+      {error && <AdminAlert>{error}</AdminAlert>}
+      <form
+        className="mb-4 flex flex-col gap-2 sm:flex-row"
+        onSubmit={(e) => {
+          e.preventDefault();
+          setPage(1);
+          void load();
+        }}
+      >
+        <Field
+          label="Поиск"
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+        />
+        <AdminButton type="submit" className="self-stretch py-3 text-[15px] sm:self-end">
+          Найти
+        </AdminButton>
+      </form>
+
+      <AdminCardList>
+        {items.map((p) => (
+          <AdminCard key={p.id} href={`/admin/catalog/products/${p.id}`}>
+            <p className="font-medium text-ink">{p.name}</p>
+            <p className="mt-1 text-xs text-muted">{p.slug}</p>
+            <div className="mt-3 space-y-2">
+              <AdminCardRow label="Цена">{formatPrice(p.basePrice)}</AdminCardRow>
+              <AdminCardRow label="Опубликован">
+                {p.isPublished ? "Да" : "Нет"}
+              </AdminCardRow>
+              <AdminCardRow label="Склад">
+                {p.inStock ? "В наличии" : "Нет"}
+              </AdminCardRow>
+            </div>
+          </AdminCard>
+        ))}
+      </AdminCardList>
+
+      <AdminTable desktopOnly>
+        <thead>
+          <tr>
+            <AdminTh>Товар</AdminTh>
+            <AdminTh>Цена</AdminTh>
+            <AdminTh>Опубликован</AdminTh>
+            <AdminTh>Склад</AdminTh>
+            <AdminTh />
+          </tr>
+        </thead>
+        <tbody>
+          {items.map((p) => (
+            <tr key={p.id}>
+              <AdminTd>
+                <p>{p.name}</p>
+                <p className="text-xs text-muted">{p.slug}</p>
+              </AdminTd>
+              <AdminTd>{formatPrice(p.basePrice)}</AdminTd>
+              <AdminTd>{p.isPublished ? "Да" : "Нет"}</AdminTd>
+              <AdminTd>{p.inStock ? "В наличии" : "Нет"}</AdminTd>
+              <AdminTd className="space-x-2">
+                <Link href={`/admin/catalog/products/${p.id}`}>
+                  <AdminButton variant="ghost">Открыть</AdminButton>
+                </Link>
+                <AdminButton
+                  variant="danger"
+                  onClick={() =>
+                    void api
+                      .deleteProduct(p.id)
+                      .then(load)
+                      .catch((e) => setError(errorMessage(e)))
+                  }
+                >
+                  Удалить
+                </AdminButton>
+              </AdminTd>
+            </tr>
+          ))}
+        </tbody>
+      </AdminTable>
+
+      <div className="mt-4 flex items-center gap-3 text-sm text-muted">
+        <AdminButton
+          variant="secondary"
+          disabled={page <= 1}
+          onClick={() => setPage(page - 1)}
+        >
+          Назад
+        </AdminButton>
+        <span>
+          Страница {page} из {pages}
+        </span>
+        <AdminButton
+          variant="secondary"
+          disabled={page >= pages}
+          onClick={() => setPage(page + 1)}
+        >
+          Вперёд
+        </AdminButton>
+      </div>
+    </div>
+  );
 }
 
 export function NewProductPage() {

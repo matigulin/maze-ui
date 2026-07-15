@@ -24,16 +24,16 @@ export default async function ProductPage({
   const related = await fetchRelatedProducts(slug, 4);
 
   return (
-    <div className="container-x py-8 md:py-12">
-      <nav className="mb-8 flex items-center gap-1.5 text-sm text-faint">
-        <Link href="/" className="transition-colors hover:text-ink">
+    <div className="container-x py-6 md:py-12">
+      <nav className="mb-6 flex items-center gap-1.5 overflow-hidden text-sm text-faint md:mb-8">
+        <Link href="/" className="shrink-0 transition-colors hover:text-ink">
           Главная
         </Link>
-        <ChevronRight size={14} />
-        <Link href="/catalog" className="transition-colors hover:text-ink">
+        <ChevronRight size={14} className="shrink-0" />
+        <Link href="/catalog" className="shrink-0 transition-colors hover:text-ink">
           Каталог
         </Link>
-        <ChevronRight size={14} />
+        <ChevronRight size={14} className="shrink-0" />
         <span className="truncate text-muted">{product.name}</span>
       </nav>
 

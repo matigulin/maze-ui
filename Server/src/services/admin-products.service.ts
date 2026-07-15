@@ -2,7 +2,7 @@ import { randomUUID } from 'node:crypto';
 import { Op } from 'sequelize';
 import { toNumber } from '../lib/decimal.js';
 import { ConflictError, NotFoundError, ValidationError } from '../lib/errors.js';
-import { isoTimestamp, intAttr } from '../lib/model-attrs.js';
+import { isoTimestamp } from '../lib/model-attrs.js';
 import { paginationOffset, parsePagination } from '../lib/pagination.js';
 import {
   Category,

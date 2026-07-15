@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import Image from "next/image";
 import { useState } from "react";
 import { motion } from "motion/react";
@@ -37,9 +36,15 @@ export function ProductDetail({ product }: { product: Product }) {
     ? Math.round((1 - product.price / product.oldPrice) * 100)
     : 0;
 
+  const lineTotal = formatPrice(product.price * qty);
+
+  function onAdd() {
+    void addItem(product, { color, memory, qty });
+  }
+
   return (
-    <div className="space-y-16">
-      <div className="grid gap-10 lg:grid-cols-2">
+    <div className="space-y-12 pb-28 sm:space-y-16 lg:pb-0">
+      <div className="grid gap-8 lg:grid-cols-2 lg:gap-10">
         {/* Галерея */}
         <div className="lg:sticky lg:top-24 lg:self-start">
           <motion.div
@@ -69,19 +74,20 @@ export function ProductDetail({ product }: { product: Product }) {
               />
             )}
             {product.badge && (
-              <span className="absolute left-4 top-4 rounded-full border border-white/20 bg-black/30 px-3 py-1 text-xs font-semibold backdrop-blur-md">
+              <span className="absolute left-3 top-3 rounded-full border border-white/20 bg-black/30 px-2.5 py-1 text-[11px] font-semibold backdrop-blur-md sm:left-4 sm:top-4 sm:px-3 sm:text-xs">
                 {product.badge}
               </span>
             )}
           </motion.div>
-          <div className="mt-4 grid grid-cols-4 gap-3">
+          <div className="mt-3 grid grid-cols-4 gap-2 sm:mt-4 sm:gap-3">
             {gallery.map((img, i) => (
               <button
                 key={i}
+                type="button"
                 onClick={() => setView(i)}
                 aria-label={`Вид ${i + 1}`}
                 className={cn(
-                  "overflow-hidden rounded-2xl border-2 transition-colors cursor-pointer",
+                  "overflow-hidden rounded-xl border-2 transition-colors cursor-pointer sm:rounded-2xl",
                   view === i ? "border-cyan" : "border-transparent",
                 )}
               >
@@ -110,16 +116,16 @@ export function ProductDetail({ product }: { product: Product }) {
 
         {/* Инфо */}
         <div>
-          <div className="mb-2 flex items-center gap-1.5 text-sm text-faint">
-            <span>{product.brand}</span>
-            <span>·</span>
-            <span>{product.category}</span>
+          <div className="mb-2 flex min-w-0 items-center gap-1.5 text-sm text-faint">
+            <span className="truncate">{product.brand}</span>
+            <span className="shrink-0">·</span>
+            <span className="truncate">{product.category}</span>
           </div>
-          <h1 className="font-display text-3xl font-bold leading-tight sm:text-4xl">
+          <h1 className="font-display text-[1.65rem] font-bold leading-tight sm:text-4xl">
             {product.name}
           </h1>
 
-          <div className="mt-3 flex items-center gap-2 text-sm">
+          <div className="mt-3 flex flex-wrap items-center gap-2 text-sm">
             <div className="flex gap-0.5">
               {Array.from({ length: 5 }).map((_, k) => (
                 <Star
@@ -139,16 +145,17 @@ export function ProductDetail({ product }: { product: Product }) {
             <span className="text-faint">· {product.reviews} отзывов</span>
           </div>
 
-          <p className="mt-5 text-muted">{product.short}</p>
+          <p className="mt-4 text-sm leading-relaxed text-muted sm:mt-5 sm:text-base">
+            {product.short}
+          </p>
 
-          {/* Цена */}
-          <div className="mt-6 flex items-end gap-3">
-            <span className="font-display text-4xl font-bold text-iri">
+          <div className="mt-5 flex flex-wrap items-end gap-2 sm:mt-6 sm:gap-3">
+            <span className="font-display text-3xl font-bold text-iri sm:text-4xl">
               {formatPrice(product.price)}
             </span>
             {product.oldPrice && (
-              <span className="mb-1 flex items-center gap-2">
-                <span className="text-lg text-faint line-through">
+              <span className="mb-0.5 flex items-center gap-2 sm:mb-1">
+                <span className="text-base text-faint line-through sm:text-lg">
                   {formatPrice(product.oldPrice)}
                 </span>
                 <span className="rounded-full bg-magenta/15 px-2 py-0.5 text-xs font-semibold text-magenta">
@@ -158,16 +165,16 @@ export function ProductDetail({ product }: { product: Product }) {
             )}
           </div>
 
-          {/* Цвет */}
           {product.colors.length > 0 && (
-            <div className="mt-7">
+            <div className="mt-6 sm:mt-7">
               <p className="mb-2.5 text-xs font-medium uppercase tracking-wider text-faint">
                 Цвет: <span className="text-ink">{color}</span>
               </p>
-              <div className="flex gap-2.5">
+              <div className="flex flex-wrap gap-2.5">
                 {product.colors.map((c) => (
                   <button
                     key={c.name}
+                    type="button"
                     onClick={() => setColor(c.name)}
                     aria-label={c.name}
                     className={cn(
@@ -185,9 +192,8 @@ export function ProductDetail({ product }: { product: Product }) {
             </div>
           )}
 
-          {/* Память */}
           {product.memory && product.memory.length > 0 && (
-            <div className="mt-6">
+            <div className="mt-5 sm:mt-6">
               <p className="mb-2.5 text-xs font-medium uppercase tracking-wider text-faint">
                 Память
               </p>
@@ -195,9 +201,10 @@ export function ProductDetail({ product }: { product: Product }) {
                 {product.memory.map((m) => (
                   <button
                     key={m}
+                    type="button"
                     onClick={() => setMemory(m)}
                     className={cn(
-                      "rounded-xl border px-4 py-2 text-sm transition-colors cursor-pointer",
+                      "rounded-xl border px-3.5 py-2 text-sm transition-colors cursor-pointer sm:px-4",
                       memory === m
                         ? "border-cyan bg-cyan/10 text-ink"
                         : "border-line text-muted hover:border-white/25",
@@ -210,10 +217,11 @@ export function ProductDetail({ product }: { product: Product }) {
             </div>
           )}
 
-          {/* Кол-во + в корзину */}
-          <div className="mt-8 flex flex-wrap items-center gap-3">
+          {/* Desktop / tablet CTA */}
+          <div className="mt-7 hidden items-center gap-3 sm:mt-8 lg:flex lg:flex-wrap">
             <div className="flex items-center gap-1 rounded-full border border-line p-1">
               <button
+                type="button"
                 onClick={() => setQty((q) => Math.max(1, q - 1))}
                 aria-label="Меньше"
                 className="grid h-10 w-10 place-items-center rounded-full text-muted transition-colors hover:bg-white/5 hover:text-ink cursor-pointer"
@@ -224,6 +232,7 @@ export function ProductDetail({ product }: { product: Product }) {
                 {qty}
               </span>
               <button
+                type="button"
                 onClick={() => setQty((q) => q + 1)}
                 aria-label="Больше"
                 className="grid h-10 w-10 place-items-center rounded-full text-muted transition-colors hover:bg-white/5 hover:text-ink cursor-pointer"
@@ -232,14 +241,12 @@ export function ProductDetail({ product }: { product: Product }) {
               </button>
             </div>
 
-            <button
-              onClick={() => void addItem(product, { color, memory, qty })}
-              className="btn-primary flex-1"
-            >
-              В корзину · {formatPrice(product.price * qty)}
+            <button type="button" onClick={onAdd} className="btn-primary flex-1">
+              В корзину · {lineTotal}
             </button>
 
             <button
+              type="button"
               onClick={() => toggleWishlist(product.id)}
               aria-label="В избранное"
               className={cn(
@@ -256,8 +263,7 @@ export function ProductDetail({ product }: { product: Product }) {
             </button>
           </div>
 
-          {/* Гарантии */}
-          <div className="mt-8 grid grid-cols-3 gap-3">
+          <div className="mt-7 grid grid-cols-3 gap-2 sm:mt-8 sm:gap-3">
             {[
               { icon: Truck, t: "Доставка", s: "в день заказа" },
               { icon: ShieldCheck, t: "Гарантия", s: "до 3 лет" },
@@ -265,32 +271,85 @@ export function ProductDetail({ product }: { product: Product }) {
             ].map(({ icon: I, t, s }) => (
               <div
                 key={t}
-                className="glass flex flex-col items-center gap-1 rounded-2xl px-2 py-4 text-center"
+                className="glass flex flex-col items-center gap-1 rounded-2xl px-1.5 py-3 text-center sm:px-2 sm:py-4"
               >
-                <I size={18} className="text-cyan" />
-                <span className="text-sm font-medium">{t}</span>
-                <span className="text-xs text-faint">{s}</span>
+                <I size={16} className="text-cyan sm:size-[18px]" />
+                <span className="text-[11px] font-medium leading-tight sm:text-sm">
+                  {t}
+                </span>
+                <span className="text-[10px] leading-tight text-faint sm:text-xs">
+                  {s}
+                </span>
               </div>
             ))}
           </div>
         </div>
       </div>
 
-      {/* Особенности */}
       <div>
-        <h2 className="mb-6 font-display text-2xl font-bold">Особенности</h2>
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <h2 className="mb-4 font-display text-xl font-bold sm:mb-6 sm:text-2xl">
+          Особенности
+        </h2>
+        <div className="grid gap-3 sm:grid-cols-2 sm:gap-4 lg:grid-cols-4">
           {product.specs.map((s) => (
-            <div key={s.label} className="glass rounded-2xl p-5">
+            <div key={s.label} className="glass rounded-2xl p-4 sm:p-5">
               <div className="mb-2 flex h-8 w-8 items-center justify-center rounded-lg bg-cyan/15 text-cyan">
                 <Check size={16} strokeWidth={2.5} />
               </div>
-              <p className="text-xs uppercase tracking-wider text-faint">
+              <p className="text-[10px] uppercase tracking-wider text-faint sm:text-xs">
                 {s.label}
               </p>
-              <p className="mt-1 font-medium text-ink">{s.value}</p>
+              <p className="mt-1 text-sm font-medium text-ink sm:text-base">
+                {s.value}
+              </p>
             </div>
           ))}
+        </div>
+      </div>
+
+      {/* Sticky mobile buy bar */}
+      <div className="fixed inset-x-0 bottom-0 z-40 border-t border-line bg-[#07080f]/95 px-4 py-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] backdrop-blur-xl lg:hidden">
+        <div className="mx-auto flex max-w-lg items-center gap-2">
+          <div className="flex shrink-0 items-center gap-0.5 rounded-full border border-line p-0.5">
+            <button
+              type="button"
+              onClick={() => setQty((q) => Math.max(1, q - 1))}
+              aria-label="Меньше"
+              className="grid h-10 w-10 place-items-center rounded-full text-muted cursor-pointer"
+            >
+              <Minus size={16} />
+            </button>
+            <span className="w-6 text-center text-sm font-medium tabular-nums">
+              {qty}
+            </span>
+            <button
+              type="button"
+              onClick={() => setQty((q) => q + 1)}
+              aria-label="Больше"
+              className="grid h-10 w-10 place-items-center rounded-full text-muted cursor-pointer"
+            >
+              <Plus size={16} />
+            </button>
+          </div>
+          <button type="button" onClick={onAdd} className="btn-primary min-w-0 flex-1 px-3 text-sm">
+            В корзину · {lineTotal}
+          </button>
+          <button
+            type="button"
+            onClick={() => toggleWishlist(product.id)}
+            aria-label="В избранное"
+            className={cn(
+              "grid h-12 w-12 shrink-0 place-items-center rounded-full border cursor-pointer",
+              wished
+                ? "border-magenta/50 bg-magenta/10"
+                : "border-line",
+            )}
+          >
+            <Heart
+              size={18}
+              className={cn(wished && "fill-magenta text-magenta")}
+            />
+          </button>
         </div>
       </div>
     </div>

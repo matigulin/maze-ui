@@ -148,34 +148,38 @@ export function CatalogClient({
 
       <div>
         {/* Toolbar */}
-        <div className="mb-6 flex flex-wrap items-center gap-3">
-          <div className="text-sm text-muted">
-            <span className="font-display text-lg font-semibold text-ink">
-              {filtered.length}
-            </span>{" "}
-            {plural(filtered.length, ["товар", "товара", "товаров"])}
+        <div className="mb-5 flex flex-col gap-3 sm:mb-6 sm:flex-row sm:flex-wrap sm:items-center">
+          <div className="flex items-center justify-between gap-3">
+            <div className="text-sm text-muted">
+              <span className="font-display text-lg font-semibold text-ink">
+                {filtered.length}
+              </span>{" "}
+              {plural(filtered.length, ["товар", "товара", "товаров"])}
+            </div>
+
+            <button
+              type="button"
+              onClick={() => setMobileFilters(true)}
+              className="flex items-center gap-2 rounded-full border border-line px-3.5 py-2 text-sm text-muted transition-colors hover:text-ink lg:hidden cursor-pointer"
+            >
+              <SlidersHorizontal size={15} />
+              Фильтры
+              {activeCount > 0 && (
+                <span className="grid h-5 w-5 place-items-center rounded-full bg-cyan text-[11px] font-bold text-[#04121a]">
+                  {activeCount}
+                </span>
+              )}
+            </button>
           </div>
 
-          <button
-            onClick={() => setMobileFilters(true)}
-            className="flex items-center gap-2 rounded-full border border-line px-4 py-2 text-sm text-muted transition-colors hover:text-ink lg:hidden cursor-pointer"
-          >
-            <SlidersHorizontal size={15} />
-            Фильтры
-            {activeCount > 0 && (
-              <span className="grid h-5 w-5 place-items-center rounded-full bg-cyan text-[11px] font-bold text-[#04121a]">
-                {activeCount}
-              </span>
-            )}
-          </button>
-
-          <div className="ml-auto flex gap-1.5">
+          <div className="-mx-1 flex gap-1.5 overflow-x-auto px-1 pb-0.5 sm:ml-auto sm:overflow-visible [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
             {SORTS.map((s) => (
               <button
+                type="button"
                 key={s.key}
                 onClick={() => setSort(s.key)}
                 className={cn(
-                  "rounded-full px-3.5 py-2 text-xs font-medium transition-colors cursor-pointer",
+                  "shrink-0 rounded-full px-3.5 py-2 text-xs font-medium transition-colors cursor-pointer",
                   sort === s.key
                     ? "bg-white/10 text-ink"
                     : "text-muted hover:text-ink",
@@ -189,7 +193,10 @@ export function CatalogClient({
 
         {/* Grid */}
         {filtered.length ? (
-          <motion.div layout className="grid grid-cols-2 gap-4 sm:gap-5 xl:grid-cols-3">
+          <motion.div
+            layout
+            className="grid grid-cols-2 gap-3 sm:gap-5 xl:grid-cols-3"
+          >
             <AnimatePresence mode="popLayout">
               {filtered.map((p) => (
                 <motion.div
