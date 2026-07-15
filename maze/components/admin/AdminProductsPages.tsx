@@ -184,16 +184,22 @@ export function ProductsListPage() {
                 </AdminButton>
               </>
             }
+            fieldsClassName="grid-cols-1 sm:grid-cols-1"
           >
             <AdminCardRow stacked label="Цена">
               {formatPrice(p.basePrice)}
             </AdminCardRow>
-            <AdminCardRow stacked label="Опубликован">
-              {p.isPublished ? "Да" : "Нет"}
-            </AdminCardRow>
-            <AdminCardRow stacked label="Склад">
-              {p.inStock ? "В наличии" : "Нет"}
-            </AdminCardRow>
+            <div className="grid grid-cols-2 gap-3">
+              <AdminCardRow stacked label="Опубликован">
+                {p.isPublished ? "Да" : "Нет"}
+              </AdminCardRow>
+              <div className="min-w-0 text-right">
+                <p className="text-[11px] leading-tight text-faint">Склад</p>
+                <div className="mt-0.5 text-sm leading-snug text-ink">
+                  {p.inStock ? "В наличии" : "Нет"}
+                </div>
+              </div>
+            </div>
           </AdminListCard>
         ))}
         {!list.loading && list.items.length === 0 && (
