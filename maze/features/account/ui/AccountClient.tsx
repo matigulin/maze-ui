@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { motion } from "motion/react";
@@ -44,6 +44,8 @@ export type AccountClientProps = {
   isAuthenticated: boolean;
   ensureAccessToken: () => Promise<string | null>;
   onLogin: () => void;
+  /** Слот из widget (LogoutButton и т.п.) — без импорта auth внутри feature. */
+  headerActions?: ReactNode;
 };
 
 export function AccountClient({
@@ -53,6 +55,7 @@ export function AccountClient({
   isAuthenticated,
   ensureAccessToken,
   onLogin,
+  headerActions,
 }: AccountClientProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -157,11 +160,14 @@ export function AccountClient({
             {isAuthenticated ? "Личный кабинет" : "Избранное"}
           </h1>
         </div>
-        {!isAuthenticated && (
-          <button type="button" onClick={onLogin} className="btn-ghost">
-            Войти
-          </button>
-        )}
+        <div className="flex flex-wrap items-center gap-2">
+          {!isAuthenticated && (
+            <button type="button" onClick={onLogin} className="btn-ghost">
+              Войти
+            </button>
+          )}
+          {isAuthenticated ? headerActions : null}
+        </div>
       </div>
 
       <div className="mb-8 flex flex-wrap gap-1.5">

@@ -5,7 +5,6 @@ import { LogIn, User } from "lucide-react";
 import { useModal } from "@/components/modals";
 import { cn } from "@/lib/utils";
 import { useUserAuth } from "../model/user-auth-provider";
-import { LogoutButton } from "./LogoutButton";
 
 function AuthIconButton({
   children,
@@ -61,12 +60,9 @@ export function HeaderAuthActions() {
   }
 
   return (
-    <div className="flex shrink-0 flex-nowrap items-center gap-1">
-      <AuthIconButton label="Личный кабинет" href="/account">
-        <User size={19} />
-      </AuthIconButton>
-      <LogoutButton className="flex h-10 shrink-0 items-center gap-1.5 rounded-full border border-line px-3 text-sm text-muted transition-colors hover:border-magenta/50 hover:text-magenta cursor-pointer" />
-    </div>
+    <AuthIconButton label="Личный кабинет" href="/account">
+      <User size={19} />
+    </AuthIconButton>
   );
 }
 
@@ -105,10 +101,6 @@ export function MobileAuthActions({ onNavigate }: { onNavigate?: () => void }) {
         <User size={18} className="text-cyan" />
         Личный кабинет
       </Link>
-      <LogoutButton
-        onDone={onNavigate}
-        className="mt-1 flex w-full items-center gap-3 rounded-xl px-3 py-3 text-sm font-medium text-muted transition-colors hover:bg-magenta/10 hover:text-magenta cursor-pointer"
-      />
     </div>
   );
 }
