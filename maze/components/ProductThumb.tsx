@@ -68,9 +68,6 @@ function Placeholder({
   );
 }
 
-/**
- * Фото с API или градиентный плейсхолдер (моки / нет картинки / битый URL).
- */
 export function ProductThumb({
   product,
   className,

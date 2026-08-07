@@ -1,4 +1,5 @@
 import type { Product, ColorOption, Spec, Badge } from "@/lib/data";
+import { resolveMediaUrl, resolveMediaUrls } from "@/lib/media-url";
 
 export type ProductListItemDto = {
   id: string;
@@ -93,7 +94,7 @@ export function mapProductListItemToUiProduct(item: ProductListItemDto): Product
     reviews: 0,
     tint: ["#22d3ee", "#a78bfa"],
     glyph: pickGlyph(item.title, item.slug),
-    imageUrl: item.mainImageUrl,
+    imageUrl: resolveMediaUrl(item.mainImageUrl),
     colors: [],
     memory: undefined,
     specs: [],
@@ -140,8 +141,8 @@ export function mapProductDetailToUiProduct(dto: ProductDetailDto): Product {
     reviews: dto.reviewsCount ?? 0,
     tint: pickTint(variants),
     glyph: pickGlyph(dto.title, dto.deviceType || dto.slug),
-    imageUrl: dto.images?.[0] ?? null,
-    images: dto.images?.length ? dto.images : undefined,
+    imageUrl: resolveMediaUrl(dto.images?.[0] ?? null),
+    images: dto.images?.length ? resolveMediaUrls(dto.images) : undefined,
     defaultVariantId: cheapestInStock?.id ?? first?.id,
     variants: variants.map((v) => ({
       id: v.id,

@@ -7,6 +7,7 @@ import {
   reviews as mockReviews,
   type Review,
 } from "@/lib/data";
+import { resolveMediaUrl } from "@/lib/media-url";
 import { shouldUseMocks } from "@/lib/mocks";
 
 export type NavCategory = {
@@ -109,7 +110,7 @@ function mapCategory(dto: CategoryTreeItemDto): NavCategory {
     count: Math.max(dto.children.length, 1),
     icon: CATEGORY_ICONS[dto.slug] ?? "smartphone",
     tint: CATEGORY_TINTS[dto.slug] ?? ["#22d3ee", "#a78bfa"],
-    imageUrl: dto.image,
+    imageUrl: resolveMediaUrl(dto.image),
   };
 }
 

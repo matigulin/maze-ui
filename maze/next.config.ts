@@ -13,8 +13,12 @@ const nextConfig: NextConfig = {
   // Доступ с телефона в той же Wi‑Fi (dev HMR)
   allowedDevOrigins: ["192.168.0.63"],
   images: {
+    // Unsplash с этой сети часто не открывается: optimizer ждёт ~7с на каждое фото → 504 и «вечный Rendering».
+    // Браузер грузит URL напрямую; при ошибке ProductThumb сразу уходит в плейсхолдер.
+    unoptimized: true,
     remotePatterns: [
       { protocol: "https", hostname: "images.unsplash.com", pathname: "/**" },
+      { protocol: "https", hostname: "wsrv.nl", pathname: "/**" },
       {
         protocol: "http",
         hostname: "localhost",

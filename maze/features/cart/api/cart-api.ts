@@ -1,5 +1,6 @@
 import { apiDelete, apiGet, apiPostJson, apiPutJson } from "@/lib/api";
 import type { Product } from "@/lib/data";
+import { resolveMediaUrl } from "@/lib/media-url";
 import type { CartItem } from "../model/types";
 
 export type CartItemDto = {
@@ -52,7 +53,7 @@ function cartLineToUiItem(line: CartItemDto): CartItem {
       reviews: 0,
       tint: ["#22d3ee", "#a78bfa"],
       glyph: line.title,
-      imageUrl: line.mainImageUrl,
+      imageUrl: resolveMediaUrl(line.mainImageUrl),
       colors: [],
       specs: [],
       short: line.variantLabel,
