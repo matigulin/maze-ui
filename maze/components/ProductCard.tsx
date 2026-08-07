@@ -13,6 +13,7 @@ import type { Product } from "@/lib/data";
 import { ProductThumb } from "./ProductThumb";
 import { useCart } from "./store";
 import { cn, formatPrice } from "@/lib/utils";
+import { formatStockLabel } from "@/lib/stock";
 
 const BADGE_STYLE: Record<string, string> = {
   NEW: "bg-cyan/15 text-cyan border-cyan/30",
@@ -114,6 +115,14 @@ export function ProductCard({ product }: { product: Product }) {
             <span className="text-ink">{product.rating.toFixed(1)}</span>
             <span className="truncate text-faint">· {product.reviews}</span>
           </div>
+          <p
+            className={cn(
+              "text-[11px] sm:text-xs",
+              (product.quantityAvailable ?? 0) > 0 ? "text-cyan" : "text-faint",
+            )}
+          >
+            {formatStockLabel(product.quantityAvailable)}
+          </p>
 
           <div className="mt-auto flex items-end justify-between gap-2 pt-1">
             <div className="min-w-0">

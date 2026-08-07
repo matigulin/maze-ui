@@ -14,6 +14,7 @@ export type ProductVariant = {
   price: number;
   oldPrice?: number;
   inStock: boolean;
+  quantityAvailable: number;
 };
 
 export type Product = {
@@ -33,6 +34,9 @@ export type Product = {
   images?: string[];
   defaultVariantId?: string;
   variants?: ProductVariant[];
+  /** Суммарный доступный остаток (карточка каталога). */
+  quantityAvailable?: number;
+  inStock?: boolean;
   colors: ColorOption[];
   memory?: string[];
   specs: Spec[];

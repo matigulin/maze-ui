@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { motion } from "motion/react";
 import {
   Heart,
@@ -17,6 +17,7 @@ import type { Product } from "@/lib/data";
 import { ProductThumb } from "@/components/ProductThumb";
 import { useCart } from "@/components/store";
 import { formatPrice, cn } from "@/lib/utils";
+import { formatStockLabel } from "@/lib/stock";
 
 const ANGLES = [135, 90, 200, 45];
 
@@ -32,14 +33,53 @@ export function ProductDetail({ product }: { product: Product }) {
       ? product.images
       : [null, null, null, null];
 
-  const discount = product.oldPrice
-    ? Math.round((1 - product.price / product.oldPrice) * 100)
+  const selectedVariant = useMemo(() => {
+    const variants = product.variants ?? [];
+    if (variants.length === 0) return undefined;
+    return (
+      variants.find(
+        (v) =>
+          (color == null || v.color === color) &&
+          (memory == null || v.memory == null || v.memory === memory),
+      ) ??
+      variants.find((v) => v.inStock) ??
+      variants[0]
+    );
+  }, [product.variants, color, memory]);
+
+  const stockQty =
+    selectedVariant?.quantityAvailable ?? product.quantityAvailable ?? 0;
+  const maxQty = Math.max(0, stockQty);
+  const canBuy = maxQty > 0;
+
+  useEffect(() => {
+    setQty((q) => {
+      if (maxQty <= 0) return 1;
+      return Math.min(Math.max(1, q), maxQty);
+    });
+  }, [maxQty]);
+
+  const unitPrice = selectedVariant?.price ?? product.price;
+  const unitOldPrice = selectedVariant?.oldPrice ?? product.oldPrice;
+
+  const discount = unitOldPrice
+    ? Math.round((1 - unitPrice / unitOldPrice) * 100)
     : 0;
 
-  const lineTotal = formatPrice(product.price * qty);
+  const lineTotal = formatPrice(unitPrice * qty);
 
   function onAdd() {
+    if (!canBuy) return;
     void addItem(product, { color, memory, qty });
+  }
+
+  function decQty() {
+    setQty((q) => Math.max(1, q - 1));
+  }
+
+  function incQty() {
+    if (maxQty <= 0) return;
+    setQty((q) => Math.min(maxQty, q + 1));
   }
 
   return (
@@ -151,12 +191,12 @@ export function ProductDetail({ product }: { product: Product }) {
 
           <div className="mt-5 flex flex-wrap items-end gap-2 sm:mt-6 sm:gap-3">
             <span className="font-display text-3xl font-bold text-iri sm:text-4xl">
-              {formatPrice(product.price)}
+              {formatPrice(unitPrice)}
             </span>
-            {product.oldPrice && (
+            {unitOldPrice && (
               <span className="mb-0.5 flex items-center gap-2 sm:mb-1">
                 <span className="text-base text-faint line-through sm:text-lg">
-                  {formatPrice(product.oldPrice)}
+                  {formatPrice(unitOldPrice)}
                 </span>
                 <span className="rounded-full bg-magenta/15 px-2 py-0.5 text-xs font-semibold text-magenta">
                   −{discount}%
@@ -164,6 +204,15 @@ export function ProductDetail({ product }: { product: Product }) {
               </span>
             )}
           </div>
+
+          <p
+            className={cn(
+              "mt-3 text-sm font-medium",
+              canBuy ? "text-cyan" : "text-faint",
+            )}
+          >
+            {formatStockLabel(stockQty)}
+          </p>
 
           {product.colors.length > 0 && (
             <div className="mt-6 sm:mt-7">
@@ -222,9 +271,10 @@ export function ProductDetail({ product }: { product: Product }) {
             <div className="flex items-center gap-1 rounded-full border border-line p-1">
               <button
                 type="button"
-                onClick={() => setQty((q) => Math.max(1, q - 1))}
+                onClick={decQty}
                 aria-label="Меньше"
-                className="grid h-10 w-10 place-items-center rounded-full text-muted transition-colors hover:bg-white/5 hover:text-ink cursor-pointer"
+                disabled={!canBuy || qty <= 1}
+                className="grid h-10 w-10 place-items-center rounded-full text-muted transition-colors hover:bg-white/5 hover:text-ink cursor-pointer disabled:cursor-not-allowed disabled:opacity-40"
               >
                 <Minus size={16} />
               </button>
@@ -233,16 +283,27 @@ export function ProductDetail({ product }: { product: Product }) {
               </span>
               <button
                 type="button"
-                onClick={() => setQty((q) => q + 1)}
+                onClick={incQty}
                 aria-label="Больше"
-                className="grid h-10 w-10 place-items-center rounded-full text-muted transition-colors hover:bg-white/5 hover:text-ink cursor-pointer"
+                disabled={!canBuy || qty >= maxQty}
+                title={
+                  qty >= maxQty && maxQty > 0
+                    ? `На складе только ${maxQty} шт.`
+                    : undefined
+                }
+                className="grid h-10 w-10 place-items-center rounded-full text-muted transition-colors hover:bg-white/5 hover:text-ink cursor-pointer disabled:cursor-not-allowed disabled:opacity-40"
               >
                 <Plus size={16} />
               </button>
             </div>
 
-            <button type="button" onClick={onAdd} className="btn-primary flex-1">
-              В корзину · {lineTotal}
+            <button
+              type="button"
+              onClick={onAdd}
+              disabled={!canBuy}
+              className="btn-primary flex-1 disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              {canBuy ? `В корзину · ${lineTotal}` : "Нет в наличии"}
             </button>
 
             <button
@@ -313,9 +374,10 @@ export function ProductDetail({ product }: { product: Product }) {
           <div className="flex shrink-0 items-center gap-0.5 rounded-full border border-line p-0.5">
             <button
               type="button"
-              onClick={() => setQty((q) => Math.max(1, q - 1))}
+              onClick={decQty}
               aria-label="Меньше"
-              className="grid h-10 w-10 place-items-center rounded-full text-muted cursor-pointer"
+              disabled={!canBuy || qty <= 1}
+              className="grid h-10 w-10 place-items-center rounded-full text-muted cursor-pointer disabled:cursor-not-allowed disabled:opacity-40"
             >
               <Minus size={16} />
             </button>
@@ -324,15 +386,21 @@ export function ProductDetail({ product }: { product: Product }) {
             </span>
             <button
               type="button"
-              onClick={() => setQty((q) => q + 1)}
+              onClick={incQty}
               aria-label="Больше"
-              className="grid h-10 w-10 place-items-center rounded-full text-muted cursor-pointer"
+              disabled={!canBuy || qty >= maxQty}
+              className="grid h-10 w-10 place-items-center rounded-full text-muted cursor-pointer disabled:cursor-not-allowed disabled:opacity-40"
             >
               <Plus size={16} />
             </button>
           </div>
-          <button type="button" onClick={onAdd} className="btn-primary min-w-0 flex-1 px-3 text-sm">
-            В корзину · {lineTotal}
+          <button
+            type="button"
+            onClick={onAdd}
+            disabled={!canBuy}
+            className="btn-primary min-w-0 flex-1 px-3 text-sm disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            {canBuy ? `В корзину · ${lineTotal}` : "Нет в наличии"}
           </button>
           <button
             type="button"

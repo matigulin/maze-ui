@@ -13,6 +13,7 @@ export type CartItemDto = {
   unitPrice: number;
   lineTotal: number;
   maxQuantity: number;
+  quantityAvailable: number;
   inStock: boolean;
   mainImageUrl: string | null;
 };
@@ -38,6 +39,7 @@ function cartLineToUiItem(line: CartItemDto): CartItem {
     variantId: line.variantId,
     qty: line.quantity,
     maxQuantity: line.maxQuantity,
+    quantityAvailable: line.quantityAvailable,
     inStock: line.inStock,
     color,
     memory,

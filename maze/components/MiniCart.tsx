@@ -6,6 +6,7 @@ import { Minus, Plus, ShoppingBag, Trash2, X } from "lucide-react";
 import { useCart } from "./store";
 import { ProductThumb } from "./ProductThumb";
 import { formatPrice, plural, cn } from "@/lib/utils";
+import { formatStockLabel } from "@/lib/stock";
 
 export function MiniCart() {
   const { miniOpen, setMiniOpen, items, subtotal, count, updateQty, removeItem } =
@@ -86,6 +87,9 @@ export function MiniCart() {
                         <p className="text-xs text-faint">
                           {[it.color, it.memory].filter(Boolean).join(" · ")}
                         </p>
+                        <p className="mt-1 text-[11px] text-cyan">
+                          {formatStockLabel(it.quantityAvailable ?? it.maxQuantity)}
+                        </p>
                         <div className="mt-2 flex items-center justify-between">
                           <div className="flex items-center gap-1 rounded-full border border-line">
                             <button
@@ -103,15 +107,15 @@ export function MiniCart() {
                               type="button"
                               aria-label="Больше"
                               onClick={() => void updateQty(it.key, it.qty + 1)}
-                              disabled={it.qty >= (it.maxQuantity ?? 10)}
+                              disabled={it.qty >= (it.maxQuantity ?? 0)}
                               title={
-                                it.qty >= (it.maxQuantity ?? 10)
+                                it.qty >= (it.maxQuantity ?? 0)
                                   ? `На складе только ${it.maxQuantity} шт.`
                                   : undefined
                               }
                               className={cn(
                                 "grid h-7 w-7 place-items-center rounded-full",
-                                it.qty >= (it.maxQuantity ?? 10)
+                                it.qty >= (it.maxQuantity ?? 0)
                                   ? "cursor-not-allowed text-faint opacity-40"
                                   : "text-muted hover:text-ink cursor-pointer",
                               )}

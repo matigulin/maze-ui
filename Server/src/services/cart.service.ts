@@ -26,6 +26,7 @@ export interface CartItemDto {
   unitPrice: number;
   lineTotal: number;
   maxQuantity: number;
+  quantityAvailable: number;
   inStock: boolean;
   /** Primary product image — same source as catalog cards. */
   mainImageUrl: string | null;
@@ -215,7 +216,8 @@ async function enrichCart(lines: CartLine[]): Promise<{ cart: CartDto; validLine
 
     const available =
       (variant.stock?.quantity ?? 0) - (variant.stock?.reserved_quantity ?? 0);
-    const maxQuantity = Math.min(CART_MAX_QTY_PER_ITEM, Math.max(available, 0));
+    const quantityAvailable = Math.max(available, 0);
+    const maxQuantity = Math.min(CART_MAX_QTY_PER_ITEM, quantityAvailable);
     const quantity = Math.min(line.quantity, Math.max(maxQuantity, 0));
     const unitPrice = toNumber(variant.price);
     const inStock = variant.is_available && available > 0;
@@ -240,6 +242,7 @@ async function enrichCart(lines: CartLine[]): Promise<{ cart: CartDto; validLine
       unitPrice,
       lineTotal: unitPrice * quantity,
       maxQuantity,
+      quantityAvailable,
       inStock,
       mainImageUrl,
     });

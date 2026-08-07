@@ -217,26 +217,41 @@ export function CartProvider({
           .join("|");
         setItems((prev) => {
           const found = prev.find((i) => i.key === key);
+          const variantQty =
+            product.variants?.find(
+              (v) =>
+                (opts.color == null || v.color === opts.color) &&
+                (opts.memory == null ||
+                  v.memory == null ||
+                  v.memory === opts.memory),
+            )?.quantityAvailable ??
+            product.quantityAvailable ??
+            0;
+          const stockCap = Math.max(0, variantQty);
           if (found) {
             return prev.map((i) =>
               i.key === key
                 ? {
                     ...i,
+                    quantityAvailable: stockCap,
+                    maxQuantity: Math.min(i.maxQuantity ?? 10, stockCap || 10),
                     qty: Math.min(
                       i.qty + (opts.qty ?? 1),
-                      i.maxQuantity ?? 10,
+                      Math.min(i.maxQuantity ?? 10, stockCap || 10),
                     ),
                   }
                 : i,
             );
           }
+          const maxQuantity = Math.min(10, stockCap || 10);
           return [
             ...prev,
             {
               key,
               product,
-              qty: opts.qty ?? 1,
-              maxQuantity: 10,
+              qty: Math.min(opts.qty ?? 1, maxQuantity),
+              maxQuantity,
+              quantityAvailable: stockCap,
               color: opts.color,
               memory: opts.memory,
               variantId: opts.variantId,

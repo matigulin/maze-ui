@@ -20,6 +20,7 @@ import { Field } from "@/components/Field";
 import { PhoneNationalField } from "@/components/PhoneNationalField";
 import { Modal } from "@/components/modals";
 import { formatPrice, plural, cn } from "@/lib/utils";
+import { formatStockLabel } from "@/lib/stock";
 import { scrollWindowToTop } from "@/lib/scroll";
 import { checkoutCart } from "@/features/checkout";
 import { ApiError } from "@/lib/api";
@@ -235,6 +236,21 @@ export function CartClient() {
         <p className="mt-2 text-sm text-muted">
           {firstName}, {phoneNational ? `+7 ${phoneNational}` : "телефон не указан"}
         </p>
+        <ul className="mt-4 space-y-2 rounded-xl border border-line bg-bg-2/40 px-3 py-2.5 text-sm">
+          {items.map((it) => (
+            <li key={it.key} className="flex items-start justify-between gap-3">
+              <span className="min-w-0 flex-1 text-ink">
+                <span className="line-clamp-1">{it.product.name}</span>
+                <span className="mt-0.5 block text-[11px] text-faint">
+                  {it.qty} шт. · {formatStockLabel(it.quantityAvailable ?? it.maxQuantity)}
+                </span>
+              </span>
+              <span className="shrink-0 tabular-nums text-muted">
+                {formatPrice(it.product.price * it.qty)}
+              </span>
+            </li>
+          ))}
+        </ul>
         <div className="mt-6 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
           <button
             type="button"
@@ -296,6 +312,9 @@ export function CartClient() {
                 <p className="text-xs text-faint">
                   {[it.color, it.memory].filter(Boolean).join(" · ")}
                 </p>
+                <p className="mt-1 text-[11px] text-cyan">
+                  {formatStockLabel(it.quantityAvailable ?? it.maxQuantity)}
+                </p>
                 <div className="mt-auto flex items-center justify-between pt-2">
                   <div className="flex flex-col gap-1">
                     <div className="flex items-center gap-1 rounded-full border border-line p-0.5">
@@ -314,15 +333,15 @@ export function CartClient() {
                         type="button"
                         onClick={() => void updateQty(it.key, it.qty + 1)}
                         aria-label="Больше"
-                        disabled={it.qty >= (it.maxQuantity ?? 10)}
+                        disabled={it.qty >= (it.maxQuantity ?? 0)}
                         title={
-                          it.qty >= (it.maxQuantity ?? 10)
+                          it.qty >= (it.maxQuantity ?? 0)
                             ? `На складе только ${it.maxQuantity} шт.`
                             : undefined
                         }
                         className={cn(
                           "grid h-8 w-8 place-items-center rounded-full transition-colors",
-                          it.qty >= (it.maxQuantity ?? 10)
+                          it.qty >= (it.maxQuantity ?? 0)
                             ? "cursor-not-allowed text-faint opacity-40"
                             : "text-muted hover:bg-white/5 hover:text-ink cursor-pointer",
                         )}
@@ -330,7 +349,7 @@ export function CartClient() {
                         <Plus size={14} />
                       </button>
                     </div>
-                    {it.qty >= (it.maxQuantity ?? 10) && (
+                    {it.qty >= (it.maxQuantity ?? 0) && (it.maxQuantity ?? 0) > 0 && (
                       <p className="pl-1 text-[11px] text-faint">
                         Максимум {it.maxQuantity} шт.
                       </p>

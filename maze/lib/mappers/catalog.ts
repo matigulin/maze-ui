@@ -12,6 +12,7 @@ export type ProductListItemDto = {
   oldPriceFrom: number | null;
   mainImageUrl: string | null;
   inStock: boolean;
+  quantityAvailable: number;
   badges: string[];
 };
 
@@ -95,6 +96,8 @@ export function mapProductListItemToUiProduct(item: ProductListItemDto): Product
     tint: ["#22d3ee", "#a78bfa"],
     glyph: pickGlyph(item.title, item.slug),
     imageUrl: resolveMediaUrl(item.mainImageUrl),
+    quantityAvailable: item.quantityAvailable,
+    inStock: item.inStock,
     colors: [],
     memory: undefined,
     specs: [],
@@ -144,6 +147,11 @@ export function mapProductDetailToUiProduct(dto: ProductDetailDto): Product {
     imageUrl: resolveMediaUrl(dto.images?.[0] ?? null),
     images: dto.images?.length ? resolveMediaUrls(dto.images) : undefined,
     defaultVariantId: cheapestInStock?.id ?? first?.id,
+    quantityAvailable: variants.reduce(
+      (sum, v) => sum + Math.max(0, v.quantityAvailable ?? 0),
+      0,
+    ),
+    inStock: dto.inStock,
     variants: variants.map((v) => ({
       id: v.id,
       color: v.color,
@@ -151,6 +159,7 @@ export function mapProductDetailToUiProduct(dto: ProductDetailDto): Product {
       price: v.price,
       oldPrice: v.oldPrice ?? undefined,
       inStock: v.inStock,
+      quantityAvailable: v.quantityAvailable,
     })),
     colors: colorOptions,
     memory: memoryOptions.length ? memoryOptions : undefined,

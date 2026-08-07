@@ -67,6 +67,7 @@ export interface ProductListItemDto {
   oldPriceFrom: number | null;
   mainImageUrl: string | null;
   inStock: boolean;
+  quantityAvailable: number;
   badges: string[];
 }
 
@@ -133,6 +134,13 @@ function mapListItem(
     product.images?.[0]?.url ??
     null;
 
+  const quantityAvailable = variants.reduce((sum, variant) => {
+    if (!variant.is_available) return sum;
+    const available =
+      (variant.stock?.quantity ?? 0) - (variant.stock?.reserved_quantity ?? 0);
+    return sum + Math.max(available, 0);
+  }, 0);
+
   return {
     id: product.id,
     slug: product.slug,
@@ -143,7 +151,8 @@ function mapListItem(
     priceFrom,
     oldPriceFrom: product.old_price ? toNumber(product.old_price) : null,
     mainImageUrl: primaryImage,
-    inStock: product.in_stock,
+    inStock: product.in_stock && quantityAvailable > 0,
+    quantityAvailable,
     badges,
   };
 }
@@ -462,8 +471,16 @@ export async function listProductSummariesByIds(productIds: string[]): Promise<P
       {
         model: ProductVariant,
         as: 'variants',
-        attributes: ['price'],
+        attributes: ['price', 'is_available'],
         separate: true,
+        include: [
+          {
+            model: Stock,
+            as: 'stock',
+            attributes: ['quantity', 'reserved_quantity'],
+            required: false,
+          },
+        ],
       },
     ],
   });
