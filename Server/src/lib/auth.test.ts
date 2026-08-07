@@ -15,10 +15,22 @@ beforeAll(() => {
 });
 
 describe('normalizePhone', () => {
-  it('normalizes russian numbers', () => {
-    expect(normalizePhone('+79991234567')).toBe('+79991234567');
-    expect(normalizePhone('89991234567')).toBe('+79991234567');
-    expect(normalizePhone('9991234567')).toBe('+79991234567');
+  it('normalizes russian mobile numbers', () => {
+    expect(normalizePhone('+79161234567')).toBe('+79161234567');
+    expect(normalizePhone('89161234567')).toBe('+79161234567');
+    expect(normalizePhone('9161234567')).toBe('+79161234567');
+  });
+
+  it('rejects landline and impossible ranges', () => {
+    expect(() => normalizePhone('+74951234567')).toThrow();
+    expect(() => normalizePhone('+71111111111')).toThrow();
+    expect(() => normalizePhone('+71234567890')).toThrow();
+  });
+
+  it('rejects obviously fake mobiles', () => {
+    expect(() => normalizePhone('+79111111111')).toThrow();
+    expect(() => normalizePhone('+79876543210')).toThrow();
+    expect(() => normalizePhone('999')).toThrow();
   });
 });
 

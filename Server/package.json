@@ -35,6 +35,7 @@
     "fastify-plugin": "^5.0.1",
     "ioredis": "^5.4.2",
     "jose": "^6.2.3",
+    "libphonenumber-js": "^1.13.10",
     "pg": "^8.13.1",
     "pg-hstore": "^2.3.4",
     "sequelize": "^6.37.5",

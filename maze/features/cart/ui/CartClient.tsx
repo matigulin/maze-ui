@@ -17,14 +17,16 @@ import {
 } from "lucide-react";
 import { ProductThumb } from "@/components/ProductThumb";
 import { Field } from "@/components/Field";
+import { PhoneNationalField } from "@/components/PhoneNationalField";
 import { Modal } from "@/components/modals";
 import { formatPrice, plural, cn } from "@/lib/utils";
 import { scrollWindowToTop } from "@/lib/scroll";
 import { checkoutCart } from "@/features/checkout";
 import { ApiError } from "@/lib/api";
 import {
-  maskNationalPhoneInput,
-  nationalPhoneToE164,
+  digitsOnly,
+  isValidRussianMobile,
+  validateRussianMobile,
 } from "@/lib/phone";
 import { useCart } from "../model/cart-provider";
 
@@ -81,7 +83,7 @@ export function CartClient() {
   const [payment, setPayment] = useState(PAYMENT[0].id);
   const [firstName, setFirstName] = useState("");
   const [phoneNational, setPhoneNational] = useState("");
-  const phoneFieldId = useId();
+  const [forcePhoneError, setForcePhoneError] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
@@ -119,12 +121,11 @@ export function CartClient() {
         throw new Error("В корзине нет вариантов товара");
       }
 
-      let phone: string;
-      try {
-        phone = nationalPhoneToE164(phoneNational);
-      } catch {
-        throw new Error("Введите корректный номер телефона");
+      const validated = validateRussianMobile(phoneNational);
+      if (!validated.ok) {
+        throw new Error(validated.message);
       }
+      const phone = validated.e164;
 
       const accessToken = await ensureAccessToken();
       const order = await checkoutCart({
@@ -367,12 +368,12 @@ export function CartClient() {
             e.preventDefault();
             if (submitting) return;
             setFormError(null);
-            try {
-              nationalPhoneToE164(phoneNational);
-            } catch {
-              setFormError("Введите корректный номер телефона");
+            const phoneCheck = validateRussianMobile(phoneNational);
+            if (!phoneCheck.ok) {
+              setForcePhoneError(true);
               return;
             }
+            setForcePhoneError(false);
             if (!firstName.trim()) {
               setFormError("Укажите имя");
               return;
@@ -427,31 +428,16 @@ export function CartClient() {
             value={firstName}
             onChange={(e) => setFirstName(e.target.value)}
           />
-          <div className="space-y-1.5">
-            <label
-              htmlFor={phoneFieldId}
-              className="block text-xs font-medium uppercase tracking-wider text-muted"
-            >
-              Телефон
-            </label>
-            <div className="flex w-full items-center gap-1.5 rounded-xl border border-line bg-bg-2/60 px-4 transition-colors outline-none focus-within:border-cyan/70 focus-within:outline-none">
-              <span className="shrink-0 text-[15px] text-ink">+7</span>
-              <input
-                id={phoneFieldId}
-                type="tel"
-                inputMode="tel"
-                autoComplete="tel-national"
-                required
-                placeholder="(999) 123-45-67"
-                value={phoneNational}
-                onChange={(e) =>
-                  setPhoneNational(maskNationalPhoneInput(e.target.value))
-                }
-                disabled={submitting}
-                className="input-inset min-w-0 flex-1 border-0 bg-transparent py-3 text-[15px] text-ink placeholder:text-faint shadow-none outline-none"
-              />
-            </div>
-          </div>
+          <PhoneNationalField
+            value={phoneNational}
+            onChange={(next) => {
+              setPhoneNational(next);
+              setForcePhoneError(false);
+              setFormError(null);
+            }}
+            disabled={submitting}
+            forceError={forcePhoneError}
+          />
 
           {formError && (
             <p
@@ -483,7 +469,15 @@ export function CartClient() {
             </div>
           </div>
 
-          <button type="submit" className="btn-primary w-full" disabled={submitting}>
+          <button
+            type="submit"
+            className="btn-primary w-full"
+            disabled={
+              submitting ||
+              (digitsOnly(phoneNational).length > 0 &&
+                !isValidRussianMobile(phoneNational))
+            }
+          >
             {submitting ? "Оформляем…" : "Оформить заказ"}
           </button>
           <p className="text-center text-xs text-faint">

@@ -4,13 +4,15 @@ import { useEffect, useState, type FormEvent } from "react";
 import { ShieldCheck } from "lucide-react";
 import { Modal } from "@/components/modals";
 import { Field } from "@/components/Field";
+import { PhoneNationalField } from "@/components/PhoneNationalField";
 import { sendSmsCode } from "@/entities/user";
 import { ApiError } from "@/lib/api";
 import {
+  digitsOnly,
   e164ToNationalDisplay,
   formatPhoneDisplay,
-  maskNationalPhoneInput,
-  nationalPhoneToE164,
+  isValidRussianMobile,
+  validateRussianMobile,
 } from "@/lib/phone";
 import { useUserAuth } from "../model/user-auth-provider";
 
@@ -30,6 +32,7 @@ export function AuthModal({
   const [code, setCode] = useState("");
   const [devCode, setDevCode] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [forcePhoneError, setForcePhoneError] = useState(false);
   const [pending, setPending] = useState(false);
 
   useEffect(() => {
@@ -44,6 +47,7 @@ export function AuthModal({
     setCode("");
     setDevCode(null);
     setError(null);
+    setForcePhoneError(false);
     setPending(false);
   }
 
@@ -54,6 +58,7 @@ export function AuthModal({
 
   function goBackToPhone() {
     setError(null);
+    setForcePhoneError(false);
     setCode("");
     setStep("phone");
     setPhoneNational(phone ? e164ToNationalDisplay(phone) : "");
@@ -63,18 +68,17 @@ export function AuthModal({
     e.preventDefault();
     setError(null);
 
-    let normalized: string;
-    try {
-      normalized = nationalPhoneToE164(phoneNational);
-    } catch {
-      setError("Введите номер полностью: (999) 123-45-67");
+    const validated = validateRussianMobile(phoneNational);
+    if (!validated.ok) {
+      setForcePhoneError(true);
       return;
     }
 
+    setForcePhoneError(false);
     setPending(true);
     try {
-      const result = await sendSmsCode(normalized);
-      setPhone(normalized);
+      const result = await sendSmsCode(validated.e164);
+      setPhone(validated.e164);
       setDevCode(result.devCode ?? null);
       setStep("code");
       setCode("");
@@ -99,7 +103,7 @@ export function AuthModal({
       return;
     }
 
-    const trimmed = code.replace(/\D/g, "");
+    const trimmed = digitsOnly(code);
     if (trimmed.length !== 4) {
       setError("Введите 4-значный код из SMS");
       return;
@@ -140,6 +144,9 @@ export function AuthModal({
   }
 
   const phoneLabel = phone ? formatPhoneDisplay(phone) : "ваш номер";
+  const phoneStarted = digitsOnly(phoneNational).length > 0;
+  const canSubmitPhone =
+    !pending && ready && (!phoneStarted || isValidRussianMobile(phoneNational));
 
   return (
     <Modal open={open} onClose={close} title="Вход в MAZE ID">
@@ -148,44 +155,30 @@ export function AuthModal({
           <p className="text-sm text-muted">
             Введите номер телефона — отправим SMS-код для входа в MAZE ID.
           </p>
-          <div className="space-y-1.5">
-            <label
-              htmlFor="auth-phone"
-              className="block text-xs font-medium uppercase tracking-wider text-muted"
-            >
-              Телефон
-            </label>
-            <div className="flex w-full items-center gap-1.5 rounded-xl border border-line bg-bg-2/60 px-4 transition-colors outline-none focus-within:border-cyan/70 focus-within:outline-none">
-              <span className="shrink-0 text-[15px] text-ink">+7</span>
-              <input
-                id="auth-phone"
-                type="tel"
-                inputMode="tel"
-                autoComplete="tel-national"
-                required
-                autoFocus={open}
-                placeholder="(999) 123-45-67"
-                value={phoneNational}
-                onChange={(e) =>
-                  setPhoneNational(maskNationalPhoneInput(e.target.value))
-                }
-                disabled={pending}
-                className="input-inset min-w-0 flex-1 border-0 bg-transparent py-3 text-[15px] text-ink placeholder:text-faint shadow-none outline-none"
-              />
-            </div>
-          </div>
-          {error && (
+          <PhoneNationalField
+            id="auth-phone"
+            value={phoneNational}
+            onChange={(next) => {
+              setPhoneNational(next);
+              setForcePhoneError(false);
+              setError(null);
+            }}
+            disabled={pending}
+            autoFocus={open}
+            forceError={forcePhoneError}
+          />
+          {error ? (
             <p
               role="alert"
               className="rounded-xl border border-magenta/30 bg-magenta/10 px-3 py-2 text-sm text-ink"
             >
               {error}
             </p>
-          )}
+          ) : null}
           <button
             type="submit"
             className="btn-primary w-full"
-            disabled={pending || !ready}
+            disabled={!canSubmitPhone}
           >
             {pending ? "Отправляем…" : "Получить код"}
           </button>
@@ -210,22 +203,23 @@ export function AuthModal({
             placeholder="0000"
             autoFocus={open}
             value={code}
-            onChange={(e) => setCode(e.target.value.replace(/\D/g, "").slice(0, 4))}
+            onChange={(e) => setCode(digitsOnly(e.target.value).slice(0, 4))}
             disabled={pending}
           />
-          {devCode && (
+          {devCode ? (
             <p className="text-xs text-cyan">
-              Код для разработки: <span className="font-mono tracking-widest">{devCode}</span>
+              Код для разработки:{" "}
+              <span className="font-mono tracking-widest">{devCode}</span>
             </p>
-          )}
-          {error && (
+          ) : null}
+          {error ? (
             <p
               role="alert"
               className="rounded-xl border border-magenta/30 bg-magenta/10 px-3 py-2 text-sm text-ink"
             >
               {error}
             </p>
-          )}
+          ) : null}
           <button
             type="submit"
             className="btn-primary w-full"
