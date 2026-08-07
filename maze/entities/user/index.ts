@@ -10,12 +10,9 @@ export type {
   AuthRefreshResponse,
 } from "./model/types";
 
-export {
-  sendSmsCode,
-  verifySmsCode,
-  refreshUserSession,
-  logoutUser,
-} from "./api/auth-api";
+/** Единая точка входа в auth — UI/features не импортируют auth-api напрямую. */
+export { authService } from "./api/auth-service";
+export type { SendCodeResult } from "./api/auth-service";
 
 export { fetchUserProfile, updateUserProfile } from "./api/profile-api";
 

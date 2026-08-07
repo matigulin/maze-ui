@@ -11,10 +11,8 @@ import {
   type ReactNode,
 } from "react";
 import {
-  logoutUser,
-  refreshUserSession,
+  authService,
   userDisplayName,
-  verifySmsCode,
   fetchUserProfile,
   type AuthUser,
 } from "@/entities/user";
@@ -137,7 +135,7 @@ export function UserAuthProvider({ children }: { children: ReactNode }) {
 
     refreshInFlight.current = (async () => {
       try {
-        const result = await refreshUserSession();
+        const result = await authService.refreshSession();
         applyAccessToken(result.accessToken, result.expiresIn);
         await hydrateUserFromToken(result.accessToken);
         return result.accessToken;
@@ -157,7 +155,7 @@ export function UserAuthProvider({ children }: { children: ReactNode }) {
 
     async function restore() {
       try {
-        const result = await refreshUserSession();
+        const result = await authService.refreshSession();
         if (cancelled) return;
         applyAccessToken(result.accessToken, result.expiresIn);
         await hydrateUserFromToken(result.accessToken);
@@ -211,7 +209,7 @@ export function UserAuthProvider({ children }: { children: ReactNode }) {
   }, [user, refreshSession]);
 
   const loginWithSms = useCallback(async (phone: string, code: string) => {
-    const result = await verifySmsCode(phone, code);
+    const result = await authService.verifyCode(phone, code);
     writeCachedProfile(result.user);
     applyAccessToken(result.accessToken, result.expiresIn);
     setUser(result.user);
@@ -220,7 +218,7 @@ export function UserAuthProvider({ children }: { children: ReactNode }) {
 
   const logout = useCallback(async () => {
     try {
-      await logoutUser();
+      await authService.logout();
     } catch {
       // clear local session even if API revoke fails
     }

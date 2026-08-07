@@ -1,11 +1,11 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
-import { LogIn, LogOut, User } from "lucide-react";
+import { LogIn, User } from "lucide-react";
 import { useModal } from "@/components/modals";
 import { cn } from "@/lib/utils";
 import { useUserAuth } from "../model/user-auth-provider";
+import { LogoutButton } from "./LogoutButton";
 
 function AuthIconButton({
   children,
@@ -41,19 +41,8 @@ function AuthIconButton({
 }
 
 export function HeaderAuthActions() {
-  const router = useRouter();
-  const pathname = usePathname();
-  const { ready, isAuthenticated, logout } = useUserAuth();
+  const { ready, isAuthenticated } = useUserAuth();
   const { open } = useModal();
-
-  async function onLogout() {
-    const leaveAccount =
-      pathname === "/account" || pathname.startsWith("/account/");
-    await logout();
-    if (leaveAccount) {
-      router.replace("/");
-    }
-  }
 
   if (!ready) {
     return (
@@ -76,14 +65,7 @@ export function HeaderAuthActions() {
       <AuthIconButton label="Личный кабинет" href="/account">
         <User size={19} />
       </AuthIconButton>
-      <button
-        type="button"
-        onClick={() => void onLogout()}
-        className="flex h-10 shrink-0 items-center gap-1.5 rounded-full border border-line px-3 text-sm text-muted transition-colors hover:border-magenta/50 hover:text-magenta cursor-pointer"
-      >
-        <LogOut size={15} />
-        <span>Выйти</span>
-      </button>
+      <LogoutButton className="flex h-10 shrink-0 items-center gap-1.5 rounded-full border border-line px-3 text-sm text-muted transition-colors hover:border-magenta/50 hover:text-magenta cursor-pointer" />
     </div>
   );
 }
@@ -123,6 +105,10 @@ export function MobileAuthActions({ onNavigate }: { onNavigate?: () => void }) {
         <User size={18} className="text-cyan" />
         Личный кабинет
       </Link>
+      <LogoutButton
+        onDone={onNavigate}
+        className="mt-1 flex w-full items-center gap-3 rounded-xl px-3 py-3 text-sm font-medium text-muted transition-colors hover:bg-magenta/10 hover:text-magenta cursor-pointer"
+      />
     </div>
   );
 }

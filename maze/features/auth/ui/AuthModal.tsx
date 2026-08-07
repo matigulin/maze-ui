@@ -3,9 +3,8 @@
 import { useEffect, useState, type FormEvent } from "react";
 import { ShieldCheck } from "lucide-react";
 import { Modal } from "@/components/modals";
-import { Field } from "@/components/Field";
 import { PhoneNationalField } from "@/components/PhoneNationalField";
-import { sendSmsCode } from "@/entities/user";
+import { authService } from "@/entities/user";
 import { ApiError } from "@/lib/api";
 import {
   digitsOnly,
@@ -15,8 +14,11 @@ import {
   validateRussianMobile,
 } from "@/lib/phone";
 import { useUserAuth } from "../model/user-auth-provider";
+import { OtpCodeInput } from "./OtpCodeInput";
 
 type Step = "phone" | "code";
+
+const RESEND_SEC = 30;
 
 export function AuthModal({
   open,
@@ -34,11 +36,18 @@ export function AuthModal({
   const [error, setError] = useState<string | null>(null);
   const [forcePhoneError, setForcePhoneError] = useState(false);
   const [pending, setPending] = useState(false);
+  const [resendIn, setResendIn] = useState(0);
 
   useEffect(() => {
     if (!open || !ready) return;
     if (isAuthenticated) onClose();
   }, [open, ready, isAuthenticated, onClose]);
+
+  useEffect(() => {
+    if (resendIn <= 0) return;
+    const id = window.setTimeout(() => setResendIn((s) => s - 1), 1000);
+    return () => window.clearTimeout(id);
+  }, [resendIn]);
 
   function reset() {
     setStep("phone");
@@ -49,6 +58,7 @@ export function AuthModal({
     setError(null);
     setForcePhoneError(false);
     setPending(false);
+    setResendIn(0);
   }
 
   function close() {
@@ -60,8 +70,22 @@ export function AuthModal({
     setError(null);
     setForcePhoneError(false);
     setCode("");
+    setResendIn(0);
     setStep("phone");
     setPhoneNational(phone ? e164ToNationalDisplay(phone) : "");
+  }
+
+  function startResendTimer() {
+    setResendIn(RESEND_SEC);
+  }
+
+  async function requestCode(e164: string) {
+    const result = await authService.sendCode(e164);
+    setPhone(e164);
+    setDevCode(result.devCode ?? null);
+    setCode("");
+    setStep("code");
+    startResendTimer();
   }
 
   async function onSendCode(e: FormEvent) {
@@ -77,11 +101,7 @@ export function AuthModal({
     setForcePhoneError(false);
     setPending(true);
     try {
-      const result = await sendSmsCode(validated.e164);
-      setPhone(validated.e164);
-      setDevCode(result.devCode ?? null);
-      setStep("code");
-      setCode("");
+      await requestCode(validated.e164);
     } catch (err) {
       if (err instanceof ApiError && err.code === "RATE_LIMIT_EXCEEDED") {
         setError("Слишком много запросов. Подождите и попробуйте снова.");
@@ -115,9 +135,17 @@ export function AuthModal({
       close();
     } catch (err) {
       if (err instanceof ApiError) {
-        setError(err.message || "Неверный или просроченный код");
+        const invalid =
+          err.code === "UNAUTHORIZED" ||
+          err.code === "VALIDATION_ERROR" ||
+          /неверн|invalid|expired|просроч/i.test(err.message);
+        setError(
+          invalid
+            ? "Неверный код. Попробуйте ещё раз."
+            : err.message || "Неверный код. Попробуйте ещё раз.",
+        );
       } else {
-        setError("Не удалось войти. Проверьте код и попробуйте снова.");
+        setError("Неверный код. Попробуйте ещё раз.");
       }
     } finally {
       setPending(false);
@@ -125,13 +153,14 @@ export function AuthModal({
   }
 
   async function onResend() {
-    if (!phone || pending) return;
+    if (!phone || pending || resendIn > 0) return;
     setError(null);
     setPending(true);
     try {
-      const result = await sendSmsCode(phone);
+      const result = await authService.sendCode(phone);
       setDevCode(result.devCode ?? null);
       setCode("");
+      startResendTimer();
     } catch (err) {
       if (err instanceof ApiError && err.code === "RATE_LIMIT_EXCEEDED") {
         setError("Слишком много запросов. Подождите и попробуйте снова.");
@@ -144,9 +173,10 @@ export function AuthModal({
   }
 
   const phoneLabel = phone ? formatPhoneDisplay(phone) : "ваш номер";
-  const phoneStarted = digitsOnly(phoneNational).length > 0;
-  const canSubmitPhone =
-    !pending && ready && (!phoneStarted || isValidRussianMobile(phoneNational));
+  const phoneValid = isValidRussianMobile(phoneNational);
+  const canSubmitPhone = !pending && ready && phoneValid;
+  const canSubmitCode = !pending && ready && digitsOnly(code).length === 4;
+  const canResend = !pending && resendIn <= 0;
 
   return (
     <Modal open={open} onClose={close} title="Вход в MAZE ID">
@@ -193,18 +223,14 @@ export function AuthModal({
             Код отправлен на{" "}
             <span className="text-ink">{phoneLabel}</span>
           </p>
-          <Field
-            label="Код из SMS"
-            labelNote="4 цифры"
-            type="text"
-            inputMode="numeric"
-            autoComplete="one-time-code"
-            maxLength={4}
-            placeholder="0000"
-            autoFocus={open}
+          <OtpCodeInput
             value={code}
-            onChange={(e) => setCode(digitsOnly(e.target.value).slice(0, 4))}
+            onChange={(next) => {
+              setCode(next);
+              setError(null);
+            }}
             disabled={pending}
+            autoFocus={open}
           />
           {devCode ? (
             <p className="text-xs text-cyan">
@@ -223,7 +249,7 @@ export function AuthModal({
           <button
             type="submit"
             className="btn-primary w-full"
-            disabled={pending || !ready}
+            disabled={!canSubmitCode}
           >
             {pending ? "Проверяем…" : "Войти"}
           </button>
@@ -231,7 +257,7 @@ export function AuthModal({
             <button
               type="button"
               onClick={goBackToPhone}
-              className="w-full text-center text-xs text-muted transition-colors hover:text-ink cursor-pointer"
+              className="w-full text-center text-xs text-muted transition-colors hover:text-ink cursor-pointer disabled:opacity-40"
               disabled={pending}
             >
               Изменить номер
@@ -239,10 +265,12 @@ export function AuthModal({
             <button
               type="button"
               onClick={() => void onResend()}
-              className="w-full text-center text-xs text-muted transition-colors hover:text-ink cursor-pointer"
-              disabled={pending}
+              className="w-full text-center text-xs text-muted transition-colors hover:text-ink cursor-pointer disabled:cursor-not-allowed disabled:opacity-40"
+              disabled={!canResend}
             >
-              Отправить код снова
+              {resendIn > 0
+                ? `Отправить повторно через ${resendIn} сек.`
+                : "Отправить код повторно"}
             </button>
           </div>
         </form>
