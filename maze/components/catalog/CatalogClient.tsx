@@ -140,15 +140,17 @@ export function CatalogClient({
   );
 
   return (
-    <div className="grid gap-8 lg:grid-cols-[16rem_1fr]">
-      {/* Desktop sidebar */}
-      <aside className="hidden lg:block">
-        <div className="glass sticky top-24 rounded-3xl p-6">{FilterPanel}</div>
+    <div className="mx-auto grid w-full min-w-0 max-w-7xl gap-8 lg:grid-cols-[15rem_minmax(0,1fr)]">
+      {/* Desktop sidebar — фиксированная ширина, не растягивается */}
+      <aside className="hidden min-w-0 lg:block lg:w-[15rem] lg:shrink-0">
+        <div className="glass sticky top-24 w-full rounded-3xl p-5 xl:p-6">
+          {FilterPanel}
+        </div>
       </aside>
 
-      <div>
+      <div className="min-w-0 w-full max-w-full">
         {/* Toolbar */}
-        <div className="mb-5 flex flex-col gap-3 sm:mb-6 sm:flex-row sm:flex-wrap sm:items-center">
+        <div className="mb-5 flex min-w-0 flex-col gap-3 sm:mb-6 sm:flex-row sm:flex-wrap sm:items-center">
           <div className="flex items-center justify-between gap-3">
             <div className="text-sm text-muted">
               <span className="font-display text-lg font-semibold text-ink">
@@ -160,7 +162,7 @@ export function CatalogClient({
             <button
               type="button"
               onClick={() => setMobileFilters(true)}
-              className="flex items-center gap-2 rounded-full border border-line px-3.5 py-2 text-sm text-muted transition-colors hover:text-ink lg:hidden cursor-pointer"
+              className="flex shrink-0 items-center gap-2 rounded-full border border-line px-3.5 py-2 text-sm text-muted transition-colors hover:text-ink lg:hidden cursor-pointer"
             >
               <SlidersHorizontal size={15} />
               Фильтры
@@ -172,7 +174,7 @@ export function CatalogClient({
             </button>
           </div>
 
-          <div className="-mx-1 flex gap-1.5 overflow-x-auto px-1 pb-0.5 sm:ml-auto sm:overflow-visible [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+          <div className="flex max-w-full gap-1.5 overflow-x-auto pb-0.5 sm:ml-auto sm:overflow-visible [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
             {SORTS.map((s) => (
               <button
                 type="button"
@@ -191,27 +193,24 @@ export function CatalogClient({
           </div>
         </div>
 
-        {/* Grid */}
+        {/* Grid: явные minmax(0,1fr) — колонки реально сжимаются на узком экране */}
         {filtered.length ? (
-          <motion.div
-            layout
-            className="grid grid-cols-2 gap-3 sm:gap-5 xl:grid-cols-3"
-          >
+          <div className="grid w-full grid-cols-2 gap-2 sm:gap-4 lg:grid-cols-3 [grid-template-columns:minmax(0,1fr)_minmax(0,1fr)] lg:[grid-template-columns:repeat(3,minmax(0,1fr))]">
             <AnimatePresence mode="popLayout">
               {filtered.map((p) => (
                 <motion.div
                   key={p.id}
-                  layout
-                  initial={{ opacity: 0, scale: 0.94 }}
+                  initial={{ opacity: 0, scale: 0.96 }}
                   animate={{ opacity: 1, scale: 1 }}
-                  exit={{ opacity: 0, scale: 0.94 }}
-                  transition={{ duration: 0.3 }}
+                  exit={{ opacity: 0, scale: 0.96 }}
+                  transition={{ duration: 0.25 }}
+                  className="min-w-0 max-w-full"
                 >
                   <ProductCard product={p} />
                 </motion.div>
               ))}
             </AnimatePresence>
-          </motion.div>
+          </div>
         ) : (
           <div className="glass grid place-items-center rounded-3xl py-20 text-center">
             <p className="text-lg font-medium">Ничего не найдено</p>

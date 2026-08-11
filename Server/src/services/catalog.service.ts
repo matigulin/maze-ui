@@ -63,6 +63,7 @@ export interface ProductListItemDto {
   brandName: string;
   brandSlug: string;
   subcategorySlug: string;
+  subcategoryName: string;
   priceFrom: number;
   oldPriceFrom: number | null;
   mainImageUrl: string | null;
@@ -90,6 +91,7 @@ export interface ProductDetailDto {
   brandName: string;
   brandSlug: string;
   subcategorySlug: string;
+  subcategoryName: string;
   deviceType: string;
   description: string | null;
   images: string[];
@@ -148,6 +150,7 @@ function mapListItem(
     brandName: product.brand?.name ?? '',
     brandSlug: product.brand?.slug ?? '',
     subcategorySlug: product.subcategory?.slug ?? '',
+    subcategoryName: product.subcategory?.name ?? '',
     priceFrom,
     oldPriceFrom: product.old_price ? toNumber(product.old_price) : null,
     mainImageUrl: primaryImage,
@@ -418,6 +421,7 @@ async function loadProductBySlug(slug: string): Promise<ProductDetailDto> {
     brandName: product.brand?.name ?? '',
     brandSlug: product.brand?.slug ?? '',
     subcategorySlug: product.subcategory?.slug ?? '',
+    subcategoryName: product.subcategory?.name ?? '',
     deviceType: product.device_type,
     description: product.description,
     images: (product.images ?? []).map((img) => img.url),

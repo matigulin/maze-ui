@@ -96,6 +96,8 @@ html {
   -webkit-tap-highlight-color: transparent;
   /* Убрать double-tap zoom; pinch режется viewport maximumScale */
   touch-action: manipulation;
+  overflow-x: clip;
+  max-width: 100%;
 }
 
 body {
@@ -103,6 +105,8 @@ body {
   color: var(--color-ink);
   touch-action: manipulation;
   overscroll-behavior-y: none;
+  overflow-x: clip;
+  max-width: 100%;
   background-image:
     radial-gradient(60rem 60rem at 12% -10%, rgba(53, 228, 240, 0.1), transparent 60%),
     radial-gradient(55rem 55rem at 100% 8%, rgba(139, 92, 246, 0.12), transparent 55%),
@@ -317,16 +321,27 @@ select:focus-visible {
   }
 }
 
-/* Section container helper */
+/* Section container helper — единый ограничитель витрины (≤1280px) */
 .container-x {
   width: 100%;
-  max-width: 80rem;
+  max-width: 80rem; /* 1280px */
   margin-inline: auto;
   padding-inline: 1.25rem;
+  box-sizing: border-box;
 }
 @media (min-width: 768px) {
   .container-x {
     padding-inline: 2rem;
+  }
+}
+@media (max-width: 379px) {
+  .container-x {
+    padding-inline: 1rem;
+  }
+}
+@media (min-width: 1440px) {
+  .container-x {
+    padding-inline: 2.5rem;
   }
 }
 

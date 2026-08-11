@@ -190,8 +190,8 @@ export function Footer() {
     <footer className="relative mt-24 border-t border-line">
       <div className="container-x py-12 md:py-14">
         {/* Primary: бренд + навигация + контакты */}
-        <div className="grid gap-8 md:grid-cols-2 md:gap-10 lg:grid-cols-[1.4fr_1fr_1fr_1.2fr] lg:items-start">
-          <div className="space-y-5">
+        <div className="grid min-w-0 gap-8 md:grid-cols-2 md:gap-10 lg:grid-cols-[1.4fr_1fr_1fr_1.2fr] lg:items-start">
+          <div className="min-w-0 space-y-5">
             <Logo />
             <p className="max-w-xs text-sm leading-relaxed text-muted">
               Найди свой путь в мире технологий. Оригинальная техника, трейд-ин
@@ -262,20 +262,24 @@ export function Footer() {
               <li>
                 <a
                   href={tel}
-                  className="flex min-h-11 items-center gap-2.5 text-sm font-medium text-ink transition-colors hover:text-cyan md:min-h-0"
+                  className="flex min-h-11 min-w-0 items-center gap-2.5 text-sm font-medium text-ink transition-colors hover:text-cyan md:min-h-0"
                 >
                   <Phone size={15} className="shrink-0 text-cyan" />
-                  Позвонить · {STORE.phone}
+                  <span className="min-w-0 break-words">
+                    Позвонить · {STORE.phone}
+                  </span>
                 </a>
               </li>
               {hasEmail ? (
                 <li>
                   <a
                     href={`mailto:${STORE.email}`}
-                    className="flex min-h-11 items-center gap-2.5 text-sm text-muted transition-colors hover:text-cyan md:min-h-0"
+                    className="flex min-h-11 min-w-0 items-center gap-2.5 text-sm text-muted transition-colors hover:text-cyan md:min-h-0"
                   >
                     <Mail size={15} className="shrink-0 text-cyan" />
-                    Написать · {STORE.email}
+                    <span className="min-w-0 break-all">
+                      Написать · {STORE.email}
+                    </span>
                   </a>
                 </li>
               ) : null}

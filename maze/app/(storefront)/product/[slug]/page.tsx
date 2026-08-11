@@ -45,9 +45,9 @@ export default async function ProductPage({
           title="Похожие товары"
           href="/catalog"
         />
-        <div className="grid grid-cols-2 gap-4 sm:gap-5 lg:grid-cols-4">
+        <div className="grid w-full grid-cols-2 gap-2 sm:gap-4 lg:grid-cols-4 [grid-template-columns:minmax(0,1fr)_minmax(0,1fr)] lg:[grid-template-columns:repeat(4,minmax(0,1fr))]">
           {related.map((p, i) => (
-            <Reveal key={p.id} delay={(i % 4) * 0.06}>
+            <Reveal key={p.id} delay={(i % 4) * 0.06} className="min-w-0 max-w-full">
               <ProductCard product={p} />
             </Reveal>
           ))}

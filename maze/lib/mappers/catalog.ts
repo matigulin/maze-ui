@@ -1,5 +1,6 @@
 import type { Product, ColorOption, Spec, Badge } from "@/lib/data";
 import { resolveMediaUrl, resolveMediaUrls } from "@/lib/media-url";
+import { productCategoryLabel } from "@/lib/product-label";
 
 export type ProductListItemDto = {
   id: string;
@@ -8,6 +9,7 @@ export type ProductListItemDto = {
   brandName: string;
   brandSlug: string;
   subcategorySlug: string;
+  subcategoryName?: string;
   priceFrom: number;
   oldPriceFrom: number | null;
   mainImageUrl: string | null;
@@ -35,6 +37,7 @@ export type ProductDetailDto = {
   brandName: string;
   brandSlug: string;
   subcategorySlug: string;
+  subcategoryName?: string;
   deviceType: string;
   description: string | null;
   images: string[];
@@ -87,7 +90,10 @@ export function mapProductListItemToUiProduct(item: ProductListItemDto): Product
     slug: item.slug,
     name: item.title,
     brand: item.brandName,
-    category: item.subcategorySlug,
+    category: productCategoryLabel({
+      subcategoryName: item.subcategoryName,
+      subcategorySlug: item.subcategorySlug,
+    }),
     price: item.priceFrom,
     oldPrice: item.oldPriceFrom ?? undefined,
     badge: badges,
@@ -136,7 +142,10 @@ export function mapProductDetailToUiProduct(dto: ProductDetailDto): Product {
     slug: dto.slug,
     name: dto.title,
     brand: dto.brandName,
-    category: dto.subcategorySlug,
+    category: productCategoryLabel({
+      subcategoryName: dto.subcategoryName,
+      subcategorySlug: dto.subcategorySlug,
+    }),
     price: cheapestInStock?.price ?? 0,
     oldPrice: cheapestInStock?.oldPrice ?? undefined,
     badge: mapBadgesToBadge(dto.badges),

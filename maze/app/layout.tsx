@@ -43,7 +43,7 @@ export default async function RootLayout({
       lang="ru"
       className={`${exo.variable} ${orbitron.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col bg-bg text-ink font-sans selection:bg-cyan/25 selection:text-white">
+      <body className="min-h-full flex max-w-full flex-col overflow-x-clip bg-bg text-ink font-sans selection:bg-cyan/25 selection:text-white">
         <Providers siteData={siteData}>{children}</Providers>
       </body>
     </html>
