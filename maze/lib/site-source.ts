@@ -4,6 +4,7 @@ import {
   FEATURES,
   BRANDS,
   STORE,
+  MAZE_TELEGRAM_URL,
   reviews as mockReviews,
   type Review,
 } from "@/lib/data";
@@ -28,11 +29,16 @@ export type UiFeature = {
 
 export type StoreInfo = {
   phone: string;
+  email: string;
   city: string;
   address: string;
   metro: string;
   hours: string;
-  socials: string[];
+  telegram: string;
+  vk: string;
+  youtube: string;
+  mapLat: number;
+  mapLng: number;
 };
 
 export type SiteChrome = {
@@ -146,9 +152,16 @@ export async function fetchSiteChrome(): Promise<SiteChrome> {
       apiGet<CategoryTreeItemDto[]>("/catalog/categories"),
       apiGet<{
         phone: string;
+        email: string;
         address: string;
         metro: string;
         workingHours: string;
+        socialLinks: {
+          telegram: string;
+          vk: string;
+          youtube: string;
+        };
+        mapCoordinates: { lat: number; lng: number };
       }>("/settings/public"),
       apiGet<{ partnerBrands: HomePartnerBrandDto[] }>("/home"),
     ]);
@@ -159,11 +172,16 @@ export async function fetchSiteChrome(): Promise<SiteChrome> {
       categories: categories.map(mapCategory),
       store: {
         phone: formatPhone(settings.phone),
+        email: settings.email || STORE.email,
         city: city || "Санкт-Петербург",
         address: addressParts.join(", ") || settings.address,
         metro: settings.metro,
         hours: settings.workingHours,
-        socials: ["TG", "VK", "YT"],
+        telegram: MAZE_TELEGRAM_URL,
+        vk: settings.socialLinks?.vk || STORE.vk,
+        youtube: settings.socialLinks?.youtube || STORE.youtube,
+        mapLat: settings.mapCoordinates?.lat ?? STORE.mapLat,
+        mapLng: settings.mapCoordinates?.lng ?? STORE.mapLng,
       },
       partnerBrands: home.partnerBrands.map((b) => b.name),
     };

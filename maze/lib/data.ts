@@ -488,13 +488,21 @@ export const FEATURES = [
   },
 ];
 
+/** Единственный Telegram для витрины — менеджер магазина. */
+export const MAZE_TELEGRAM_URL = "https://t.me/Maze_Store78";
+
 export const STORE = {
   phone: "+7 (995) 911-49-84",
+  email: "info@maze.ru",
   city: "Санкт-Петербург",
   address: "Чайковского, 56",
   metro: "Метро Чернышевская",
   hours: "11:30 – 20:00",
-  socials: ["TG", "VK", "YT"],
+  telegram: MAZE_TELEGRAM_URL,
+  vk: "https://vk.com/maze",
+  youtube: "",
+  mapLat: 59.944,
+  mapLng: 30.36,
 };
 
 export function getProduct(slug: string) {
