@@ -21,7 +21,7 @@ export function AccountCabinet({ initialTab = "profile" }: { initialTab?: Tab })
       isAuthenticated={isAuthenticated}
       ensureAccessToken={ensureAccessToken}
       onLogin={() => open("auth")}
-      headerActions={
+      profileFooterActions={
         <LogoutButton className="inline-flex items-center gap-1.5 rounded-full border border-line px-4 py-2.5 text-sm text-muted transition-colors hover:border-magenta/50 hover:bg-magenta/10 hover:text-magenta cursor-pointer" />
       }
     />

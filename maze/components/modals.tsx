@@ -8,6 +8,7 @@ import {
   useState,
   type ReactNode,
 } from "react";
+import { createPortal } from "react-dom";
 import { AnimatePresence, motion } from "motion/react";
 import { X } from "lucide-react";
 
@@ -34,7 +35,7 @@ export function useModal() {
   return ctx;
 }
 
-/** Стеклянная оболочка модалки. */
+/** Стеклянная оболочка модалки. Portal в body — fixed не ломается от transform у родителей (motion и т.п.). */
 export function Modal({
   open,
   onClose,
@@ -48,6 +49,12 @@ export function Modal({
   children: ReactNode;
   maxWidth?: string;
 }) {
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
   useEffect(() => {
     if (!open) return;
     const onKey = (e: KeyboardEvent) => e.key === "Escape" && onClose();
@@ -60,11 +67,13 @@ export function Modal({
     };
   }, [open, onClose]);
 
-  return (
+  if (!mounted) return null;
+
+  return createPortal(
     <AnimatePresence>
       {open && (
         <motion.div
-          className="fixed inset-0 z-[100] flex items-center justify-center p-4"
+          className="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
@@ -78,21 +87,22 @@ export function Modal({
             role="dialog"
             aria-modal="true"
             aria-label={title}
-            className="glass-strong iri-ring relative z-10 w-full rounded-3xl p-6 sm:p-8"
+            className="glass-strong iri-ring relative z-10 mx-auto w-full max-h-[min(90dvh,40rem)] overflow-y-auto rounded-3xl p-5 sm:p-8"
             style={{ maxWidth }}
             initial={{ opacity: 0, y: 24, scale: 0.96 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 16, scale: 0.97 }}
             transition={{ duration: 0.32, ease: [0.22, 1, 0.36, 1] }}
           >
-            <div className="mb-5 flex items-center justify-between">
+            <div className="mb-5 flex items-start justify-between gap-3">
               <h2 className="font-display text-lg font-semibold tracking-wide">
                 {title}
               </h2>
               <button
+                type="button"
                 onClick={onClose}
                 aria-label="Закрыть"
-                className="grid h-9 w-9 place-items-center rounded-full text-muted transition-colors hover:bg-white/10 hover:text-ink cursor-pointer"
+                className="grid h-10 w-10 shrink-0 place-items-center rounded-full text-muted transition-colors hover:bg-white/10 hover:text-ink cursor-pointer"
               >
                 <X size={18} />
               </button>
@@ -101,6 +111,7 @@ export function Modal({
           </motion.div>
         </motion.div>
       )}
-    </AnimatePresence>
+    </AnimatePresence>,
+    document.body,
   );
 }

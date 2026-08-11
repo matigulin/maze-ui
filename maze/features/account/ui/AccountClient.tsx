@@ -44,8 +44,8 @@ export type AccountClientProps = {
   isAuthenticated: boolean;
   ensureAccessToken: () => Promise<string | null>;
   onLogin: () => void;
-  /** Слот из widget (LogoutButton и т.п.) — без импорта auth внутри feature. */
-  headerActions?: ReactNode;
+  /** Слот в форме профиля (LogoutButton из widget). */
+  profileFooterActions?: ReactNode;
 };
 
 export function AccountClient({
@@ -55,7 +55,7 @@ export function AccountClient({
   isAuthenticated,
   ensureAccessToken,
   onLogin,
-  headerActions,
+  profileFooterActions,
 }: AccountClientProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -154,20 +154,17 @@ export function AccountClient({
   return (
     <div>
       <div className="mb-8 flex flex-wrap items-center justify-between gap-4">
-        <div>
+        <div className="min-w-0">
           <p className="eyebrow mb-2">MAZE ID</p>
-          <h1 className="font-display text-4xl font-bold tracking-tight sm:text-5xl">
+          <h1 className="font-display text-3xl font-bold tracking-tight break-words sm:text-4xl md:text-5xl">
             {isAuthenticated ? "Личный кабинет" : "Избранное"}
           </h1>
         </div>
-        <div className="flex flex-wrap items-center gap-2">
-          {!isAuthenticated && (
-            <button type="button" onClick={onLogin} className="btn-ghost">
-              Войти
-            </button>
-          )}
-          {isAuthenticated ? headerActions : null}
-        </div>
+        {!isAuthenticated && (
+          <button type="button" onClick={onLogin} className="btn-ghost shrink-0">
+            Войти
+          </button>
+        )}
       </div>
 
       <div className="mb-8 flex flex-wrap gap-1.5">
@@ -220,6 +217,7 @@ export function AccountClient({
           <AccountProfile
             ensureAccessToken={ensureAccessToken}
             isAuthenticated={isAuthenticated}
+            footerActions={profileFooterActions}
           />
         )}
         {isAuthenticated && tab === "orders" && <Orders />}
@@ -281,9 +279,11 @@ function Wishlist({ items }: { items: typeof products }) {
     );
   }
   return (
-    <div className="grid grid-cols-2 gap-4 sm:gap-5 lg:grid-cols-3 xl:grid-cols-4">
+    <div className="grid w-full grid-cols-2 gap-2 sm:gap-4 lg:grid-cols-3 xl:grid-cols-4 [grid-template-columns:minmax(0,1fr)_minmax(0,1fr)] lg:[grid-template-columns:repeat(3,minmax(0,1fr))] xl:[grid-template-columns:repeat(4,minmax(0,1fr))]">
       {items.map((p) => (
-        <ProductCard key={p.id} product={p} />
+        <div key={p.id} className="min-w-0 max-w-full">
+          <ProductCard product={p} />
+        </div>
       ))}
     </div>
   );

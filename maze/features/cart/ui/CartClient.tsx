@@ -293,29 +293,29 @@ export function CartClient() {
               initial={{ opacity: 0, y: 12 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, x: -20 }}
-              className="glass flex gap-4 rounded-2xl p-4"
+              className="glass flex min-w-0 gap-3 rounded-2xl p-3 sm:gap-4 sm:p-4"
             >
               <Link href={`/product/${it.product.slug}`} className="shrink-0">
                 <ProductThumb
                   product={it.product}
-                  className="h-24 w-24"
+                  className="h-20 w-20 sm:h-24 sm:w-24"
                   glyphClassName="text-[0.7rem]"
                 />
               </Link>
               <div className="flex min-w-0 flex-1 flex-col">
                 <Link
                   href={`/product/${it.product.slug}`}
-                  className="font-medium leading-snug transition-colors hover:text-cyan"
+                  className="line-clamp-2 break-words font-medium leading-snug transition-colors hover:text-cyan"
                 >
                   {it.product.name}
                 </Link>
-                <p className="text-xs text-faint">
+                <p className="truncate text-xs text-faint">
                   {[it.color, it.memory].filter(Boolean).join(" · ")}
                 </p>
-                <p className="mt-1 text-[11px] text-cyan">
+                <p className="mt-1 truncate text-[11px] text-cyan">
                   {formatStockLabel(it.quantityAvailable ?? it.maxQuantity)}
                 </p>
-                <div className="mt-auto flex items-center justify-between pt-2">
+                <div className="mt-auto flex min-w-0 flex-wrap items-center justify-between gap-2 pt-2">
                   <div className="flex flex-col gap-1">
                     <div className="flex items-center gap-1 rounded-full border border-line p-0.5">
                       <button

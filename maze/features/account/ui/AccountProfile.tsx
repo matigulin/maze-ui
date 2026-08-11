@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, type FormEvent } from "react";
+import { useEffect, useState, type FormEvent, type ReactNode } from "react";
 import { Field } from "@/components/Field";
 import {
   fetchUserProfile,
@@ -21,11 +21,14 @@ type Gender = "" | UserGender;
 export type AccountProfileProps = {
   ensureAccessToken: () => Promise<string | null>;
   isAuthenticated: boolean;
+  /** Слот справа от «Сохранить» (LogoutButton из widget). */
+  footerActions?: ReactNode;
 };
 
 export function AccountProfile({
   ensureAccessToken,
   isAuthenticated,
+  footerActions,
 }: AccountProfileProps) {
   const [loading, setLoading] = useState(isAuthenticated);
   const [saving, setSaving] = useState(false);
@@ -166,7 +169,7 @@ export function AccountProfile({
   return (
     <form
       onSubmit={onSubmit}
-      className="glass max-w-3xl space-y-8 rounded-3xl p-6 sm:p-8"
+      className="glass max-w-3xl space-y-8 overflow-x-clip rounded-3xl p-5 sm:p-8"
     >
       <section className="space-y-5">
         <h2 className="eyebrow">Обо мне</h2>
@@ -287,9 +290,16 @@ export function AccountProfile({
       )}
       {saved && <p className="text-sm text-cyan">Изменения сохранены</p>}
 
-      <button type="submit" className="btn-primary" disabled={saving}>
-        {saving ? "Сохраняем…" : "Сохранить изменения"}
-      </button>
+      <div className="flex flex-wrap items-center gap-3 sm:justify-between">
+        <button
+          type="submit"
+          className="btn-primary max-w-full"
+          disabled={saving}
+        >
+          {saving ? "Сохраняем…" : "Сохранить изменения"}
+        </button>
+        {footerActions ?? null}
+      </div>
     </form>
   );
 }
