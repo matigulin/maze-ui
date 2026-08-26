@@ -353,38 +353,52 @@ select:focus-visible {
   cursor: pointer;
 }
 
-/* Range slider (фильтр цены) */
-.maze-range {
+/* Range slider: только thumb; заливку трека рисует PriceRangeSlider */
+.maze-range-input {
+  --maze-range-thumb: 18px;
   -webkit-appearance: none;
   appearance: none;
-  height: 6px;
-  border-radius: 999px;
-  background: linear-gradient(
-    90deg,
-    var(--color-cyan),
-    var(--color-violet)
-  );
+  height: var(--maze-range-thumb);
+  margin: 0;
+  background: transparent;
   outline: none;
   cursor: pointer;
+  accent-color: transparent;
 }
-.maze-range::-webkit-slider-thumb {
+.maze-range-input::-webkit-slider-runnable-track {
+  height: 6px;
+  background: transparent;
+  border: none;
+}
+.maze-range-input::-webkit-slider-thumb {
   -webkit-appearance: none;
   appearance: none;
-  width: 18px;
-  height: 18px;
+  width: var(--maze-range-thumb);
+  height: var(--maze-range-thumb);
+  margin-top: calc((6px - var(--maze-range-thumb)) / 2);
   border-radius: 50%;
   background: #fff;
   border: 3px solid var(--color-cyan);
-  box-shadow: 0 0 12px rgba(53, 228, 240, 0.7);
+  /* свечение только вокруг точки, без «хвоста» по треку */
+  box-shadow: 0 0 10px rgba(53, 228, 240, 0.55);
   cursor: pointer;
 }
-.maze-range::-moz-range-thumb {
-  width: 18px;
-  height: 18px;
+.maze-range-input::-moz-range-track {
+  height: 6px;
+  background: transparent;
+  border: none;
+}
+.maze-range-input::-moz-range-progress {
+  background: transparent;
+  border: none;
+}
+.maze-range-input::-moz-range-thumb {
+  width: var(--maze-range-thumb);
+  height: var(--maze-range-thumb);
+  border: 3px solid var(--color-cyan);
   border-radius: 50%;
   background: #fff;
-  border: 3px solid var(--color-cyan);
-  box-shadow: 0 0 12px rgba(53, 228, 240, 0.7);
+  box-shadow: 0 0 10px rgba(53, 228, 240, 0.55);
   cursor: pointer;
 }
 

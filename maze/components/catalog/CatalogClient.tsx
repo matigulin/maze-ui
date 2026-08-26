@@ -2,10 +2,15 @@
 
 import { useMemo, useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { SlidersHorizontal, X, Check } from "lucide-react";
+import { SlidersHorizontal, X } from "lucide-react";
 import type { Product } from "@/lib/data";
 import { ProductCard } from "@/components/ProductCard";
-import { formatPrice, plural, cn } from "@/lib/utils";
+import {
+  CheckRow,
+  FilterGroup,
+  PriceFilter,
+} from "@/features/catalog-filters";
+import { plural, cn } from "@/lib/utils";
 
 type Sort = "pop" | "cheap" | "exp" | "new";
 
@@ -35,10 +40,10 @@ export function CatalogClient({
     () => [...new Set(products.map((p) => p.category))],
     [products],
   );
-  const maxPrice = useMemo(
-    () => Math.max(...products.map((p) => p.price)),
-    [products],
-  );
+  const maxPrice = useMemo(() => {
+    if (!products.length) return 0;
+    return Math.max(...products.map((p) => p.price));
+  }, [products]);
 
   const [query, setQuery] = useState(initialQuery);
   const [selBrands, setSelBrands] = useState<string[]>(
@@ -85,6 +90,8 @@ export function CatalogClient({
 
   const FilterPanel = (
     <div className="space-y-7">
+      <PriceFilter price={price} maxPrice={maxPrice} onChange={setPrice} />
+
       <FilterGroup title="Бренд">
         {brands.map((b) => (
           <CheckRow
@@ -107,29 +114,9 @@ export function CatalogClient({
         ))}
       </FilterGroup>
 
-      <FilterGroup title="Цена">
-        <div className="px-1">
-          <input
-            type="range"
-            min={0}
-            max={maxPrice}
-            step={1000}
-            value={price}
-            onChange={(e) => setPrice(Number(e.target.value))}
-            className="maze-range w-full"
-            aria-label="Максимальная цена"
-          />
-          <div className="mt-3 flex items-center justify-between text-sm">
-            <span className="text-faint">0 ₽</span>
-            <span className="rounded-lg border border-line bg-white/[0.03] px-2.5 py-1 font-medium text-cyan">
-              до {formatPrice(price)}
-            </span>
-          </div>
-        </div>
-      </FilterGroup>
-
       {activeCount > 0 && (
         <button
+          type="button"
           onClick={reset}
           className="w-full rounded-xl border border-line py-2.5 text-sm text-muted transition-colors hover:border-magenta/50 hover:text-magenta cursor-pointer"
         >
@@ -141,15 +128,13 @@ export function CatalogClient({
 
   return (
     <div className="mx-auto grid w-full min-w-0 max-w-7xl gap-8 lg:grid-cols-[15rem_minmax(0,1fr)]">
-      {/* Desktop sidebar — фиксированная ширина, не растягивается */}
       <aside className="hidden min-w-0 lg:block lg:w-[15rem] lg:shrink-0">
-        <div className="glass sticky top-24 w-full rounded-3xl p-5 xl:p-6">
+        <div className="glass sticky top-24 max-h-[calc(100dvh-7rem)] w-full overflow-y-auto rounded-3xl p-5 xl:p-6">
           {FilterPanel}
         </div>
       </aside>
 
       <div className="min-w-0 w-full max-w-full">
-        {/* Toolbar */}
         <div className="mb-5 flex min-w-0 flex-col gap-3 sm:mb-6 sm:flex-row sm:flex-wrap sm:items-center">
           <div className="flex items-center justify-between gap-3">
             <div className="text-sm text-muted">
@@ -193,7 +178,6 @@ export function CatalogClient({
           </div>
         </div>
 
-        {/* Grid: явные minmax(0,1fr) — колонки реально сжимаются на узком экране */}
         {filtered.length ? (
           <div className="grid w-full grid-cols-2 gap-2 sm:gap-4 lg:grid-cols-3 [grid-template-columns:minmax(0,1fr)_minmax(0,1fr)] lg:[grid-template-columns:repeat(3,minmax(0,1fr))]">
             <AnimatePresence mode="popLayout">
@@ -217,14 +201,13 @@ export function CatalogClient({
             <p className="mt-1 text-sm text-muted">
               Попробуйте изменить фильтры или сбросить их.
             </p>
-            <button onClick={reset} className="btn-ghost mt-5">
+            <button type="button" onClick={reset} className="btn-ghost mt-5">
               Сбросить фильтры
             </button>
           </div>
         )}
       </div>
 
-      {/* Mobile filter drawer */}
       <AnimatePresence>
         {mobileFilters && (
           <motion.div
@@ -247,6 +230,7 @@ export function CatalogClient({
               <div className="mb-6 flex items-center justify-between">
                 <h2 className="font-display text-lg font-semibold">Фильтры</h2>
                 <button
+                  type="button"
                   onClick={() => setMobileFilters(false)}
                   aria-label="Закрыть"
                   className="grid h-9 w-9 place-items-center rounded-full text-muted hover:text-ink cursor-pointer"
@@ -256,6 +240,7 @@ export function CatalogClient({
               </div>
               {FilterPanel}
               <button
+                type="button"
                 onClick={() => setMobileFilters(false)}
                 className="btn-primary mt-7 w-full"
               >
@@ -266,51 +251,5 @@ export function CatalogClient({
         )}
       </AnimatePresence>
     </div>
-  );
-}
-
-function FilterGroup({
-  title,
-  children,
-}: {
-  title: string;
-  children: React.ReactNode;
-}) {
-  return (
-    <div>
-      <h3 className="mb-3 font-display text-xs font-semibold uppercase tracking-wider text-faint">
-        {title}
-      </h3>
-      <div className="space-y-1.5">{children}</div>
-    </div>
-  );
-}
-
-function CheckRow({
-  label,
-  checked,
-  onClick,
-}: {
-  label: string;
-  checked: boolean;
-  onClick: () => void;
-}) {
-  return (
-    <button
-      onClick={onClick}
-      className="flex w-full items-center gap-2.5 rounded-lg py-1 text-left text-sm text-muted transition-colors hover:text-ink cursor-pointer"
-    >
-      <span
-        className={cn(
-          "grid h-5 w-5 shrink-0 place-items-center rounded-md border transition-colors",
-          checked
-            ? "border-cyan bg-cyan text-[#04121a]"
-            : "border-line bg-white/[0.02]",
-        )}
-      >
-        {checked && <Check size={13} strokeWidth={3} />}
-      </span>
-      {label}
-    </button>
   );
 }
