@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { motion } from "motion/react";
 import {
   Heart,
@@ -26,7 +26,7 @@ export function ProductDetail({ product }: { product: Product }) {
   const [view, setView] = useState(0);
   const [color, setColor] = useState(product.colors[0]?.name);
   const [memory, setMemory] = useState(product.memory?.[0]);
-  const [qty, setQty] = useState(1);
+  const [qtyRaw, setQtyRaw] = useState(1);
   const wished = isWished(product.id);
   const gallery =
     product.images && product.images.length > 0
@@ -51,13 +51,15 @@ export function ProductDetail({ product }: { product: Product }) {
     selectedVariant?.quantityAvailable ?? product.quantityAvailable ?? 0;
   const maxQty = Math.max(0, stockQty);
   const canBuy = maxQty > 0;
+  const qty = maxQty <= 0 ? 1 : Math.min(Math.max(1, qtyRaw), maxQty);
 
-  useEffect(() => {
-    setQty((q) => {
+  const setQty = (next: number | ((prev: number) => number)) => {
+    setQtyRaw((prev) => {
+      const value = typeof next === "function" ? next(prev) : next;
       if (maxQty <= 0) return 1;
-      return Math.min(Math.max(1, q), maxQty);
+      return Math.min(Math.max(1, value), maxQty);
     });
-  }, [maxQty]);
+  };
 
   const unitPrice = selectedVariant?.price ?? product.price;
   const unitOldPrice = selectedVariant?.oldPrice ?? product.oldPrice;

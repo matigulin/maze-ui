@@ -3,6 +3,7 @@
 import { useEffect, useState, type FormEvent } from "react";
 import { Field } from "@/components/Field";
 import { useAdminApi } from "@/lib/admin/client";
+import { runAfterCommit } from "@/lib/run-after-commit";
 import type { AdminCategory, CategoryBody } from "@/lib/admin/types";
 import {
   AdminActionsTd,
@@ -60,7 +61,7 @@ export function AdminCategoriesPage() {
   };
 
   useEffect(() => {
-    void load();
+    runAfterCommit(() => load());
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const update = <K extends keyof CategoryBody>(

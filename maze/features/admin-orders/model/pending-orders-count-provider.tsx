@@ -11,6 +11,7 @@ import {
 } from "react";
 import { useStaffAuth } from "@/components/staff/StaffAuthProvider";
 import { fetchPendingOrdersCount } from "../api/pending-orders-count";
+import { runAfterCommit } from "@/lib/run-after-commit";
 import { ADMIN_ORDERS_POLL_MS } from "../lib/poll";
 import { PENDING_ORDERS_COUNT_REFRESH_EVENT } from "../lib/refresh-event";
 
@@ -58,7 +59,7 @@ export function PendingOrdersCountProvider({
 
   useEffect(() => {
     if (!authReady) return;
-    void refresh();
+    runAfterCommit(() => refresh());
   }, [authReady, refresh]);
 
   useEffect(() => {

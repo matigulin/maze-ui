@@ -2,8 +2,9 @@
 
 import Link from "next/link";
 import { useEffect, useState, type FormEvent, type ReactNode } from "react";
-import { Field, fieldCls } from "@/components/Field";
+import { Field } from "@/components/Field";
 import { useAdminApi } from "@/lib/admin/client";
+import { runAfterCommit } from "@/lib/run-after-commit";
 import type {
   AdminBanner,
   AdminCmsPage,
@@ -112,7 +113,7 @@ export function BannersPage() {
     }
   };
   useEffect(() => {
-    void load();
+    runAfterCommit(() => load());
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
   const set = <K extends keyof typeof form>(key: K, value: (typeof form)[K]) =>
     setForm((f) => ({ ...f, [key]: value }));
@@ -309,7 +310,7 @@ export function SlidesPage() {
     }
   };
   useEffect(() => {
-    void load();
+    runAfterCommit(() => load());
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
   async function save(e: FormEvent) {
     e.preventDefault();
@@ -488,7 +489,7 @@ export function CmsListPage() {
     }
   };
   useEffect(() => {
-    void load(); 
+    runAfterCommit(() => load()); 
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
   function removePage(id: string) {
     void api

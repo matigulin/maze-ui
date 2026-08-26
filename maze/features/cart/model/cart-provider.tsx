@@ -207,7 +207,10 @@ export function CartProvider({
   );
 
   const commitAddRef = useRef(commitAdd);
-  commitAddRef.current = commitAdd;
+
+  useEffect(() => {
+    commitAddRef.current = commitAdd;
+  }, [commitAdd]);
 
   useEffect(() => {
     if (!ready) return;

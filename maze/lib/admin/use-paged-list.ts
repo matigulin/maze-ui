@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import { runAfterCommit } from "@/lib/run-after-commit";
 
 function toErrorMessage(err: unknown, fallback = "Ошибка запроса") {
   if (err instanceof Error) return err.message || fallback;
@@ -37,12 +38,15 @@ export function useAdminPagedList<T extends { id: string }>({
   const [error, setError] = useState("");
   const sentinelRef = useRef<HTMLDivElement>(null);
   const fetchRef = useRef(fetchPage);
-  fetchRef.current = fetchPage;
   const loadingRef = useRef(false);
   const pageRef = useRef(1);
   const pagesRef = useRef(1);
-  pageRef.current = page;
-  pagesRef.current = pages;
+
+  useEffect(() => {
+    fetchRef.current = fetchPage;
+    pageRef.current = page;
+    pagesRef.current = pages;
+  }, [fetchPage, page, pages]);
 
   const load = useCallback(
     async (opts: { page: number; append: boolean; silent?: boolean }) => {
@@ -75,7 +79,7 @@ export function useAdminPagedList<T extends { id: string }>({
   );
 
   useEffect(() => {
-    void load({ page: 1, append: false });
+    runAfterCommit(() => load({ page: 1, append: false }));
   }, [resetKey, load]);
 
   useEffect(() => {
