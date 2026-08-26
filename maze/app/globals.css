@@ -356,30 +356,39 @@ select:focus-visible {
 /* Range slider: только thumb; заливку трека рисует PriceRangeSlider */
 .maze-range-input {
   --maze-range-thumb: 18px;
-  -webkit-appearance: none;
-  appearance: none;
+  -webkit-appearance: none !important;
+  appearance: none !important;
+  width: 100%;
   height: var(--maze-range-thumb);
   margin: 0;
+  padding: 0;
   background: transparent;
+  border: none;
   outline: none;
   cursor: pointer;
-  accent-color: transparent;
+  /* не давать Safari рисовать системный accent-track */
+  color: transparent;
+}
+.maze-range-input::-webkit-slider-container {
+  background: transparent;
 }
 .maze-range-input::-webkit-slider-runnable-track {
+  -webkit-appearance: none;
+  appearance: none;
   height: 6px;
   background: transparent;
   border: none;
+  box-shadow: none;
 }
 .maze-range-input::-webkit-slider-thumb {
-  -webkit-appearance: none;
-  appearance: none;
+  -webkit-appearance: none !important;
+  appearance: none !important;
   width: var(--maze-range-thumb);
   height: var(--maze-range-thumb);
   margin-top: calc((6px - var(--maze-range-thumb)) / 2);
   border-radius: 50%;
   background: #fff;
   border: 3px solid var(--color-cyan);
-  /* свечение только вокруг точки, без «хвоста» по треку */
   box-shadow: 0 0 10px rgba(53, 228, 240, 0.55);
   cursor: pointer;
 }

@@ -6,11 +6,13 @@ import {
   useContext,
   useEffect,
   useMemo,
+  useRef,
   useState,
   type ReactNode,
 } from "react";
 import type { Product } from "@/lib/data";
 import type { CartItem } from "./types";
+import type { AddItemOpts, PendingAddItem } from "./pending-add";
 import { shouldUseMocks } from "@/lib/mocks";
 import { apiGet } from "@/lib/api";
 import {
@@ -33,6 +35,7 @@ import {
 } from "../lib/storage";
 
 export type { CartItem } from "./types";
+export type { AddItemOpts, PendingAddItem } from "./pending-add";
 
 /** Auth dependency injected from app/widgets — feature не импортирует features/auth. */
 export type CartAuthAdapter = {
@@ -51,16 +54,9 @@ type Store = {
   subtotal: number;
   cartLoading: boolean;
   ensureAccessToken: () => Promise<string | null>;
-  addItem: (
-    product: Product,
-    opts?: {
-      color?: string;
-      memory?: string;
-      qty?: number;
-      silent?: boolean;
-      variantId?: string;
-    },
-  ) => Promise<void>;
+  addItem: (product: Product, opts?: AddItemOpts) => Promise<void>;
+  /** Сброс отложенного add, если гость закрыл модалку входа. */
+  dismissPendingAdd: () => void;
   removeItem: (key: string) => Promise<void>;
   updateQty: (key: string, qty: number) => Promise<void>;
   clearCart: () => Promise<void>;
@@ -78,7 +74,9 @@ async function loadVariantId(
   const direct = resolveVariantId(product, opts);
   if (direct) return direct;
 
-  const dto = await apiGet<ProductDetailDto>(`/catalog/products/${product.slug}`);
+  const dto = await apiGet<ProductDetailDto>(
+    `/catalog/products/${product.slug}`,
+  );
   const mapped = mapProductDetailToUiProduct(dto);
   return resolveVariantId(mapped, opts);
 }
@@ -98,6 +96,7 @@ export function CartProvider({
   const [miniOpen, setMiniOpen] = useState(false);
   const [hydrated, setHydrated] = useState(false);
   const [cartLoading, setCartLoading] = useState(false);
+  const pendingAddRef = useRef<PendingAddItem | null>(null);
 
   const cartAuth = useCallback(async () => {
     const accessToken = await ensureAccessToken();
@@ -136,8 +135,84 @@ export function CartProvider({
     setItems(readCachedCart(userId) ?? []);
   }, [userId]);
 
+  /** Реальное добавление — только для уже авторизованного. */
+  const commitAdd = useCallback(
+    async (product: Product, opts: AddItemOpts = {}) => {
+      if (useApi) {
+        try {
+          const variantId = await loadVariantId(product, opts);
+          if (!variantId) return;
+          const next = await addCartLine(
+            variantId,
+            opts.qty ?? 1,
+            await cartAuth(),
+          );
+          setItems(next);
+          if (!opts.silent && next.length > 0) setMiniOpen(true);
+        } catch {
+          /* сеть / API — мини-корзину не трогаем */
+        }
+        return;
+      }
+
+      const key = [product.slug, opts.color, opts.memory]
+        .filter(Boolean)
+        .join("|");
+      setItems((prev) => {
+        const found = prev.find((i) => i.key === key);
+        const variantQty =
+          product.variants?.find(
+            (v) =>
+              (opts.color == null || v.color === opts.color) &&
+              (opts.memory == null ||
+                v.memory == null ||
+                v.memory === opts.memory),
+          )?.quantityAvailable ??
+          product.quantityAvailable ??
+          0;
+        const stockCap = Math.max(0, variantQty);
+        if (found) {
+          return prev.map((i) =>
+            i.key === key
+              ? {
+                  ...i,
+                  quantityAvailable: stockCap,
+                  maxQuantity: Math.min(i.maxQuantity ?? 10, stockCap || 10),
+                  qty: Math.min(
+                    i.qty + (opts.qty ?? 1),
+                    Math.min(i.maxQuantity ?? 10, stockCap || 10),
+                  ),
+                }
+              : i,
+          );
+        }
+        const maxQuantity = Math.min(10, stockCap || 10);
+        return [
+          ...prev,
+          {
+            key,
+            product,
+            qty: Math.min(opts.qty ?? 1, maxQuantity),
+            maxQuantity,
+            quantityAvailable: stockCap,
+            color: opts.color,
+            memory: opts.memory,
+            variantId: opts.variantId,
+          },
+        ];
+      });
+      if (!opts.silent) setMiniOpen(true);
+    },
+    [useApi, cartAuth],
+  );
+
+  const commitAddRef = useRef(commitAdd);
+  commitAddRef.current = commitAdd;
+
   useEffect(() => {
     if (!ready) return;
+
+    let cancelled = false;
 
     async function hydrate() {
       try {
@@ -155,11 +230,30 @@ export function CartProvider({
       } catch {
         /* ignore */
       }
+
+      if (cancelled) return;
       setHydrated(true);
+
+      // После входа: сначала подтянули корзину, затем отложенный add с карточки.
+      const pending = pendingAddRef.current;
+      if (pending && isAuthenticated) {
+        pendingAddRef.current = null;
+        await commitAddRef.current(pending.product, pending.opts);
+      }
     }
 
     void hydrate();
-  }, [useApi, ready, isAuthenticated, userId, refreshApiCart, loadLocalCart]);
+    return () => {
+      cancelled = true;
+    };
+  }, [
+    useApi,
+    ready,
+    isAuthenticated,
+    userId,
+    refreshApiCart,
+    loadLocalCart,
+  ]);
 
   useEffect(() => {
     if (hydrated && isAuthenticated && userId) {
@@ -171,13 +265,29 @@ export function CartProvider({
     if (hydrated) writeWishlist(wishlist);
   }, [wishlist, hydrated]);
 
-  /** Корзина — только для авторизованных; избранное доступно гостю на устройстве. */
   const requireAuthForCart = useCallback(() => {
     if (!ready) return false;
     if (isAuthenticated) return true;
     onRequireAuth();
     return false;
   }, [ready, isAuthenticated, onRequireAuth]);
+
+  const addItem = useCallback(
+    async (product: Product, opts: AddItemOpts = {}) => {
+      if (!ready) return;
+      if (!isAuthenticated) {
+        pendingAddRef.current = { product, opts };
+        onRequireAuth();
+        return;
+      }
+      await commitAdd(product, opts);
+    },
+    [ready, isAuthenticated, onRequireAuth, commitAdd],
+  );
+
+  const dismissPendingAdd = useCallback(() => {
+    pendingAddRef.current = null;
+  }, []);
 
   const store = useMemo<Store>(() => {
     const count = items.reduce((s, i) => s + i.qty, 0);
@@ -192,74 +302,8 @@ export function CartProvider({
       cartLoading,
       ensureAccessToken,
       setMiniOpen,
-      addItem: async (product, opts = {}) => {
-        if (!requireAuthForCart()) return;
-
-        if (useApi) {
-          try {
-            const variantId = await loadVariantId(product, opts);
-            if (!variantId) return;
-            const next = await addCartLine(
-              variantId,
-              opts.qty ?? 1,
-              await cartAuth(),
-            );
-            setItems(next);
-            // Не открываем пустую корзину (например out-of-stock, отфильтрованный ответ).
-            if (!opts.silent && next.length > 0) setMiniOpen(true);
-          } catch {
-            /* сеть / API — мини-корзину не трогаем */
-          }
-          return;
-        }
-        const key = [product.slug, opts.color, opts.memory]
-          .filter(Boolean)
-          .join("|");
-        setItems((prev) => {
-          const found = prev.find((i) => i.key === key);
-          const variantQty =
-            product.variants?.find(
-              (v) =>
-                (opts.color == null || v.color === opts.color) &&
-                (opts.memory == null ||
-                  v.memory == null ||
-                  v.memory === opts.memory),
-            )?.quantityAvailable ??
-            product.quantityAvailable ??
-            0;
-          const stockCap = Math.max(0, variantQty);
-          if (found) {
-            return prev.map((i) =>
-              i.key === key
-                ? {
-                    ...i,
-                    quantityAvailable: stockCap,
-                    maxQuantity: Math.min(i.maxQuantity ?? 10, stockCap || 10),
-                    qty: Math.min(
-                      i.qty + (opts.qty ?? 1),
-                      Math.min(i.maxQuantity ?? 10, stockCap || 10),
-                    ),
-                  }
-                : i,
-            );
-          }
-          const maxQuantity = Math.min(10, stockCap || 10);
-          return [
-            ...prev,
-            {
-              key,
-              product,
-              qty: Math.min(opts.qty ?? 1, maxQuantity),
-              maxQuantity,
-              quantityAvailable: stockCap,
-              color: opts.color,
-              memory: opts.memory,
-              variantId: opts.variantId,
-            },
-          ];
-        });
-        if (!opts.silent) setMiniOpen(true);
-      },
+      addItem,
+      dismissPendingAdd,
       removeItem: async (key) => {
         if (!requireAuthForCart()) return;
 
@@ -335,6 +379,8 @@ export function CartProvider({
     requireAuthForCart,
     cartAuth,
     ensureAccessToken,
+    addItem,
+    dismissPendingAdd,
   ]);
 
   return <CartContext.Provider value={store}>{children}</CartContext.Provider>;
