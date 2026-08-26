@@ -8,4 +8,4 @@ export {
   productCategoryLabel,
 } from "@/lib/product-label";
 
-export { formatStockCompact, formatStockLabel } from "@/lib/stock";
+export { formatStockCompact, formatStockLabel, isProductInStock } from "@/lib/stock";

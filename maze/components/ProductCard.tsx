@@ -11,7 +11,7 @@ import {
 } from "motion/react";
 import { Heart, Plus, Star } from "lucide-react";
 import type { Product } from "@/lib/data";
-import { formatStockCompact } from "@/entities/product";
+import { formatStockCompact, isProductInStock } from "@/entities/product";
 import { ProductThumb } from "./ProductThumb";
 import { useCart } from "./store";
 import { cn, formatPrice } from "@/lib/utils";
@@ -67,7 +67,7 @@ export function ProductCard({ product }: { product: Product }) {
     product.badge === "SALE" && product.oldPrice
       ? Math.round((1 - product.price / product.oldPrice) * 100)
       : null;
-  const inStock = (product.quantityAvailable ?? 0) > 0;
+  const inStock = isProductInStock(product);
   const meta =
     product.brand && product.category && product.brand !== product.category
       ? `${product.brand} · ${product.category}`
@@ -166,12 +166,19 @@ export function ProductCard({ product }: { product: Product }) {
             </div>
             <button
               type="button"
-              aria-label="В корзину"
+              disabled={!inStock}
+              aria-label={inStock ? "В корзину" : "Нет в наличии"}
               onClick={(e) => {
                 e.preventDefault();
+                if (!inStock) return;
                 void addItem(product);
               }}
-              className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-gradient-to-br from-cyan to-blue text-[#04121a] shadow-[0_8px_24px_-8px_rgba(53,228,240,0.7)] transition-transform hover:scale-105 active:scale-95 cursor-pointer sm:h-10 sm:w-10"
+              className={cn(
+                "grid h-9 w-9 shrink-0 place-items-center rounded-full transition-transform sm:h-10 sm:w-10",
+                inStock
+                  ? "cursor-pointer bg-gradient-to-br from-cyan to-blue text-[#04121a] shadow-[0_8px_24px_-8px_rgba(53,228,240,0.7)] hover:scale-105 active:scale-95"
+                  : "cursor-not-allowed border border-line bg-white/[0.06] text-faint",
+              )}
             >
               <Plus size={17} strokeWidth={2.5} className="sm:size-[18px]" />
             </button>

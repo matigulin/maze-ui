@@ -11,3 +11,12 @@ export function formatStockCompact(quantity: number | null | undefined): string 
   if (qty <= 0) return "Нет";
   return `${qty} шт.`;
 }
+
+/** Единая проверка наличия для карточек каталога. */
+export function isProductInStock(product: {
+  quantityAvailable?: number;
+  inStock?: boolean;
+}): boolean {
+  if (product.inStock === false) return false;
+  return (product.quantityAvailable ?? 0) > 0;
+}
