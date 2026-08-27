@@ -69,8 +69,8 @@ export async function loginStaff(input: {
     throw new ValidationError('Email и пароль обязательны');
   }
 
-  await consumeRateLimit(`rate:staff-login:email:${email}`, 5, RATE_WINDOW_SEC);
-  await consumeRateLimit(`rate:staff-login:ip:${input.ip}`, 5, RATE_WINDOW_SEC);
+  await consumeRateLimit(`rate:staff-login:email:${email}`, 30, RATE_WINDOW_SEC);
+  await consumeRateLimit(`rate:staff-login:ip:${input.ip}`, 30, RATE_WINDOW_SEC);
 
   const staff = await StaffUser.findOne({
     where: { email, is_active: true },

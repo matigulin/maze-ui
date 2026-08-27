@@ -27,6 +27,7 @@ import { requestAccountOrdersRefresh } from "@/lib/account-orders-refresh";
 import { ApiError } from "@/lib/api";
 import {
   digitsOnly,
+  e164ToNationalDisplay,
   isValidRussianMobile,
   validateRussianMobile,
 } from "@/lib/phone";
@@ -80,6 +81,7 @@ export function CartClient() {
     removeItem,
     clearCart,
     ensureAccessToken,
+    checkoutContact,
   } = useCart();
   const [delivery, setDelivery] = useState<DeliveryId>(DELIVERY[0].id);
   const [payment, setPayment] = useState(PAYMENT[0].id);
@@ -91,6 +93,25 @@ export function CartClient() {
   const [formError, setFormError] = useState<string | null>(null);
   const [doneOrder, setDoneOrder] = useState<string | null>(null);
   const successRef = useRef<HTMLDivElement>(null);
+  /** Prefill один раз на userId — дальше поля свободно редактируются. */
+  const [prefilledUserId, setPrefilledUserId] = useState<string | null>(null);
+
+  const contactUserId = checkoutContact?.userId ?? null;
+  if (!contactUserId && prefilledUserId !== null) {
+    setPrefilledUserId(null);
+  } else if (
+    contactUserId &&
+    contactUserId !== prefilledUserId &&
+    checkoutContact
+  ) {
+    setPrefilledUserId(contactUserId);
+    if (checkoutContact.firstName?.trim()) {
+      setFirstName(checkoutContact.firstName.trim());
+    }
+    if (checkoutContact.phone) {
+      setPhoneNational(e164ToNationalDisplay(checkoutContact.phone));
+    }
+  }
 
   const deliveryPrice = DELIVERY.find((d) => d.id === delivery)?.price ?? 0;
   const surcharge = PAYMENT.find((p) => p.id === payment)?.surcharge ?? 0;

@@ -1,18 +1,22 @@
 "use client";
 
-import { useEffect, useState, type FormEvent } from "react";
+import { useEffect, useId, useState, type FormEvent } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Field } from "@/components/Field";
+import { Eye, EyeOff } from "lucide-react";
+import { Field, fieldCls } from "@/components/Field";
 import { Logo } from "@/components/Logo";
 import { useStaffAuth } from "@/components/staff/StaffAuthProvider";
 import { ApiError } from "@/lib/api";
+import { cn } from "@/lib/utils";
 
 export default function StaffLoginPage() {
   const router = useRouter();
   const { ready, isStaff, login } = useStaffAuth();
+  const passwordId = useId();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [pending, setPending] = useState(false);
 
@@ -68,18 +72,46 @@ export default function StaffLoginPage() {
             required
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            placeholder="admin@maze.ru"
           />
-          <Field
-            label="Пароль"
-            type="password"
-            autoComplete="current-password"
-            required
-            minLength={8}
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            placeholder="••••••••"
-          />
+
+          <div className="space-y-1.5">
+            <label
+              htmlFor={passwordId}
+              className="block text-xs font-medium uppercase tracking-wider text-muted"
+            >
+              Пароль
+            </label>
+            <div className="relative">
+              <input
+                id={passwordId}
+                type={showPassword ? "text" : "password"}
+                autoComplete="current-password"
+                required
+                minLength={8}
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className={cn(fieldCls, "pr-12")}
+              />
+              <button
+                type="button"
+                onPointerDown={(e) => {
+                  e.preventDefault();
+                  setShowPassword(true);
+                }}
+                onPointerUp={() => setShowPassword(false)}
+                onPointerLeave={() => setShowPassword(false)}
+                onPointerCancel={() => setShowPassword(false)}
+                aria-label="Показать пароль, удерживая кнопку"
+                className="absolute right-1.5 top-1/2 grid h-9 w-9 -translate-y-1/2 place-items-center rounded-lg text-faint cursor-pointer select-none"
+              >
+                {showPassword ? (
+                  <Eye size={18} strokeWidth={2} />
+                ) : (
+                  <EyeOff size={18} strokeWidth={2} />
+                )}
+              </button>
+            </div>
+          </div>
 
           {error && (
             <p

@@ -20,6 +20,13 @@ export function AuthenticatedCartProvider({
         ready,
         isAuthenticated,
         userId: user?.id ?? null,
+        checkoutContact: user
+          ? {
+              userId: user.id,
+              firstName: user.firstName,
+              phone: user.phone,
+            }
+          : null,
         ensureAccessToken,
         onRequireAuth: () => open("auth"),
       }}

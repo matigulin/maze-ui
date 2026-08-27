@@ -42,6 +42,12 @@ export type CartAuthAdapter = {
   ready: boolean;
   isAuthenticated: boolean;
   userId: string | null;
+  /** Контакты из профиля для префилла оформления (форма остаётся редактируемой). */
+  checkoutContact: {
+    userId: string;
+    firstName: string | null;
+    phone: string | null;
+  } | null;
   ensureAccessToken: () => Promise<string | null>;
   onRequireAuth: () => void;
 };
@@ -53,6 +59,7 @@ type Store = {
   count: number;
   subtotal: number;
   cartLoading: boolean;
+  checkoutContact: CartAuthAdapter["checkoutContact"];
   ensureAccessToken: () => Promise<string | null>;
   addItem: (product: Product, opts?: AddItemOpts) => Promise<void>;
   /** Сброс отложенного add, если гость закрыл модалку входа. */
@@ -89,7 +96,7 @@ export function CartProvider({
   auth: CartAuthAdapter;
 }) {
   const useApi = !shouldUseMocks();
-  const { ready, isAuthenticated, userId, ensureAccessToken, onRequireAuth } =
+  const { ready, isAuthenticated, userId, checkoutContact, ensureAccessToken, onRequireAuth } =
     auth;
   const [items, setItems] = useState<CartItem[]>([]);
   const [wishlist, setWishlist] = useState<string[]>([]);
@@ -303,6 +310,7 @@ export function CartProvider({
       count,
       subtotal,
       cartLoading,
+      checkoutContact,
       ensureAccessToken,
       setMiniOpen,
       addItem,
@@ -378,6 +386,7 @@ export function CartProvider({
     wishlist,
     miniOpen,
     cartLoading,
+    checkoutContact,
     useApi,
     requireAuthForCart,
     cartAuth,
