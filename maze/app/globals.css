@@ -172,11 +172,28 @@ select:focus-visible {
     border: 1px solid rgba(150, 170, 255, 0.12);
   }
 
+  /*
+   * Sticky chrome: без сильного blur + без transition «всего».
+   * backdrop-filter поверх canvas-фона давал ~200ms+ paint при 0ms React.
+   */
+  .chrome-sticky {
+    background: rgba(7, 8, 15, 0.94);
+    border-bottom: 1px solid var(--color-line);
+    transition:
+      background-color 200ms ease,
+      border-color 200ms ease;
+  }
+  @supports ((-webkit-backdrop-filter: blur(1px)) or (backdrop-filter: blur(1px))) {
+    .chrome-sticky {
+      background: rgba(7, 8, 15, 0.82);
+      backdrop-filter: blur(10px) saturate(120%);
+      -webkit-backdrop-filter: blur(10px) saturate(120%);
+    }
+  }
+
   /* Mobile drawers — плотный непрозрачный фон */
   .drawer-scrim {
-    background: rgba(5, 6, 14, 0.88);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
+    background: rgba(5, 6, 14, 0.92);
   }
   .drawer-panel-right,
   .drawer-panel-left {

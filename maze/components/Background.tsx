@@ -117,8 +117,11 @@ export function Background() {
 
     let raf = 0;
     let running = true;
+    let scrollPaused = false;
+    let scrollResumeTimer = 0;
+
     function loop() {
-      if (!running) return;
+      if (!running || scrollPaused) return;
       draw();
       raf = requestAnimationFrame(loop);
     }
@@ -134,8 +137,19 @@ export function Background() {
     const onResize = () => init();
     const onVisibility = () => {
       running = !document.hidden;
-      if (running) loop();
+      if (running && !scrollPaused) loop();
       else cancelAnimationFrame(raf);
+    };
+    /** На скролле canvas жрёт кадры вместе со sticky-header — пауза ~120ms. */
+    const onScroll = () => {
+      if (reduce) return;
+      scrollPaused = true;
+      cancelAnimationFrame(raf);
+      window.clearTimeout(scrollResumeTimer);
+      scrollResumeTimer = window.setTimeout(() => {
+        scrollPaused = false;
+        if (running) loop();
+      }, 120);
     };
 
     init();
@@ -144,6 +158,7 @@ export function Background() {
     } else {
       window.addEventListener("mousemove", onMove);
       window.addEventListener("mouseout", onLeave);
+      window.addEventListener("scroll", onScroll, { passive: true });
       document.addEventListener("visibilitychange", onVisibility);
       loop();
     }
@@ -152,9 +167,11 @@ export function Background() {
     return () => {
       running = false;
       cancelAnimationFrame(raf);
+      window.clearTimeout(scrollResumeTimer);
       window.removeEventListener("mousemove", onMove);
       window.removeEventListener("mouseout", onLeave);
       window.removeEventListener("resize", onResize);
+      window.removeEventListener("scroll", onScroll);
       document.removeEventListener("visibilitychange", onVisibility);
     };
   }, []);

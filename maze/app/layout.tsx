@@ -1,4 +1,5 @@
 import type { Metadata, Viewport } from "next";
+import Script from "next/script";
 import { Exo_2, Orbitron } from "next/font/google";
 import "./globals.css";
 import { Providers } from "@/components/Providers";
@@ -44,6 +45,13 @@ export default async function RootLayout({
       className={`${exo.variable} ${orbitron.variable} h-full antialiased`}
     >
       <body className="min-h-full flex max-w-full flex-col overflow-x-hidden bg-bg text-ink font-sans selection:bg-cyan/25 selection:text-white">
+        {process.env.NODE_ENV === "development" && (
+          <Script
+            src="https://unpkg.com/react-scan/dist/auto.global.js"
+            strategy="afterInteractive"
+            crossOrigin="anonymous"
+          />
+        )}
         <Providers siteData={siteData}>{children}</Providers>
       </body>
     </html>

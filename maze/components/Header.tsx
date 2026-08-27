@@ -61,11 +61,10 @@ export function Header() {
     <>
       <header
         className={cn(
-          "sticky top-0 z-50 transition-all duration-300",
-          "max-md:border-b max-md:border-line max-md:bg-[#07080f]/96 max-md:backdrop-blur-md",
-          scrolled
-            ? "glass-strong border-b border-line"
-            : "border-b border-transparent",
+          "sticky top-0 z-50",
+          scrolled || mobileOpen
+            ? "chrome-sticky"
+            : "border-b border-transparent bg-transparent transition-[background-color,border-color] duration-200",
         )}
       >
         <div className="container-x flex h-14 min-w-0 shrink-0 flex-nowrap items-center gap-1.5 sm:h-16 sm:gap-3 md:h-[4.5rem] md:gap-5">
@@ -91,7 +90,7 @@ export function Header() {
                   animate={{ opacity: 1, y: 0, scale: 1 }}
                   exit={{ opacity: 0, y: 8, scale: 0.98 }}
                   transition={{ duration: 0.18 }}
-                  className="glass-strong absolute left-0 top-full mt-2 grid w-[30rem] grid-cols-2 gap-1 rounded-2xl border border-line p-2"
+                  className="absolute left-0 top-full mt-2 grid w-[30rem] grid-cols-2 gap-1 rounded-2xl border border-line bg-[#0e1126] p-2 shadow-[0_18px_50px_-20px_rgba(0,0,0,0.75)]"
                 >
                   {categories.map((c) => (
                     <Link
