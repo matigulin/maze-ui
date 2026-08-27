@@ -23,6 +23,7 @@ import { formatPrice, plural, cn } from "@/lib/utils";
 import { formatStockLabel } from "@/lib/stock";
 import { scrollWindowToTop } from "@/lib/scroll";
 import { checkoutCart } from "@/features/checkout";
+import { requestAccountOrdersRefresh } from "@/lib/account-orders-refresh";
 import { ApiError } from "@/lib/api";
 import {
   digitsOnly,
@@ -140,6 +141,7 @@ export function CartClient() {
       });
       setConfirmOpen(false);
       setDoneOrder(order.orderNumber);
+      requestAccountOrdersRefresh();
       await clearCart();
     } catch (err) {
       const message =
@@ -184,9 +186,14 @@ export function CartClient() {
           Заказ <span className="text-cyan">#{doneOrder}</span>{" "}
           принят. Менеджер свяжется с вами в ближайшее время.
         </p>
-        <Link href="/catalog" className="btn-primary mt-8 inline-flex">
-          Продолжить покупки
-        </Link>
+        <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:justify-center">
+          <Link href="/account?tab=orders" className="btn-primary inline-flex">
+            Мои заказы
+          </Link>
+          <Link href="/catalog" className="btn-ghost inline-flex">
+            Продолжить покупки
+          </Link>
+        </div>
       </motion.div>
     );
   }

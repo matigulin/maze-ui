@@ -4,7 +4,7 @@ import { useEffect, useState, type ReactNode } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { motion } from "motion/react";
-import { MapPin, Package, Plus, Building2, Heart } from "lucide-react";
+import { MapPin, Plus, Building2, Heart } from "lucide-react";
 import { ProductCard } from "@/components/ProductCard";
 import { AccountProfile } from "./AccountProfile";
 import { ACCOUNT_TAB_EVENT } from "../lib/tab-event";
@@ -15,7 +15,7 @@ import {
   mapProductListItemToUiProduct,
   type ProductListItemDto,
 } from "@/lib/mappers/catalog";
-import { formatPrice, cn } from "@/lib/utils";
+import { cn } from "@/lib/utils";
 
 type Tab = "profile" | "orders" | "wishlist" | "addresses" | "company";
 
@@ -44,6 +44,8 @@ export type AccountClientProps = {
   isAuthenticated: boolean;
   ensureAccessToken: () => Promise<string | null>;
   onLogin: () => void;
+  /** Вкладка «Мои заказы» — из widget (features/account-orders). */
+  ordersPanel?: ReactNode;
   /** Слот в форме профиля (LogoutButton из widget). */
   profileFooterActions?: ReactNode;
 };
@@ -55,6 +57,7 @@ export function AccountClient({
   isAuthenticated,
   ensureAccessToken,
   onLogin,
+  ordersPanel,
   profileFooterActions,
 }: AccountClientProps) {
   const router = useRouter();
@@ -220,49 +223,10 @@ export function AccountClient({
             footerActions={profileFooterActions}
           />
         )}
-        {isAuthenticated && tab === "orders" && <Orders />}
+        {isAuthenticated && tab === "orders" && ordersPanel}
         {isAuthenticated && tab === "addresses" && <Addresses />}
         {isAuthenticated && tab === "company" && <Company />}
       </motion.div>
-    </div>
-  );
-}
-
-function Orders() {
-  const p = products.find((x) => x.slug === "iphone-15-pro-max");
-  if (!p) {
-    return (
-      <Empty
-        icon={<Package size={30} />}
-        title="Заказов пока нет"
-        text="Оформите первый заказ — он появится здесь."
-        cta
-      />
-    );
-  }
-  return (
-    <div className="max-w-2xl space-y-4">
-      <div className="glass rounded-2xl p-5">
-        <div className="mb-4 flex items-center justify-between">
-          <div>
-            <p className="font-display font-semibold">Заказ #MAZE-1042</p>
-            <p className="text-xs text-faint">15 мая 2026</p>
-          </div>
-          <span className="flex items-center gap-1.5 rounded-full bg-cyan/15 px-3 py-1 text-xs font-medium text-cyan">
-            <Package size={13} />
-            Доставлен
-          </span>
-        </div>
-        <Link
-          href={`/product/${p.slug}`}
-          className="flex items-center justify-between rounded-xl border border-line p-3 transition-colors hover:border-white/20"
-        >
-          <span className="text-sm">{p.name}</span>
-          <span className="font-display font-semibold">
-            {formatPrice(p.price)}
-          </span>
-        </Link>
-      </div>
     </div>
   );
 }

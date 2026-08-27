@@ -14,6 +14,8 @@ export class Order extends Model {
   declare comment: string | null;
   declare idempotency_key: string | null;
   declare pricing_version: string;
+  declare createdAt: Date;
+  declare updatedAt: Date;
   declare items?: OrderItem[];
   declare delivery?: OrderDelivery | null;
   declare payment?: OrderPayment | null;

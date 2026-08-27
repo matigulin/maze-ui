@@ -87,7 +87,7 @@ export async function listManagerOrders(
       'customer_last_name',
       'customer_phone',
       'assigned_manager_id',
-      'created_at',
+      'createdAt',
     ],
     include: [{ model: OrderItem, as: 'items', attributes: ['quantity'] }],
   });

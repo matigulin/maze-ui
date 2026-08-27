@@ -10,6 +10,7 @@ import {
   FilterGroup,
   PriceFilter,
 } from "@/features/catalog-filters";
+import { MobileDrawer } from "@/shared/ui/mobile-drawer";
 import { plural, cn } from "@/lib/utils";
 
 type Sort = "pop" | "cheap" | "exp" | "new";
@@ -208,48 +209,36 @@ export function CatalogClient({
         )}
       </div>
 
-      <AnimatePresence>
-        {mobileFilters && (
-          <motion.div
-            className="fixed inset-0 z-[95] lg:hidden"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-          >
-            <div
-              className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+      <MobileDrawer
+        open={mobileFilters}
+        onClose={() => setMobileFilters(false)}
+        side="left"
+        rootClassName="lg:hidden"
+      >
+        <div className="shrink-0 border-b border-line p-6 pb-4">
+          <div className="flex items-center justify-between">
+            <h2 className="font-display text-lg font-semibold">Фильтры</h2>
+            <button
+              type="button"
               onClick={() => setMobileFilters(false)}
-            />
-            <motion.div
-              className="glass-strong absolute inset-y-0 left-0 w-[85%] max-w-sm overflow-y-auto border-r border-line p-6"
-              initial={{ x: "-100%" }}
-              animate={{ x: 0 }}
-              exit={{ x: "-100%" }}
-              transition={{ type: "spring", stiffness: 320, damping: 34 }}
+              aria-label="Закрыть"
+              className="grid h-9 w-9 place-items-center rounded-full text-muted hover:text-ink cursor-pointer"
             >
-              <div className="mb-6 flex items-center justify-between">
-                <h2 className="font-display text-lg font-semibold">Фильтры</h2>
-                <button
-                  type="button"
-                  onClick={() => setMobileFilters(false)}
-                  aria-label="Закрыть"
-                  className="grid h-9 w-9 place-items-center rounded-full text-muted hover:text-ink cursor-pointer"
-                >
-                  <X size={18} />
-                </button>
-              </div>
-              {FilterPanel}
-              <button
-                type="button"
-                onClick={() => setMobileFilters(false)}
-                className="btn-primary mt-7 w-full"
-              >
-                Показать {filtered.length}
-              </button>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+              <X size={18} />
+            </button>
+          </div>
+        </div>
+        <div className="flex-1 overflow-y-auto p-6 pt-4">
+          {FilterPanel}
+          <button
+            type="button"
+            onClick={() => setMobileFilters(false)}
+            className="btn-primary mt-7 w-full"
+          >
+            Показать {filtered.length}
+          </button>
+        </div>
+      </MobileDrawer>
     </div>
   );
 }

@@ -172,6 +172,26 @@ select:focus-visible {
     border: 1px solid rgba(150, 170, 255, 0.12);
   }
 
+  /* Mobile drawers — плотный непрозрачный фон */
+  .drawer-scrim {
+    background: rgba(5, 6, 14, 0.88);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+  }
+  .drawer-panel-right,
+  .drawer-panel-left {
+    background-color: #0e1126;
+    isolation: isolate;
+  }
+  .drawer-panel-right {
+    border-left: 1px solid var(--color-line);
+    box-shadow: -24px 0 64px -16px rgba(0, 0, 0, 0.72);
+  }
+  .drawer-panel-left {
+    border-right: 1px solid var(--color-line);
+    box-shadow: 24px 0 64px -16px rgba(0, 0, 0, 0.72);
+  }
+
   /* Iridescent gradient text (animated sweep) */
   .text-iri {
     background: linear-gradient(

@@ -5,14 +5,21 @@ import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { scrollWindowToTop } from "@/lib/scroll";
 
-export function Logo({ className }: { className?: string }) {
+export function Logo({
+  className,
+  compact = false,
+}: {
+  className?: string;
+  /** true — всегда компактный; "mobile" — только до md */
+  compact?: boolean | "mobile";
+}) {
   const pathname = usePathname();
   const onHome = pathname === "/";
 
   return (
     <Link
       href="/"
-      className={cn("inline-flex items-center", className)}
+      className={cn("inline-flex min-w-0 shrink items-center", className)}
       aria-label={onHome ? "MAZE — наверх" : "MAZE — на главную"}
       onClick={(e) => {
         if (!onHome) return;
@@ -26,7 +33,12 @@ export function Logo({ className }: { className?: string }) {
         viewBox="0 0 140 40"
         fill="none"
         xmlns="http://www.w3.org/2000/svg"
-        className="h-9 w-auto"
+        className={cn(
+          "w-auto",
+          compact === true && "h-8 max-w-[6.75rem]",
+          compact === "mobile" && "h-8 max-w-[6.75rem] md:h-9 md:max-w-none",
+          !compact && "h-9",
+        )}
         aria-hidden
       >
         <path

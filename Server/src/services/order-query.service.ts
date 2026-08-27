@@ -1,5 +1,6 @@
 import { toNumber } from '../lib/decimal.js';
 import { NotFoundError } from '../lib/errors.js';
+import { isoTimestamp } from '../lib/model-attrs.js';
 import { paginationOffset, parsePagination } from '../lib/pagination.js';
 import { Order, OrderDelivery, OrderItem, OrderPayment } from '../models/order.js';
 import { PaymentMethod } from '../models/reference.js';
@@ -72,7 +73,7 @@ export async function listUserOrders(userId: string, query: Record<string, unkno
       'order_number',
       'status',
       'total',
-      'created_at',
+      'createdAt',
     ],
     include: [
       {
@@ -90,7 +91,7 @@ export async function listUserOrders(userId: string, query: Record<string, unkno
       status: order.status,
       totalRub: toNumber(order.total),
       itemsCount: (order.items ?? []).reduce((sum, item) => sum + item.quantity, 0),
-      createdAt: (order.get('created_at') as Date).toISOString(),
+      createdAt: isoTimestamp(order, 'createdAt'),
     })),
     meta: { page, limit, total: count },
   };
@@ -166,6 +167,6 @@ export async function getUserOrderById(
     })),
     comment: (order.get('comment') as string | null) ?? null,
     pricingVersion: order.pricing_version,
-    createdAt: (order.get('created_at') as Date).toISOString(),
+    createdAt: isoTimestamp(order, 'createdAt'),
   };
 }
