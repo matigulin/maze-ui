@@ -16,6 +16,7 @@ import {
 import { HeaderAuthActions, MobileAuthActions } from "@/features/auth";
 import { ACCOUNT_TAB_EVENT } from "@/features/account";
 import { MobileDrawer } from "@/shared/ui/mobile-drawer";
+import { resetWindowScroll } from "@/lib/scroll";
 import { Logo } from "./Logo";
 import { Icon } from "./Icon";
 import { useCart } from "./store";
@@ -151,7 +152,8 @@ export function Header() {
                   window.dispatchEvent(
                     new CustomEvent(ACCOUNT_TAB_EVENT, { detail: "wishlist" }),
                   );
-                  router.replace("/account?tab=wishlist", { scroll: false });
+                  router.replace("/account?tab=wishlist");
+                  resetWindowScroll();
                 }
               }}
             >
@@ -281,7 +283,6 @@ function IconButton({
     return (
       <Link
         href={href}
-        scroll={false}
         aria-label={label}
         className={cls}
         onClick={onClick}

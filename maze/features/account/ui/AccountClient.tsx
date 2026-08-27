@@ -15,6 +15,7 @@ import {
   mapProductListItemToUiProduct,
   type ProductListItemDto,
 } from "@/lib/mappers/catalog";
+import { resetWindowScroll } from "@/lib/scroll";
 import { cn } from "@/lib/utils";
 
 type Tab = "profile" | "orders" | "wishlist" | "addresses" | "company";
@@ -82,7 +83,8 @@ export function AccountClient({
 
   function selectTab(next: Tab) {
     setTab(next);
-    router.replace(tabHref(next), { scroll: false });
+    router.replace(tabHref(next));
+    resetWindowScroll();
   }
 
   useEffect(() => {

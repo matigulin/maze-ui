@@ -1,4 +1,4 @@
-/** Плавный скролл окна — общий для логотипа и кнопки «Наверх». */
+/** Скролл окна — логотип, «Наверх», сброс при навигации. */
 
 export function getWindowScrollY(): number {
   if (typeof window === "undefined") return 0;
@@ -10,7 +10,12 @@ export function getWindowScrollY(): number {
   );
 }
 
-export function scrollWindowToTop(): void {
+export function scrollWindowToTop(behavior: ScrollBehavior = "smooth"): void {
   if (typeof window === "undefined") return;
-  window.scrollTo({ top: 0, behavior: "smooth" });
+  window.scrollTo({ top: 0, left: 0, behavior });
+}
+
+/** Мгновенный сброс при смене роута — без «долистывания» со старой страницы. */
+export function resetWindowScroll(): void {
+  scrollWindowToTop("auto");
 }
