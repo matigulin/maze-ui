@@ -17,6 +17,7 @@ import {
 } from "@/lib/mappers/catalog";
 import { resetWindowScroll } from "@/lib/scroll";
 import { cn } from "@/lib/utils";
+import type { UserProfile } from "@/entities/user";
 
 type Tab = "profile" | "orders" | "wishlist" | "addresses" | "company";
 
@@ -45,6 +46,8 @@ export type AccountClientProps = {
   isAuthenticated: boolean;
   ensureAccessToken: () => Promise<string | null>;
   onLogin: () => void;
+  /** После сохранения профиля — синхронизация auth (widget). */
+  onProfileSaved?: (profile: UserProfile) => void;
   /** Вкладка «Мои заказы» — из widget (features/account-orders). */
   ordersPanel?: ReactNode;
   /** Слот в форме профиля (LogoutButton из widget). */
@@ -58,6 +61,7 @@ export function AccountClient({
   isAuthenticated,
   ensureAccessToken,
   onLogin,
+  onProfileSaved,
   ordersPanel,
   profileFooterActions,
 }: AccountClientProps) {
@@ -222,6 +226,7 @@ export function AccountClient({
           <AccountProfile
             ensureAccessToken={ensureAccessToken}
             isAuthenticated={isAuthenticated}
+            onProfileSaved={onProfileSaved}
             footerActions={profileFooterActions}
           />
         )}

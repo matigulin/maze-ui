@@ -5,6 +5,7 @@ import { releaseOrderStockReservations } from '../lib/order-stock.js';
 import { runInTransaction } from '../lib/transaction.js';
 import { Order, OrderItem, OrderStatusHistory } from '../models/order.js';
 import { publishOutboxEvent } from './outbox.service.js';
+import { invalidateCatalogAndHomeCache } from './cache-invalidation.service.js';
 
 const BATCH_SIZE = 50;
 
@@ -70,6 +71,10 @@ export async function releaseExpiredPendingOrderReservations() {
     });
 
     processed += 1;
+  }
+
+  if (processed > 0) {
+    await invalidateCatalogAndHomeCache();
   }
 
   return { processed, cutoff: cutoff.toISOString() };

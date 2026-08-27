@@ -21,6 +21,8 @@ type Gender = "" | UserGender;
 export type AccountProfileProps = {
   ensureAccessToken: () => Promise<string | null>;
   isAuthenticated: boolean;
+  /** После успешного PATCH — обновить auth-сессию (checkout / хедер). */
+  onProfileSaved?: (profile: UserProfile) => void;
   /** Слот справа от «Сохранить» (LogoutButton из widget). */
   footerActions?: ReactNode;
 };
@@ -28,6 +30,7 @@ export type AccountProfileProps = {
 export function AccountProfile({
   ensureAccessToken,
   isAuthenticated,
+  onProfileSaved,
   footerActions,
 }: AccountProfileProps) {
   const [loading, setLoading] = useState(isAuthenticated);
@@ -140,14 +143,17 @@ export function AccountProfile({
         subscribeSms,
       };
 
+      let saved: UserProfile;
       try {
-        applyProfile(await updateUserProfile(token, body));
+        saved = await updateUserProfile(token, body);
       } catch (err) {
         if (!(err instanceof ApiError && err.status === 401)) throw err;
         token = await ensureAccessToken();
         if (!token) throw err;
-        applyProfile(await updateUserProfile(token, body));
+        saved = await updateUserProfile(token, body);
       }
+      applyProfile(saved);
+      onProfileSaved?.(saved);
       setSaved(true);
     } catch (err) {
       setError(

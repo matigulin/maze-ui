@@ -20,3 +20,13 @@ export function isProductInStock(product: {
   if (product.inStock === false) return false;
   return (product.quantityAvailable ?? 0) > 0;
 }
+
+/** Можно ли ещё добавить с карточки: остаток минус уже лежащее в корзине. */
+export function canAddMoreFromCard(
+  product: { id: string; slug: string; quantityAvailable?: number; inStock?: boolean },
+  cartQtyForProduct: number,
+): boolean {
+  if (!isProductInStock(product)) return false;
+  const stock = Math.max(0, Math.floor(product.quantityAvailable ?? 0));
+  return cartQtyForProduct < stock;
+}

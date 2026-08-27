@@ -36,6 +36,8 @@ type UserAuthState = {
   /** Актуальный Bearer: обновит сессию, если токен протух или скоро истечёт. */
   ensureAccessToken: () => Promise<string | null>;
   refreshSession: () => Promise<string | null>;
+  /** После PATCH /me в ЛК — обновить user и кэш для checkout/хедера. */
+  syncUserProfile: (profile: AuthUser) => void;
 };
 
 const UserAuthContext = createContext<UserAuthState | null>(null);
@@ -112,7 +114,6 @@ export function UserAuthProvider({ children }: { children: ReactNode }) {
         firstName: cached.firstName ?? null,
         lastName: cached.lastName ?? null,
       });
-      return;
     }
 
     try {
@@ -126,7 +127,7 @@ export function UserAuthProvider({ children }: { children: ReactNode }) {
       writeCachedProfile(next);
       setUser(next);
     } catch {
-      setUser(null);
+      if (!cached?.id) setUser(null);
     }
   }
 
@@ -236,6 +237,11 @@ export function UserAuthProvider({ children }: { children: ReactNode }) {
     return refreshSession();
   }, [refreshSession]);
 
+  const syncUserProfile = useCallback((profile: AuthUser) => {
+    writeCachedProfile(profile);
+    setUser(profile);
+  }, []);
+
   const value = useMemo<UserAuthState>(
     () => ({
       user,
@@ -248,6 +254,7 @@ export function UserAuthProvider({ children }: { children: ReactNode }) {
       getAccessToken,
       ensureAccessToken,
       refreshSession,
+      syncUserProfile,
     }),
     [
       user,
@@ -258,6 +265,7 @@ export function UserAuthProvider({ children }: { children: ReactNode }) {
       getAccessToken,
       ensureAccessToken,
       refreshSession,
+      syncUserProfile,
     ],
   );
 

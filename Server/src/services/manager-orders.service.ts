@@ -17,6 +17,7 @@ import {
 import { PaymentMethod } from '../models/reference.js';
 import { StaffUser } from '../models/user.js';
 import { publishOutboxEvent } from './outbox.service.js';
+import { invalidateCatalogAndHomeCache } from './cache-invalidation.service.js';
 
 export const MANAGER_ORDER_STATUSES = [
   'confirmed',
@@ -203,7 +204,7 @@ export async function updateManagerOrderStatus(
     throw new ValidationError('Invalid order status');
   }
 
-  await runInTransaction(async (transaction) => {
+  const result = await runInTransaction(async (transaction) => {
     const order = await Order.findByPk(orderId, {
       lock: transaction.LOCK.UPDATE,
       transaction,
@@ -215,7 +216,7 @@ export async function updateManagerOrderStatus(
 
     const previousStatus = order.status;
     if (previousStatus === input.status) {
-      return;
+      return { stockChanged: false };
     }
 
     const [items, payment] = await Promise.all([
@@ -223,12 +224,16 @@ export async function updateManagerOrderStatus(
       OrderPayment.findOne({ where: { order_id: orderId }, transaction }),
     ]);
 
+    let stockChanged = false;
+
     if (input.status === 'cancelled' && previousStatus !== 'paid' && previousStatus !== 'cancelled') {
       await releaseOrderStockReservations(items, transaction);
+      stockChanged = true;
     }
 
     if (input.status === 'paid' && previousStatus !== 'paid') {
       await fulfillOrderStock(items, transaction);
+      stockChanged = true;
       if (payment) {
         await payment.update(
           {
@@ -268,7 +273,13 @@ export async function updateManagerOrderStatus(
       },
       { transaction },
     );
+
+    return { stockChanged };
   });
+
+  if (result.stockChanged) {
+    await invalidateCatalogAndHomeCache();
+  }
 
   return getManagerOrderById(orderId);
 }

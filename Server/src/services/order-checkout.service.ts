@@ -23,6 +23,7 @@ import {
 } from '../models/order.js';
 import { PaymentMethod } from '../models/reference.js';
 import { publishOutboxEvent } from './outbox.service.js';
+import { invalidateCatalogAndHomeCache } from './cache-invalidation.service.js';
 import {
   clearCartForOwner,
   loadCartLinesForOwner,
@@ -388,5 +389,7 @@ export async function createOrderFromCheckout(
 
   await clearCartForOwner(owner);
   await saveIdempotentResponse(idempotencyKey, bodyHash, response);
+  // Остаток (quantity - reserved) изменился — каталог/PDP не должны отдавать старый кэш.
+  await invalidateCatalogAndHomeCache();
   return response;
 }

@@ -123,12 +123,12 @@ export function resolveVariantId(
   const match = variants.find((v) => {
     if (opts?.memory && v.memory !== opts.memory) return false;
     if (opts?.color && v.color !== opts.color) return false;
-    return v.inStock;
+    return (v.quantityAvailable ?? 0) > 0 || v.inStock;
   });
 
   return (
     match?.id ??
-    variants.find((v) => v.inStock)?.id ??
+    variants.find((v) => (v.quantityAvailable ?? 0) > 0 || v.inStock)?.id ??
     variants[0]?.id
   );
 }

@@ -93,25 +93,41 @@ export function CartClient() {
   const [formError, setFormError] = useState<string | null>(null);
   const [doneOrder, setDoneOrder] = useState<string | null>(null);
   const successRef = useRef<HTMLDivElement>(null);
-  /** Prefill один раз на userId — дальше поля свободно редактируются. */
-  const [prefilledUserId, setPrefilledUserId] = useState<string | null>(null);
+  /** Уже сделали полный prefill для этого userId (поля дальше редактируются). */
+  const prefilledUserIdRef = useRef<string | null>(null);
 
   const contactUserId = checkoutContact?.userId ?? null;
-  if (!contactUserId && prefilledUserId !== null) {
-    setPrefilledUserId(null);
-  } else if (
-    contactUserId &&
-    contactUserId !== prefilledUserId &&
-    checkoutContact
-  ) {
-    setPrefilledUserId(contactUserId);
-    if (checkoutContact.firstName?.trim()) {
-      setFirstName(checkoutContact.firstName.trim());
+  const contactFirstName = checkoutContact?.firstName ?? null;
+  const contactPhone = checkoutContact?.phone ?? null;
+
+  useEffect(() => {
+    if (!contactUserId) {
+      prefilledUserIdRef.current = null;
+      return;
     }
-    if (checkoutContact.phone) {
-      setPhoneNational(e164ToNationalDisplay(checkoutContact.phone));
+
+    const name = contactFirstName?.trim() ?? "";
+    const isNewUser = prefilledUserIdRef.current !== contactUserId;
+
+    if (isNewUser) {
+      prefilledUserIdRef.current = contactUserId;
+      setFirstName(name);
+      setPhoneNational(
+        contactPhone ? e164ToNationalDisplay(contactPhone) : "",
+      );
+      return;
     }
-  }
+
+    // Имя/телефон сохранили в ЛК после первого захода на checkout — только в пустые поля.
+    if (name) {
+      setFirstName((cur) => (cur.trim() ? cur : name));
+    }
+    if (contactPhone) {
+      setPhoneNational((cur) =>
+        cur.trim() ? cur : e164ToNationalDisplay(contactPhone),
+      );
+    }
+  }, [contactUserId, contactFirstName, contactPhone]);
 
   const deliveryPrice = DELIVERY.find((d) => d.id === delivery)?.price ?? 0;
   const surcharge = PAYMENT.find((p) => p.id === payment)?.surcharge ?? 0;

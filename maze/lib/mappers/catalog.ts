@@ -116,8 +116,10 @@ export function mapProductDetailToUiProduct(dto: ProductDetailDto): Product {
   const first = variants[0];
   const cheapestInStock =
     variants
-      .filter((v) => v.inStock)
-      .sort((a, b) => a.price - b.price)[0] ?? first;
+      .filter((v) => v.inStock && (v.quantityAvailable ?? 0) > 0)
+      .sort((a, b) => a.price - b.price)[0] ??
+    variants.filter((v) => v.inStock).sort((a, b) => a.price - b.price)[0] ??
+    first;
 
   const colorOptions: ColorOption[] = uniq(
     variants.map((v) => ({ name: v.color, hex: v.colorHex })),
