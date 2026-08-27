@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion } from "motion/react";
 import {
   ChevronDown,
@@ -32,6 +32,7 @@ export function Header() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [q, setQ] = useState("");
   const catRef = useRef<HTMLDivElement>(null);
+  const closeMobile = useCallback(() => setMobileOpen(false), []);
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 12);
@@ -52,7 +53,7 @@ export function Header() {
   function search(e: React.FormEvent) {
     e.preventDefault();
     router.push(q.trim() ? `/catalog?q=${encodeURIComponent(q.trim())}` : "/catalog");
-    setMobileOpen(false);
+    closeMobile();
   }
 
   return (
@@ -189,7 +190,7 @@ export function Header() {
 
       <MobileDrawer
         open={mobileOpen}
-        onClose={() => setMobileOpen(false)}
+        onClose={closeMobile}
         rootClassName="md:hidden"
         /* Ширина по самой длинной категории («Игровые приставки»), не на весь экран */
         panelClassName="w-[min(100vw-2.75rem,18rem)] max-w-[18rem]"
@@ -199,7 +200,7 @@ export function Header() {
             <Logo compact />
             <button
               type="button"
-              onClick={() => setMobileOpen(false)}
+              onClick={closeMobile}
               aria-label="Закрыть меню"
               className="grid h-9 w-9 place-items-center rounded-full text-muted hover:text-ink cursor-pointer"
             >
@@ -208,6 +209,9 @@ export function Header() {
           </div>
         </div>
         <div className="flex-1 overflow-y-auto p-5 pt-4">
+          <div className="mb-4">
+            <MobileAuthActions onNavigate={closeMobile} />
+          </div>
           <form onSubmit={search} className="relative mb-5">
             <Search
               size={16}
@@ -220,12 +224,12 @@ export function Header() {
               className="w-full rounded-full border border-line bg-white/[0.03] py-2.5 pl-11 pr-4 text-sm outline-none focus:border-cyan/60"
             />
           </form>
-          <nav className="space-y-1 border-b border-line pb-4">
+          <nav className="space-y-1">
             {categories.map((c) => (
               <Link
                 key={c.slug}
                 href={`/catalog?cat=${c.slug}`}
-                onClick={() => setMobileOpen(false)}
+                onClick={closeMobile}
                 className="flex items-center gap-3 rounded-xl px-3 py-3 transition-colors hover:bg-white/5"
               >
                 <span
@@ -242,7 +246,6 @@ export function Header() {
               </Link>
             ))}
           </nav>
-          <MobileAuthActions onNavigate={() => setMobileOpen(false)} />
         </div>
       </MobileDrawer>
     </>

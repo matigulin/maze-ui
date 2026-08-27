@@ -13,6 +13,11 @@ import { createPortal } from "react-dom";
 import { AnimatePresence, motion } from "motion/react";
 import { X } from "lucide-react";
 import { useBodyScrollLock } from "@/lib/body-scroll-lock";
+import {
+  getClientSnapshot,
+  getServerSnapshot,
+  subscribeNoop,
+} from "@/shared/lib/client-mounted";
 
 export type ModalKind = "auth" | "tradein" | null;
 
@@ -52,9 +57,9 @@ export function Modal({
   maxWidth?: string;
 }) {
   const mounted = useSyncExternalStore(
-    () => () => {},
-    () => true,
-    () => false,
+    subscribeNoop,
+    getClientSnapshot,
+    getServerSnapshot,
   );
 
   useEffect(() => {

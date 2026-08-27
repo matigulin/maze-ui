@@ -4,6 +4,11 @@ import { useEffect, useSyncExternalStore, type ReactNode } from "react";
 import { createPortal } from "react-dom";
 import { AnimatePresence, motion } from "motion/react";
 import { useBodyScrollLock } from "@/lib/body-scroll-lock";
+import {
+  getClientSnapshot,
+  getServerSnapshot,
+  subscribeNoop,
+} from "@/shared/lib/client-mounted";
 import { cn } from "@/lib/utils";
 
 const PANEL_BG = "#0e1126";
@@ -37,9 +42,9 @@ export function MobileDrawer({
   children,
 }: MobileDrawerProps) {
   const mounted = useSyncExternalStore(
-    () => () => {},
-    () => true,
-    () => false,
+    subscribeNoop,
+    getClientSnapshot,
+    getServerSnapshot,
   );
 
   useBodyScrollLock(open);
