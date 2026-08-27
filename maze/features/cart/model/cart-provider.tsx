@@ -244,7 +244,7 @@ export function CartProvider({
       if (cancelled) return;
       setHydrated(true);
 
-      // После входа: сначала подтянули корзину, затем отложенный add с карточки.
+      // После входа: корзина уже подтянута — затем отложенный add с карточки.
       const pending = pendingAddRef.current;
       if (pending && isAuthenticated) {
         pendingAddRef.current = null;

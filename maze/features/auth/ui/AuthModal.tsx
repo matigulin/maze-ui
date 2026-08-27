@@ -18,6 +18,9 @@ import { OtpCodeInput } from "./OtpCodeInput";
 
 type Step = "phone" | "code";
 
+/** Почему закрыли модалку: после успеха pending-add нельзя сбрасывать. */
+export type AuthCloseReason = "dismiss" | "authenticated";
+
 const RESEND_SEC = 30;
 
 export function AuthModal({
@@ -25,7 +28,7 @@ export function AuthModal({
   onClose,
 }: {
   open: boolean;
-  onClose: () => void;
+  onClose: (reason?: AuthCloseReason) => void;
 }) {
   const { loginWithSms, isAuthenticated, ready } = useUserAuth();
   const [step, setStep] = useState<Step>("phone");
@@ -37,17 +40,6 @@ export function AuthModal({
   const [forcePhoneError, setForcePhoneError] = useState(false);
   const [pending, setPending] = useState(false);
   const [resendIn, setResendIn] = useState(0);
-
-  useEffect(() => {
-    if (!open || !ready) return;
-    if (isAuthenticated) onClose();
-  }, [open, ready, isAuthenticated, onClose]);
-
-  useEffect(() => {
-    if (resendIn <= 0) return;
-    const id = window.setTimeout(() => setResendIn((s) => s - 1), 1000);
-    return () => window.clearTimeout(id);
-  }, [resendIn]);
 
   function reset() {
     setStep("phone");
@@ -61,10 +53,22 @@ export function AuthModal({
     setResendIn(0);
   }
 
-  function close() {
-    onClose();
+  function close(reason: AuthCloseReason = "dismiss") {
+    onClose(reason);
     setTimeout(reset, 250);
   }
+
+  useEffect(() => {
+    if (!open || !ready) return;
+    if (isAuthenticated) close("authenticated");
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- close after login; avoid loop on onClose identity
+  }, [open, ready, isAuthenticated]);
+
+  useEffect(() => {
+    if (resendIn <= 0) return;
+    const id = window.setTimeout(() => setResendIn((s) => s - 1), 1000);
+    return () => window.clearTimeout(id);
+  }, [resendIn]);
 
   function goBackToPhone() {
     setError(null);
@@ -132,7 +136,7 @@ export function AuthModal({
     setPending(true);
     try {
       await loginWithSms(phone, trimmed);
-      close();
+      close("authenticated");
     } catch (err) {
       if (err instanceof ApiError) {
         const invalid =
