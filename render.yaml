@@ -21,7 +21,7 @@ services:
     plan: free
     rootDir: Server
     branch: dev
-    buildCommand: npm ci && npm run build
+    buildCommand: npm install && npm run build
     initialDeployHook: npm run db:migrate && npm run db:seed
     startCommand: npm start
     healthCheckPath: /health/live
@@ -58,9 +58,8 @@ services:
     plan: free
     rootDir: maze
     branch: dev
-    buildCommand: npm ci && API_INTERNAL_URL=https://matigulin-maze-api.onrender.com npm run build
+    buildCommand: npm install && API_INTERNAL_URL=https://matigulin-maze-api.onrender.com npm run build
     startCommand: npx next start -H 0.0.0.0 -p $PORT
-    healthCheckPath: /
     envVars:
       - key: NODE_ENV
         value: production
