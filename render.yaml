@@ -22,8 +22,8 @@ services:
     rootDir: Server
     branch: dev
     buildCommand: npm ci && npm run build
-    initialDeployHook: npm run db:seed
-    startCommand: npm run db:migrate && npm start
+    initialDeployHook: npm run db:migrate && npm run db:seed
+    startCommand: npm start
     healthCheckPath: /health/live
     envVars:
       - key: NODE_ENV
