@@ -1,9 +1,19 @@
 function getApiBaseUrl(): string {
-  if (typeof window === "undefined" && process.env.API_INTERNAL_URL) {
-    return `${process.env.API_INTERNAL_URL.replace(/\/$/, "")}/api/v1`;
+  if (typeof window !== "undefined") {
+    return process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:4000/api/v1";
   }
-  return process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:4000/api/v1";
+  // SSR на Render: через свой /api proxy (не будить отдельный хост API при cold start)
+  const site = process.env.RENDER_EXTERNAL_URL;
+  if (site) return `${site.replace(/\/$/, "")}/api/v1`;
+  const internal = process.env.API_INTERNAL_URL;
+  if (internal) return `${internal.replace(/\/$/, "")}/api/v1`;
+  const pub = process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:4000/api/v1";
+  if (pub.startsWith("http")) return pub;
+  return `http://localhost:4000${pub.startsWith("/") ? pub : `/${pub}`}`;
 }
+
+const API_FETCH_TIMEOUT_MS =
+  typeof window === "undefined" ? 45_000 : 8_000;
 
 export type PaginationMeta = {
   page: number;
@@ -47,7 +57,7 @@ async function apiFetch(
   try {
     return await fetch(input, {
       ...init,
-      signal: init?.signal ?? AbortSignal.timeout(8_000),
+      signal: init?.signal ?? AbortSignal.timeout(API_FETCH_TIMEOUT_MS),
     });
   } catch {
     throw new ApiError({

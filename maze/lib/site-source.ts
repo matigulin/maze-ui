@@ -9,7 +9,7 @@ import {
   type Review,
 } from "@/lib/data";
 import { resolveMediaUrl } from "@/lib/media-url";
-import { shouldUseMocks } from "@/lib/mocks";
+import { shouldUseMocks, canUseDevMocksFallback } from "@/lib/mocks";
 
 export type NavCategory = {
   slug: string;
@@ -180,7 +180,7 @@ export async function fetchSiteChrome(): Promise<SiteChrome> {
       partnerBrands: home.partnerBrands.map((b) => b.name),
     };
   } catch {
-    // API down / сеть — layout всё равно должен отрендериться
+    if (!canUseDevMocksFallback()) throw new Error("Site chrome API unavailable");
     return mockSiteChrome();
   }
 }
@@ -203,6 +203,7 @@ export async function fetchHomeFeatures(): Promise<UiFeature[]> {
       text: a.desc,
     }));
   } catch {
+    if (!canUseDevMocksFallback()) return [];
     return FEATURES.map((f) => ({
       icon: f.icon,
       title: f.title,
@@ -227,6 +228,7 @@ export async function fetchReviews(limit = 8): Promise<Review[]> {
       hue: REVIEW_HUES[i % REVIEW_HUES.length],
     }));
   } catch {
+    if (!canUseDevMocksFallback()) return [];
     return mockReviews;
   }
 }

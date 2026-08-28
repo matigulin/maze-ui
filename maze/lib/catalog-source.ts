@@ -1,5 +1,5 @@
 import { apiGet, ApiError } from "@/lib/api";
-import { shouldUseMocks } from "@/lib/mocks";
+import { shouldUseMocks, canUseDevMocksFallback } from "@/lib/mocks";
 import {
   getProduct,
   products,
@@ -53,6 +53,7 @@ export async function fetchEditorChoice(): Promise<Product[]> {
     const home = await apiGet<{ editorChoice: ProductListItemDto[] }>("/home");
     return home.editorChoice.map(mapProductListItemToUiProduct);
   } catch {
+    if (!canUseDevMocksFallback()) return [];
     return [...products].sort((a, b) => b.reviews - a.reviews).slice(0, 8);
   }
 }
@@ -68,6 +69,7 @@ export async function fetchNewProducts(): Promise<Product[]> {
       .slice(0, 4)
       .map(mapProductListItemToUiProduct);
   } catch {
+    if (!canUseDevMocksFallback()) return [];
     return products.filter((p) => p.badge === "NEW").slice(0, 4);
   }
 }
@@ -93,6 +95,7 @@ export async function fetchCatalogProducts(opts: {
     );
     return items.map(mapProductListItemToUiProduct);
   } catch {
+    if (!canUseDevMocksFallback()) return [];
     return filterMockProducts(opts);
   }
 }
@@ -109,6 +112,7 @@ export async function fetchProductBySlug(
     return mapProductDetailToUiProduct(dto);
   } catch (e) {
     if (e instanceof ApiError && e.status === 404) return null;
+    if (!canUseDevMocksFallback()) return null;
     return getProduct(slug) ?? null;
   }
 }
@@ -132,6 +136,7 @@ export async function fetchRelatedProducts(
       .slice(0, n)
       .map(mapProductListItemToUiProduct);
   } catch {
+    if (!canUseDevMocksFallback()) return [];
     return relatedProducts(slug, n);
   }
 }

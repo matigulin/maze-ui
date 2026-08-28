@@ -5,3 +5,8 @@ export function shouldUseMocks(): boolean {
     process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:4000/api/v1";
   return Boolean(process.env.VERCEL && api.includes("localhost"));
 }
+
+/** Моки только в dev / явном режиме — не подменять прод при таймауте API. */
+export function canUseDevMocksFallback(): boolean {
+  return shouldUseMocks() || process.env.NODE_ENV !== "production";
+}
