@@ -65,7 +65,8 @@ export async function loginStaff(input: {
   refreshJti: string;
 }> {
   const email = input.email.trim().toLowerCase();
-  if (!email || !input.password) {
+  const password = input.password.trim();
+  if (!email || !password) {
     throw new ValidationError('Email и пароль обязательны');
   }
 
@@ -88,7 +89,7 @@ export async function loginStaff(input: {
   }
 
   const passwordHash = staff.get('password_hash') as string;
-  const valid = await verifySecret(input.password, passwordHash);
+  const valid = await verifySecret(password, passwordHash);
 
   if (!valid) {
     await recordStaffLoginAttempt({

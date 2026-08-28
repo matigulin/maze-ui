@@ -10,6 +10,28 @@ import { useStaffAuth } from "@/components/staff/StaffAuthProvider";
 import { ApiError } from "@/lib/api";
 import { cn } from "@/lib/utils";
 
+function staffLoginErrorMessage(err: ApiError): string {
+  if (err.code === "RATE_LIMIT_EXCEEDED") {
+    return "Слишком много попыток. Подождите и попробуйте снова.";
+  }
+  if (err.code === "CSRF_VALIDATION_FAILED") {
+    return "Ошибка безопасности запроса. Обновите страницу и попробуйте снова.";
+  }
+  if (err.code === "VALIDATION_ERROR") {
+    return "Проверьте email и пароль (минимум 8 символов).";
+  }
+  if (err.code === "NOT_FOUND") {
+    return "Сервис авторизации недоступен. Обновите страницу.";
+  }
+  if (err.status === 401 || err.code === "UNAUTHORIZED") {
+    return "Неверный email или пароль.";
+  }
+  if (err.status === 0 || err.code === "NETWORK_ERROR") {
+    return "Не удалось войти. Проверьте, что API запущен.";
+  }
+  return "Не удалось войти. Попробуйте снова.";
+}
+
 export default function StaffLoginPage() {
   const router = useRouter();
   const { ready, isStaff, login } = useStaffAuth();
@@ -34,11 +56,7 @@ export default function StaffLoginPage() {
       router.replace("/admin");
     } catch (err) {
       if (err instanceof ApiError) {
-        setError(
-          err.code === "RATE_LIMIT_EXCEEDED"
-            ? "Слишком много попыток. Подождите и попробуйте снова."
-            : "Неверный email или пароль.",
-        );
+        setError(staffLoginErrorMessage(err));
       } else {
         setError("Не удалось войти. Проверьте, что API запущен.");
       }

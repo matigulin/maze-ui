@@ -42,9 +42,7 @@ async function main() {
 
   try {
     for (const staff of STAFF) {
-      await sequelize.query(`DELETE FROM staff_users WHERE email = :email`, {
-        replacements: { email: staff.email },
-      });
+      // UPSERT: не удаляем staff — иначе ломается FK (manager_notes и др.)
       await sequelize.query(
         `INSERT INTO staff_users (
           id, email, password_hash, role, first_name, last_name,
@@ -52,12 +50,20 @@ async function main() {
         ) VALUES (
           :id, :email, :passwordHash, :role, :first_name, :last_name,
           true, NULL, NOW(), NOW()
-        )`,
+        )
+        ON CONFLICT (email) DO UPDATE SET
+          password_hash = EXCLUDED.password_hash,
+          role = EXCLUDED.role,
+          first_name = EXCLUDED.first_name,
+          last_name = EXCLUDED.last_name,
+          is_active = true,
+          deleted_at = NULL,
+          updated_at = NOW()`,
         {
           replacements: { ...staff, passwordHash },
         },
       );
-      console.log(`[bootstrap-staff] created ${staff.email}`);
+      console.log(`[bootstrap-staff] upserted ${staff.email}`);
     }
   } finally {
     await sequelize.close();

@@ -146,7 +146,7 @@ export function AdminShell({ children }: { children: ReactNode }) {
   }, [menuOpen]);
 
   return (
-    <div className="flex min-h-full flex-1">
+    <div className="flex min-h-dvh flex-1">
       {/* Desktop sidebar */}
       <aside className="sticky top-0 hidden h-screen w-60 shrink-0 flex-col border-r border-line bg-panel/60 md:flex">
         <AdminNav />

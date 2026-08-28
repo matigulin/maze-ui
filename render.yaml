@@ -11,7 +11,7 @@ services:
     name: matigulin-maze-redis
     plan: free
     region: frankfurt
-    maxmemoryPolicy: allkeys-lru
+    maxmemoryPolicy: noeviction
     ipAllowList: []
 
   - type: web

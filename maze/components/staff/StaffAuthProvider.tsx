@@ -110,7 +110,7 @@ export function StaffAuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const login = useCallback(async (email: string, password: string) => {
-    const result = await staffLogin(email.trim().toLowerCase(), password);
+    const result = await staffLogin(email.trim().toLowerCase(), password.trim());
     const next: StaffUser = {
       id: result.staff.id,
       role: result.staff.role,
