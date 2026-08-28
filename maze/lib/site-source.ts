@@ -35,8 +35,6 @@ export type StoreInfo = {
   metro: string;
   hours: string;
   telegram: string;
-  vk: string;
-  youtube: string;
   mapLat: number;
   mapLng: number;
 };
@@ -158,8 +156,6 @@ export async function fetchSiteChrome(): Promise<SiteChrome> {
         workingHours: string;
         socialLinks: {
           telegram: string;
-          vk: string;
-          youtube: string;
         };
         mapCoordinates: { lat: number; lng: number };
       }>("/settings/public"),
@@ -178,8 +174,6 @@ export async function fetchSiteChrome(): Promise<SiteChrome> {
         metro: settings.metro,
         hours: settings.workingHours,
         telegram: MAZE_TELEGRAM_URL,
-        vk: settings.socialLinks?.vk || STORE.vk,
-        youtube: settings.socialLinks?.youtube || STORE.youtube,
         mapLat: settings.mapCoordinates?.lat ?? STORE.mapLat,
         mapLng: settings.mapCoordinates?.lng ?? STORE.mapLng,
       },

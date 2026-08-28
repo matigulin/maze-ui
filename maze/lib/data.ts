@@ -499,8 +499,6 @@ export const STORE = {
   metro: "Метро Чернышевская",
   hours: "11:30 – 20:00",
   telegram: MAZE_TELEGRAM_URL,
-  vk: "https://vk.com/maze",
-  youtube: "",
   mapLat: 59.944,
   mapLng: 30.36,
 };

@@ -61,41 +61,6 @@ function brandCatalogHref(name: string, categories: NavCategory[]): string | nul
   return match ? `/catalog?cat=${match.slug}` : null;
 }
 
-function SocialLinks({
-  telegram,
-  vk,
-  youtube,
-}: {
-  telegram: string;
-  vk: string;
-  youtube: string;
-}) {
-  const items = [
-    { label: "Telegram", href: telegram, short: "TG" },
-    { label: "VK", href: vk, short: "VK" },
-    { label: "YouTube", href: youtube, short: "YT" },
-  ].filter((s) => Boolean(s.href));
-
-  if (items.length === 0) return null;
-
-  return (
-    <div className="flex flex-wrap gap-2">
-      {items.map((s) => (
-        <a
-          key={s.label}
-          href={s.href}
-          target="_blank"
-          rel="noopener noreferrer"
-          aria-label={s.label}
-          className="grid h-11 min-w-11 place-items-center rounded-full border border-line px-3 text-xs font-semibold text-muted transition-colors hover:border-cyan/50 hover:text-cyan"
-        >
-          {s.short}
-        </a>
-      ))}
-    </div>
-  );
-}
-
 function NavSection({
   title,
   children,
@@ -241,12 +206,6 @@ export function Footer() {
                 ) : null}
               </div>
             </div>
-
-            <SocialLinks
-              telegram={STORE.telegram}
-              vk={STORE.vk}
-              youtube={STORE.youtube}
-            />
           </div>
 
           <NavSection title="Каталог" collapsible defaultOpen={false}>

@@ -661,7 +661,7 @@ export function SiteSettingsPage() {
     email: "",
     metro: "",
     workingHours: "",
-    socialLinks: { telegram: "", vk: "", youtube: "", telegramUsed: "" },
+    socialLinks: { telegram: "", telegramUsed: "" },
     mapCoordinates: { lat: 0, lng: 0 },
   });
   const [error, setError] = useState("");
@@ -676,8 +676,6 @@ export function SiteSettingsPage() {
           ...v,
           socialLinks: {
             telegram: v.socialLinks?.telegram ?? "",
-            vk: v.socialLinks?.vk ?? "",
-            youtube: v.socialLinks?.youtube ?? "",
             telegramUsed: v.socialLinks?.telegramUsed ?? "",
           },
           mapCoordinates: v.mapCoordinates ?? { lat: 0, lng: 0 },
@@ -700,8 +698,6 @@ export function SiteSettingsPage() {
         ...saved,
         socialLinks: {
           telegram: saved.socialLinks?.telegram ?? "",
-          vk: saved.socialLinks?.vk ?? "",
-          youtube: saved.socialLinks?.youtube ?? "",
           telegramUsed: saved.socialLinks?.telegramUsed ?? "",
         },
         mapCoordinates: saved.mapCoordinates ?? { lat: 0, lng: 0 },
@@ -766,8 +762,6 @@ export function SiteSettingsPage() {
           {(
             [
               ["telegram", "Telegram"],
-              ["vk", "VK"],
-              ["youtube", "YouTube"],
               ["telegramUsed", "Telegram б/у"],
             ] as const
           ).map(([key, label]) => (
