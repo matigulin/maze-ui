@@ -132,6 +132,14 @@ body {
   background-attachment: fixed;
 }
 
+/* Staff / admin: без зелёного градиента витрины (fixed bg просвечивал снизу) */
+html:has([data-staff-zone]),
+body:has([data-staff-zone]) {
+  background-color: #07080f;
+  background-image: none;
+  background-attachment: scroll;
+}
+
 ::selection {
   background: rgba(173, 148, 107, 0.35);
   color: #fff;

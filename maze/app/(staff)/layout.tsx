@@ -11,7 +11,10 @@ export default function StaffLayout({
   children: React.ReactNode;
 }) {
   return (
-    <div className="flex min-h-dvh flex-1 flex-col bg-[#07080f] text-ink">
+    <div
+      data-staff-zone
+      className="staff-zone flex min-h-dvh flex-1 flex-col bg-[#07080f] text-ink"
+    >
       {children}
     </div>
   );
