@@ -25,8 +25,9 @@ const nextConfig: NextConfig = {
         port: "4000",
         pathname: "/uploads/**",
       },
-      // Railway public hosts (uploads preferably via same-origin /uploads rewrite)
+      // Railway / Render public hosts (uploads via same-origin /uploads rewrite)
       { protocol: "https", hostname: "*.up.railway.app", pathname: "/uploads/**" },
+      { protocol: "https", hostname: "*.onrender.com", pathname: "/uploads/**" },
     ],
   },
   async rewrites() {

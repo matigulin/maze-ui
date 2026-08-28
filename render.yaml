@@ -1,0 +1,72 @@
+# MAZE demo on Render — Blueprint
+# Dashboard: https://dashboard.render.com/ → New → Blueprint → repo matigulin/maze-ui, branch dev
+
+databases:
+  - name: maze-db
+    plan: free
+    region: frankfurt
+
+services:
+  - type: keyvalue
+    name: maze-redis
+    plan: free
+    region: frankfurt
+    maxmemoryPolicy: allkeys-lru
+
+  - type: web
+    name: maze-api
+    runtime: node
+    region: frankfurt
+    plan: free
+    rootDir: Server
+    branch: dev
+    buildCommand: npm install --include=dev && npm run build
+    preDeployCommand: npm run db:migrate
+    initialDeployHook: npm run db:seed
+    startCommand: npm start
+    healthCheckPath: /health/live
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: HOST
+        value: 0.0.0.0
+      - key: DATABASE_URL
+        fromDatabase:
+          name: maze-db
+          property: connectionString
+      - key: REDIS_URL
+        fromService:
+          type: keyvalue
+          name: maze-redis
+          property: connectionString
+      - key: JWT_SECRET
+        generateValue: true
+      - key: JWT_REFRESH_SECRET
+        generateValue: true
+      - key: AUTH_DEV_OTP
+        value: "true"
+      - key: CORS_ORIGIN
+        fromService:
+          type: web
+          name: maze-web
+          envVarKey: RENDER_EXTERNAL_URL
+
+  - type: web
+    name: maze-web
+    runtime: node
+    region: frankfurt
+    plan: free
+    rootDir: maze
+    branch: dev
+    buildCommand: >-
+      npm install &&
+      NEXT_PUBLIC_API_BASE_URL="${RENDER_EXTERNAL_URL}/api/v1" npm run build
+    startCommand: npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: API_INTERNAL_URL
+        fromService:
+          type: web
+          name: maze-api
+          envVarKey: RENDER_EXTERNAL_URL
