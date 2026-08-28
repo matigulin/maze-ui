@@ -52,8 +52,22 @@ async function apiFetch(
 }
 
 function buildUrl(endpoint: string, query?: Record<string, unknown>) {
-  const url = new URL(API_BASE_URL);
+  const base = API_BASE_URL.replace(/\/$/, "");
   const clean = endpoint.startsWith("/") ? endpoint.slice(1) : endpoint;
+  const path = `${base}/${clean}`;
+
+  if (base.startsWith("/")) {
+    if (!query) return path;
+    const params = new URLSearchParams();
+    for (const [k, v] of Object.entries(query)) {
+      if (v === undefined || v === null || v === "") continue;
+      params.set(k, String(v));
+    }
+    const qs = params.toString();
+    return qs ? `${path}?${qs}` : path;
+  }
+
+  const url = new URL(base);
   url.pathname = `${url.pathname.replace(/\/$/, "")}/${clean}`;
   if (query) {
     for (const [k, v] of Object.entries(query)) {

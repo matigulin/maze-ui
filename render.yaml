@@ -58,13 +58,14 @@ services:
     plan: free
     rootDir: maze
     branch: dev
-    buildCommand: >-
-      npm install &&
-      NEXT_PUBLIC_API_BASE_URL="${RENDER_EXTERNAL_URL}/api/v1" npm run build
-    startCommand: npm start
+    buildCommand: npm ci && npm run build
+    startCommand: npx next start -H 0.0.0.0 -p $PORT
+    healthCheckPath: /
     envVars:
       - key: NODE_ENV
         value: production
+      - key: NEXT_PUBLIC_API_BASE_URL
+        value: /api/v1
       - key: API_INTERNAL_URL
         fromService:
           type: web
