@@ -1,6 +1,7 @@
 'use strict';
 
-const bcrypt = require('bcrypt');
+const bcrypt = require('bcryptjs');
+const { Op } = require('sequelize');
 const { seedUuid } = require('./lib/seed-ids.cjs');
 const { now } = require('./lib/now.cjs');
 
@@ -9,6 +10,12 @@ module.exports = {
   async up(queryInterface) {
     const ts = now();
     const passwordHash = bcrypt.hashSync('manager123', 12);
+
+    await queryInterface.bulkDelete(
+      'staff_users',
+      { email: { [Op.in]: ['manager@maze.ru', 'admin@maze.ru'] } },
+      {},
+    );
 
     await queryInterface.bulkInsert('staff_users', [
       {
