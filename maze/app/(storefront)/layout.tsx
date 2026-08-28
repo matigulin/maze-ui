@@ -5,6 +5,7 @@ import { Footer } from "@/components/Footer";
 import { StorefrontModals } from "@/components/StorefrontModals";
 import { ScrollToTop } from "@/components/ScrollToTop";
 import { RouteScrollReset } from "@/shared/ui/route-scroll-reset";
+import { SmoothScroll } from "@/shared/ui/smooth-scroll";
 
 export default function StorefrontLayout({
   children,
@@ -12,7 +13,7 @@ export default function StorefrontLayout({
   children: React.ReactNode;
 }) {
   return (
-    <>
+    <SmoothScroll>
       <Background />
       <Header />
       <main className="flex-1">{children}</main>
@@ -21,8 +22,7 @@ export default function StorefrontLayout({
       <Suspense fallback={null}>
         <RouteScrollReset />
       </Suspense>
-      {/* fixed «Наверх» — вне overflow-контейнеров */}
       <ScrollToTop />
-    </>
+    </SmoothScroll>
   );
 }

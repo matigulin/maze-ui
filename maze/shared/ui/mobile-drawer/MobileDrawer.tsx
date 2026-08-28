@@ -11,8 +11,8 @@ import {
 } from "@/shared/lib/client-mounted";
 import { cn } from "@/lib/utils";
 
-const PANEL_BG = "#0e1126";
-const SCRIM_BG = "rgba(5, 6, 14, 0.92)";
+const PANEL_BG = "#1e2a26";
+const SCRIM_BG = "rgba(21, 29, 26, 0.92)";
 
 export type MobileDrawerProps = {
   open: boolean;
@@ -84,7 +84,7 @@ export function MobileDrawer({
           <motion.button
             type="button"
             aria-label="Закрыть"
-            className="absolute inset-0 z-0 bg-[#05060e]/92 backdrop-blur-md"
+            className="absolute inset-0 z-0 bg-bg/92 backdrop-blur-md"
             style={{ backgroundColor: SCRIM_BG }}
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -96,7 +96,7 @@ export function MobileDrawer({
             aria-modal="true"
             role="dialog"
             className={cn(
-              "absolute top-0 z-10 flex h-dvh min-h-dvh flex-col overflow-hidden bg-[#0e1126]",
+              "absolute top-0 z-10 flex h-dvh min-h-dvh flex-col overflow-hidden bg-panel",
               panelWidthClass,
               panelPositionClass,
               panelClassName,

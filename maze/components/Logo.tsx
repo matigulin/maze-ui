@@ -43,7 +43,7 @@ export function Logo({
       >
         <path
           d="M23.65 33 H35 L23.65 9.5 L12.3 33 H16.85 L23.65 19.5 L30.45 33"
-          stroke="white"
+          stroke="#c9aa78"
           strokeWidth="3"
           strokeLinecap="round"
           strokeLinejoin="round"
@@ -52,7 +52,7 @@ export function Logo({
         <text
           x="48"
           y="29"
-          fill="white"
+          fill="#c9aa78"
           style={{
             fontFamily: "var(--font-orbitron), sans-serif",
             fontSize: 24,

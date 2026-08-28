@@ -1,4 +1,4 @@
-import { Hero } from "@/components/home/Hero";
+import { HomeHero } from "@/features/home-hero";
 import { Marquee } from "@/components/home/Marquee";
 import { Features } from "@/components/home/Features";
 import { CategoryGrid } from "@/components/home/CategoryGrid";
@@ -31,7 +31,7 @@ export default async function Home() {
 
   return (
     <div className="pb-8">
-      <Hero />
+      <HomeHero />
 
       <div className="my-6">
         <Marquee brands={brands} />

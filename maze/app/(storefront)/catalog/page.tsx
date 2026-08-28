@@ -1,4 +1,4 @@
-import { CatalogClient } from "@/components/catalog/CatalogClient";
+import { CatalogClient } from "@/features/catalog";
 import { fetchCatalogProducts } from "@/lib/catalog-source";
 
 export default async function CatalogPage({
@@ -25,7 +25,11 @@ export default async function CatalogPage({
         </p>
       </div>
 
-      <CatalogClient products={products} initialQuery={sp.q ?? ""} />
+      <CatalogClient
+        products={products}
+        initialQuery={sp.q ?? ""}
+        initialCat={sp.cat}
+      />
     </div>
   );
 }

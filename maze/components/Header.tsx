@@ -9,12 +9,12 @@ import {
   Heart,
   Menu,
   Phone,
-  Search,
   ShoppingCart,
   X,
 } from "lucide-react";
 import { HeaderAuthActions, MobileAuthActions } from "@/features/auth";
 import { ACCOUNT_TAB_EVENT } from "@/features/account";
+import { CatalogSearchInput } from "@/features/catalog-search";
 import { MobileDrawer } from "@/shared/ui/mobile-drawer";
 import { resetWindowScroll } from "@/lib/scroll";
 import { Logo } from "./Logo";
@@ -27,7 +27,7 @@ export function Header() {
   const router = useRouter();
   const pathname = usePathname();
   const { count, wishlist, setMiniOpen } = useCart();
-  const { categories, store: STORE } = useSiteData();
+  const { categories, store: STORE, partnerBrands } = useSiteData();
   const [scrolled, setScrolled] = useState(false);
   const [catOpen, setCatOpen] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -125,18 +125,12 @@ export function Header() {
           {/* Поиск */}
           <form
             onSubmit={search}
-            className="relative hidden flex-1 lg:block"
+            className="hidden flex-1 lg:block"
           >
-            <Search
-              size={16}
-              className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-faint"
-            />
-            <input
+            <CatalogSearchInput
               value={q}
-              onChange={(e) => setQ(e.target.value)}
-              placeholder="Поиск по каталогу…"
-              aria-label="Поиск"
-              className="w-full rounded-full border border-line bg-white/[0.03] py-2.5 pl-11 pr-4 text-sm text-ink placeholder:text-faint outline-none transition-colors focus:border-cyan/60 focus:bg-white/[0.05]"
+              onChange={setQ}
+              brands={partnerBrands}
             />
           </form>
 
@@ -213,16 +207,11 @@ export function Header() {
           <div className="mb-4">
             <MobileAuthActions onNavigate={closeMobile} />
           </div>
-          <form onSubmit={search} className="relative mb-5">
-            <Search
-              size={16}
-              className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-faint"
-            />
-            <input
+          <form onSubmit={search} className="mb-5">
+            <CatalogSearchInput
               value={q}
-              onChange={(e) => setQ(e.target.value)}
-              placeholder="Поиск…"
-              className="w-full rounded-full border border-line bg-white/[0.03] py-2.5 pl-11 pr-4 text-sm outline-none focus:border-cyan/60"
+              onChange={setQ}
+              brands={partnerBrands}
             />
           </form>
           <nav className="space-y-1">

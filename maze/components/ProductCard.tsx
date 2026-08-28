@@ -91,7 +91,7 @@ export function ProductCard({ product }: { product: Product }) {
     >
       <Link
         href={`/product/${product.slug}`}
-        className="glass flex h-full min-w-0 flex-col overflow-hidden rounded-2xl p-2 transition-[border-color,box-shadow] duration-300 hover:border-cyan/30 hover:shadow-[0_20px_60px_-24px_rgba(53,228,240,0.5)] sm:rounded-3xl sm:p-3"
+        className="glass flex h-full min-w-0 flex-col overflow-hidden rounded-2xl p-2 transition-[border-color,box-shadow] duration-300 hover:border-bg-warm/35 hover:shadow-[0_20px_60px_-24px_rgba(92,56,56,0.4)] sm:rounded-3xl sm:p-3"
       >
         <div className="relative shrink-0">
           <ProductThumb product={product} className="aspect-square w-full" />
@@ -187,7 +187,7 @@ export function ProductCard({ product }: { product: Product }) {
               className={cn(
                 "grid h-9 w-9 shrink-0 place-items-center rounded-full transition-transform sm:h-10 sm:w-10",
                 canAdd
-                  ? "cursor-pointer bg-gradient-to-br from-cyan to-blue text-[#04121a] shadow-[0_8px_24px_-8px_rgba(53,228,240,0.7)] hover:scale-105 active:scale-95"
+                  ? "cursor-pointer bg-gradient-to-br from-accent to-bg-warm text-[#1a1814] shadow-[0_8px_24px_-8px_rgba(92,56,56,0.55)] hover:scale-105 active:scale-95"
                   : "cursor-not-allowed border border-line bg-white/[0.06] text-faint",
               )}
             >

@@ -44,14 +44,14 @@ export function Testimonials({ reviews }: { reviews: Review[] }) {
           <button
             onClick={() => go(-1)}
             aria-label="Предыдущий отзыв"
-            className="grid h-10 w-10 place-items-center rounded-full border border-line text-muted transition-colors hover:border-cyan/50 hover:text-cyan cursor-pointer"
+            className="grid h-10 w-10 place-items-center rounded-full border border-line text-muted transition-colors hover:border-bg-warm/50 hover:text-accent cursor-pointer"
           >
             <ChevronLeft size={18} />
           </button>
           <button
             onClick={() => go(1)}
             aria-label="Следующий отзыв"
-            className="grid h-10 w-10 place-items-center rounded-full border border-line text-muted transition-colors hover:border-cyan/50 hover:text-cyan cursor-pointer"
+            className="grid h-10 w-10 place-items-center rounded-full border border-line text-muted transition-colors hover:border-bg-warm/50 hover:text-accent cursor-pointer"
           >
             <ChevronRight size={18} />
           </button>
@@ -60,7 +60,7 @@ export function Testimonials({ reviews }: { reviews: Review[] }) {
               <span
                 key={idx}
                 className={`h-1.5 rounded-full transition-all ${
-                  idx === i ? "w-6 bg-cyan" : "w-1.5 bg-line"
+                  idx === i ? "w-6 bg-accent" : "w-1.5 bg-line"
                 }`}
               />
             ))}
@@ -81,7 +81,7 @@ export function Testimonials({ reviews }: { reviews: Review[] }) {
           >
             <Quote
               size={32}
-              className="absolute right-6 top-6 text-cyan/20"
+              className="absolute right-6 top-6 text-accent/20"
               aria-hidden
             />
             <div>

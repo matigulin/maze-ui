@@ -6,7 +6,7 @@ export function Marquee({ brands }: { brands: string[] }) {
         {row.map((b, i) => (
           <span
             key={i}
-            className="font-display text-xl font-semibold tracking-[0.2em] text-faint transition-colors hover:text-cyan sm:text-2xl"
+            className="font-display text-xl font-semibold tracking-[0.2em] text-faint transition-colors hover:text-accent sm:text-2xl"
           >
             {b}
           </span>

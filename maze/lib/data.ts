@@ -43,16 +43,18 @@ export type Product = {
   short: string;
 };
 
+import { CATEGORY_TINTS } from "@/shared/config/brand-colors";
+
 export const CATEGORIES = [
-  { slug: "apple", name: "Apple", count: 5, icon: "apple", tint: ["#7dd3fc", "#a78bfa"] },
-  { slug: "samsung", name: "Samsung", count: 2, icon: "smartphone", tint: ["#60a5fa", "#22d3ee"] },
-  { slug: "sony", name: "Sony", count: 2, icon: "gamepad", tint: ["#818cf8", "#38bdf8"] },
-  { slug: "marshall", name: "Marshall", count: 2, icon: "speaker", tint: ["#fbbf24", "#f472b6"] },
-  { slug: "dyson", name: "Dyson", count: 2, icon: "wind", tint: ["#34d399", "#22d3ee"] },
-  { slug: "harman", name: "Harman Kardon", count: 1, icon: "audio", tint: ["#c084fc", "#f472b6"] },
-  { slug: "console", name: "Игровые приставки", count: 1, icon: "gamepad", tint: ["#60a5fa", "#818cf8"] },
-  { slug: "accessories", name: "Аксессуары", count: 8, icon: "headphones", tint: ["#f472b6", "#a78bfa"] },
-  { slug: "used", name: "Б/У техника", count: 4, icon: "recycle", tint: ["#34d399", "#4ade80"] },
+  { slug: "apple", name: "Apple", count: 5, icon: "apple", tint: CATEGORY_TINTS.apple },
+  { slug: "samsung", name: "Samsung", count: 2, icon: "smartphone", tint: CATEGORY_TINTS.samsung },
+  { slug: "sony", name: "Sony", count: 2, icon: "gamepad", tint: CATEGORY_TINTS.sony },
+  { slug: "marshall", name: "Marshall", count: 2, icon: "speaker", tint: CATEGORY_TINTS.marshall },
+  { slug: "dyson", name: "Dyson", count: 2, icon: "wind", tint: CATEGORY_TINTS.dyson },
+  { slug: "harman", name: "Harman Kardon", count: 1, icon: "audio", tint: CATEGORY_TINTS.harman },
+  { slug: "console", name: "Игровые приставки", count: 1, icon: "gamepad", tint: CATEGORY_TINTS.console },
+  { slug: "accessories", name: "Аксессуары", count: 8, icon: "headphones", tint: CATEGORY_TINTS.accessories },
+  { slug: "used", name: "Б/У техника", count: 4, icon: "recycle", tint: CATEGORY_TINTS.used },
 ];
 
 export const BRANDS = [

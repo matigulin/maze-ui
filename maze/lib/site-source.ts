@@ -72,17 +72,7 @@ type HomePartnerBrandDto = {
   name: string;
 };
 
-const CATEGORY_TINTS: Record<string, [string, string]> = {
-  apple: ["#7dd3fc", "#a78bfa"],
-  samsung: ["#60a5fa", "#22d3ee"],
-  sony: ["#818cf8", "#38bdf8"],
-  marshall: ["#fbbf24", "#f472b6"],
-  dyson: ["#34d399", "#22d3ee"],
-  harman: ["#c084fc", "#f472b6"],
-  gaming: ["#60a5fa", "#818cf8"],
-  accessories: ["#f472b6", "#a78bfa"],
-  used: ["#34d399", "#4ade80"],
-};
+import { CATEGORY_TINTS, DEFAULT_CATEGORY_TINT } from "@/shared/config/brand-colors";
 
 const CATEGORY_ICONS: Record<string, string> = {
   apple: "apple",
@@ -96,7 +86,7 @@ const CATEGORY_ICONS: Record<string, string> = {
   used: "recycle",
 };
 
-const REVIEW_HUES = ["#35e4f0", "#ff3d8b", "#8b5cf6", "#3b82f6", "#22d3ee", "#a78bfa"];
+const REVIEW_HUES = ["#ad946b", "#5c3838", "#6b9a7a", "#8a7355", "#c4a87a", "#2b1a1a"];
 
 function initials(name: string): string {
   return name
@@ -113,7 +103,7 @@ function mapCategory(dto: CategoryTreeItemDto): NavCategory {
     name: dto.name,
     count: Math.max(dto.children.length, 1),
     icon: CATEGORY_ICONS[dto.slug] ?? "smartphone",
-    tint: CATEGORY_TINTS[dto.slug] ?? ["#22d3ee", "#a78bfa"],
+    tint: CATEGORY_TINTS[dto.slug] ?? DEFAULT_CATEGORY_TINT,
     imageUrl: resolveMediaUrl(dto.image),
   };
 }
@@ -239,6 +229,7 @@ export async function fetchPartnerBrands(): Promise<string[]> {
     const home = await apiGet<{ partnerBrands: HomePartnerBrandDto[] }>("/home");
     return home.partnerBrands.map((b) => b.name);
   } catch {
+    if (!canUseDevMocksFallback()) return [];
     return BRANDS;
   }
 }

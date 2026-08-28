@@ -22,3 +22,9 @@ export {
   readLastWorkedOrderId,
   adminOrdersListHref,
 } from "./lib/last-worked-order";
+export {
+  lastVisitedOrderBadgeClass,
+  lastVisitedOrderCardClass,
+  lastVisitedOrderNumberClass,
+  lastVisitedOrderRowClass,
+} from "./lib/last-visited-highlight";

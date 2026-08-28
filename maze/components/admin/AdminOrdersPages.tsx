@@ -32,6 +32,10 @@ import {
   OrderNotesSection,
   OrderStatusText,
   adminOrdersListHref,
+  lastVisitedOrderBadgeClass,
+  lastVisitedOrderCardClass,
+  lastVisitedOrderNumberClass,
+  lastVisitedOrderRowClass,
   orderStatusLabel,
   readLastWorkedOrderId,
   requestPendingOrdersCountRefresh,
@@ -195,10 +199,7 @@ export function OrdersListPage() {
                 <AdminCard
                   key={order.id}
                   href={`/admin/orders/${order.id}`}
-                  className={cn(
-                    isFocus &&
-                      "border-cyan/50 bg-cyan/10 shadow-[0_0_0_1px_rgba(53,228,240,0.35)]",
-                  )}
+                  className={cn(isFocus && lastVisitedOrderCardClass)}
                 >
                   <div
                     ref={
@@ -211,14 +212,31 @@ export function OrdersListPage() {
                   >
                     <div className="mb-3 flex items-start justify-between gap-3">
                       <div>
-                        <p className="font-medium text-cyan">{order.orderNumber}</p>
+                        <p
+                          className={cn(
+                            "font-medium",
+                            isFocus
+                              ? lastVisitedOrderNumberClass
+                              : "text-cyan",
+                          )}
+                        >
+                          {order.orderNumber}
+                        </p>
                         {isFocus && (
-                          <p className="mt-0.5 text-[11px] font-medium text-cyan">
+                          <p
+                            className={cn(
+                              "mt-0.5 text-[11px] font-medium",
+                              lastVisitedOrderBadgeClass,
+                            )}
+                          >
                             Последний в работе
                           </p>
                         )}
                       </div>
-                      <OrderStatusText status={order.status} className="text-right text-xs" />
+                      <OrderStatusText
+                        status={order.status}
+                        className="text-right text-xs"
+                      />
                     </div>
                     <div className="space-y-2">
                       <AdminCardRow label="Клиент">
@@ -229,7 +247,9 @@ export function OrdersListPage() {
                           {order.customer.phone}
                         </span>
                       </AdminCardRow>
-                      <AdminCardRow label="Позиции">{order.itemsCount}</AdminCardRow>
+                      <AdminCardRow label="Позиции">
+                        {order.itemsCount}
+                      </AdminCardRow>
                       <AdminCardRow label="Сумма">
                         <span className="font-medium">
                           {formatPrice(order.totalRub)}
@@ -272,14 +292,24 @@ export function OrdersListPage() {
                           }
                         : undefined
                     }
-                    className={cn(
-                      isFocus && "bg-cyan/10 outline outline-1 outline-cyan/40",
-                    )}
+                    className={cn(isFocus && lastVisitedOrderRowClass)}
                   >
                     <AdminTd>
-                      <p className="font-medium text-cyan">{order.orderNumber}</p>
+                      <p
+                        className={cn(
+                          "font-medium",
+                          isFocus ? lastVisitedOrderNumberClass : "text-cyan",
+                        )}
+                      >
+                        {order.orderNumber}
+                      </p>
                       {isFocus && (
-                        <p className="text-[11px] font-medium text-cyan">
+                        <p
+                          className={cn(
+                            "text-[11px] font-medium",
+                            lastVisitedOrderBadgeClass,
+                          )}
+                        >
                           Последний в работе
                         </p>
                       )}
@@ -288,7 +318,9 @@ export function OrdersListPage() {
                       <p>
                         {order.customer.firstName} {order.customer.lastName}
                       </p>
-                      <p className="text-xs text-muted">{order.customer.phone}</p>
+                      <p className="text-xs text-muted">
+                        {order.customer.phone}
+                      </p>
                     </AdminTd>
                     <AdminTd>
                       <OrderStatusText status={order.status} />
@@ -451,7 +483,9 @@ export function OrderDetailPage() {
 
       <div className="grid gap-4 lg:grid-cols-2">
         <section className="rounded-2xl border border-line bg-panel/50 p-5">
-          <h3 className="font-display text-sm tracking-wide text-cyan">Клиент</h3>
+          <h3 className="font-display text-sm tracking-wide text-cyan">
+            Клиент
+          </h3>
           <p className="mt-3 text-ink">
             {order.customer.firstName} {order.customer.lastName}
           </p>
@@ -460,18 +494,25 @@ export function OrderDetailPage() {
             <p className="text-sm text-muted">{order.customer.email}</p>
           )}
           {order.comment && (
-            <p className="mt-3 text-sm text-muted">Комментарий: {order.comment}</p>
+            <p className="mt-3 text-sm text-muted">
+              Комментарий: {order.comment}
+            </p>
           )}
         </section>
 
         <section className="rounded-2xl border border-line bg-panel/50 p-5">
-          <h3 className="font-display text-sm tracking-wide text-cyan">Доставка и оплата</h3>
+          <h3 className="font-display text-sm tracking-wide text-cyan">
+            Доставка и оплата
+          </h3>
           {order.delivery ? (
             <div className="mt-3 space-y-1 text-sm text-muted">
               <p className="text-ink">{deliveryLabel(order.delivery.type)}</p>
               <p>
-                {order.delivery.city}, {order.delivery.street} {order.delivery.house}
-                {order.delivery.apartment ? `, кв. ${order.delivery.apartment}` : ""}
+                {order.delivery.city}, {order.delivery.street}{" "}
+                {order.delivery.house}
+                {order.delivery.apartment
+                  ? `, кв. ${order.delivery.apartment}`
+                  : ""}
               </p>
             </div>
           ) : (
@@ -489,7 +530,9 @@ export function OrderDetailPage() {
       </div>
 
       <section className="rounded-2xl border border-line bg-panel/50 p-5">
-        <h3 className="mb-4 font-display text-sm tracking-wide text-cyan">Состав заказа</h3>
+        <h3 className="mb-4 font-display text-sm tracking-wide text-cyan">
+          Состав заказа
+        </h3>
         <AdminCardList>
           {order.items.map((item) => (
             <AdminCard key={item.id}>
@@ -498,10 +541,14 @@ export function OrderDetailPage() {
                 {[item.color, item.memory].filter(Boolean).join(" · ")}
               </p>
               <div className="mt-3 space-y-2">
-                <AdminCardRow label="Цена">{formatPrice(item.unitPrice)}</AdminCardRow>
+                <AdminCardRow label="Цена">
+                  {formatPrice(item.unitPrice)}
+                </AdminCardRow>
                 <AdminCardRow label="Кол-во">{item.quantity}</AdminCardRow>
                 <AdminCardRow label="Сумма">
-                  <span className="font-medium">{formatPrice(item.lineTotal)}</span>
+                  <span className="font-medium">
+                    {formatPrice(item.lineTotal)}
+                  </span>
                 </AdminCardRow>
               </div>
             </AdminCard>
@@ -549,13 +596,17 @@ export function OrderDetailPage() {
           )}
           <div className="flex justify-between border-t border-line pt-2 text-ink">
             <span>Итого</span>
-            <span className="font-display text-lg">{formatPrice(order.totals.totalRub)}</span>
+            <span className="font-display text-lg">
+              {formatPrice(order.totals.totalRub)}
+            </span>
           </div>
         </div>
       </section>
 
       <section className="rounded-2xl border border-line bg-panel/50 p-5">
-        <h3 className="mb-3 font-display text-sm tracking-wide text-cyan">Статус</h3>
+        <h3 className="mb-3 font-display text-sm tracking-wide text-cyan">
+          Статус
+        </h3>
         <div className="flex flex-wrap gap-2">
           {STATUS_ACTIONS.map((s) => (
             <AdminButton
@@ -578,7 +629,10 @@ export function OrderDetailPage() {
             onChange={(v) => void assign(v)}
             options={[
               { value: "", label: "Не назначен" },
-              ...staff.map((s) => ({ value: s.id, label: `${s.name} (${s.role})` })),
+              ...staff.map((s) => ({
+                value: s.id,
+                label: `${s.name} (${s.role})`,
+              })),
             ]}
           />
         </section>

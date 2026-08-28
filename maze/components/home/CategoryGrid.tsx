@@ -3,6 +3,7 @@ import { ArrowUpRight } from "lucide-react";
 import { Reveal } from "@/components/Reveal";
 import { Icon } from "@/components/Icon";
 import type { NavCategory } from "@/lib/site-source";
+import { CARD_HOVER_GLOW } from "@/shared/config/brand-colors";
 import { cn } from "@/lib/utils";
 
 /** Стрелка ~18px в углу с padding p-5 → центр ≈ 1.25rem + 9px от краёв. */
@@ -23,7 +24,7 @@ export function CategoryGrid({ categories }: { categories: NavCategory[] }) {
           >
             <Link
               href={`/catalog?cat=${c.slug}`}
-              className="group relative flex h-full flex-col justify-between overflow-hidden rounded-3xl border border-line p-5 transition-[border-color,box-shadow] duration-300 hover:border-white/20 hover:shadow-[0_18px_48px_-30px_rgba(53,228,240,0.28)] focus-visible:border-cyan/45 focus-visible:outline-none"
+              className="group relative flex h-full flex-col justify-between overflow-hidden rounded-3xl border border-line p-5 transition-[border-color,box-shadow] duration-300 hover:border-bg-warm/40 hover:shadow-[0_18px_48px_-30px_rgba(92,56,56,0.35)] focus-visible:border-bg-warm/50 focus-visible:outline-none"
               style={{
                 background: `linear-gradient(140deg, ${c.tint[0]}22, ${c.tint[1]}14)`,
               }}
@@ -37,7 +38,7 @@ export function CategoryGrid({ categories }: { categories: NavCategory[] }) {
                   height: GLOW_SIZE,
                   top: `calc(${ARROW_CENTER} - ${GLOW_RADIUS})`,
                   right: `calc(${ARROW_CENTER} - ${GLOW_RADIUS})`,
-                  background: `radial-gradient(circle at center, ${c.tint[0]}cc 0%, ${c.tint[0]}66 32%, ${c.tint[0]}28 52%, transparent 72%)`,
+                  background: CARD_HOVER_GLOW,
                 }}
               />
 
@@ -55,7 +56,7 @@ export function CategoryGrid({ categories }: { categories: NavCategory[] }) {
                 </span>
                 <ArrowUpRight
                   size={18}
-                  className="shrink-0 text-muted transition-[color,transform] duration-300 group-hover:-translate-y-0.5 group-hover:translate-x-0.5 group-hover:text-ink"
+                  className="shrink-0 text-muted transition-[color,transform] duration-300 group-hover:-translate-y-0.5 group-hover:translate-x-0.5 group-hover:text-accent"
                   aria-hidden
                 />
               </div>

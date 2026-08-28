@@ -4,7 +4,7 @@ import { cn } from "@/lib/utils";
 import { type InputHTMLAttributes, type ReactNode, useId } from "react";
 
 export const fieldCls =
-  "w-full rounded-xl border border-line bg-bg-2/60 px-4 py-3 text-[15px] text-ink placeholder:text-faint outline-none transition-colors focus:border-cyan/70 focus-visible:outline-none";
+  "w-full rounded-xl border border-line bg-bg-2/60 px-4 py-3 text-[15px] text-ink placeholder:text-faint outline-none transition-colors focus:border-accent/70 focus-visible:outline-none";
 
 export function Field({
   label,

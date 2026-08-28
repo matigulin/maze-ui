@@ -12,24 +12,13 @@ import {
   type ProductDetailDto,
   type ProductListItemDto,
 } from "@/lib/mappers/catalog";
-
-const CAT_MAP: Record<string, { brand?: string; category?: string }> = {
-  apple: { brand: "apple" },
-  samsung: { brand: "samsung" },
-  sony: { brand: "sony" },
-  marshall: { brand: "marshall" },
-  dyson: { brand: "dyson" },
-  harman: { brand: "harman" },
-  console: { category: "gaming" },
-  accessories: { category: "accessories" },
-  used: { category: "used" },
-};
+import { getCatalogRouteApiFilter } from "@/shared/lib/catalog-routes";
 
 function filterMockProducts(opts: {
   q?: string;
   cat?: string;
 }): Product[] {
-  const mapped = opts.cat ? CAT_MAP[opts.cat] : undefined;
+  const mapped = opts.cat ? getCatalogRouteApiFilter(opts.cat) : undefined;
   const q = opts.q?.toLowerCase() ?? "";
 
   return products.filter((p) => {
@@ -83,7 +72,7 @@ export async function fetchCatalogProducts(opts: {
   }
 
   try {
-    const mapped = opts.cat ? CAT_MAP[opts.cat] : undefined;
+    const mapped = opts.cat ? getCatalogRouteApiFilter(opts.cat) : undefined;
     const apiQuery: Record<string, unknown> = { limit: 48, page: 1 };
     if (opts.q) apiQuery.search = opts.q;
     if (mapped?.brand) apiQuery.brand = mapped.brand;

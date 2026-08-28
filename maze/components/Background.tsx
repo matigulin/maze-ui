@@ -49,6 +49,8 @@ export function Background() {
       }));
     }
 
+    const GREEN_LINE = (alpha: number) => `rgba(36, 52, 46, ${alpha})`;
+
     function draw() {
       ctx!.clearRect(0, 0, w, h);
 
@@ -81,8 +83,8 @@ export function Background() {
           const dy = a.y - b.y;
           const d = Math.hypot(dx, dy);
           if (d < LINK_DIST) {
-            const alpha = (1 - d / LINK_DIST) * 0.35;
-            ctx!.strokeStyle = `rgba(120, 190, 255, ${alpha})`;
+            const alpha = (1 - d / LINK_DIST) * 0.28;
+            ctx!.strokeStyle = GREEN_LINE(alpha);
             ctx!.lineWidth = 1;
             ctx!.beginPath();
             ctx!.moveTo(a.x, a.y);
@@ -96,8 +98,8 @@ export function Background() {
         const dym = a.y - mouse.y;
         const dm = Math.hypot(dxm, dym);
         if (dm < MOUSE_DIST) {
-          const alpha = (1 - dm / MOUSE_DIST) * 0.5;
-          ctx!.strokeStyle = `rgba(53, 228, 240, ${alpha})`;
+          const alpha = (1 - dm / MOUSE_DIST) * 0.4;
+          ctx!.strokeStyle = GREEN_LINE(alpha);
           ctx!.lineWidth = 1;
           ctx!.beginPath();
           ctx!.moveTo(a.x, a.y);
@@ -108,7 +110,7 @@ export function Background() {
 
       // точки
       for (const p of particles) {
-        ctx!.fillStyle = "rgba(160, 210, 255, 0.75)";
+        ctx!.fillStyle = GREEN_LINE(0.4);
         ctx!.beginPath();
         ctx!.arc(p.x, p.y, 1.4, 0, Math.PI * 2);
         ctx!.fill();
@@ -178,34 +180,7 @@ export function Background() {
 
   return (
     <div className="pointer-events-none fixed inset-0 -z-10 overflow-hidden">
-      {/* иридесцентные морфинг-блобы */}
-      <div
-        className="absolute -left-40 -top-40 h-[36rem] w-[36rem] opacity-40 blur-3xl animate-blob"
-        style={{
-          background:
-            "radial-gradient(circle at 30% 30%, #35e4f0, transparent 60%)",
-        }}
-      />
-      <div
-        className="absolute -right-52 top-20 h-[40rem] w-[40rem] opacity-35 blur-3xl animate-blob"
-        style={{
-          animationDelay: "-6s",
-          background:
-            "radial-gradient(circle at 60% 40%, #8b5cf6, transparent 60%)",
-        }}
-      />
-      <div
-        className="absolute bottom-[-16rem] left-1/3 h-[34rem] w-[34rem] opacity-30 blur-3xl animate-blob"
-        style={{
-          animationDelay: "-12s",
-          background:
-            "radial-gradient(circle at 50% 50%, #ff3d8b, transparent 62%)",
-        }}
-      />
-      {/* плексус */}
-      <canvas ref={canvasRef} className="absolute inset-0 h-full w-full" />
-      {/* лёгкая виньетка, чтобы контент читался */}
-      <div className="absolute inset-0 bg-[radial-gradient(120%_80%_at_50%_0%,transparent,rgba(5,6,14,0.55))]" />
+      <canvas ref={canvasRef} className="absolute inset-0 h-full w-full opacity-40" />
     </div>
   );
 }

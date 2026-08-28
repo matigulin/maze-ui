@@ -3,7 +3,9 @@
 import { useEffect, useState } from "react";
 import { Modal } from "./modals";
 import { Field, fieldCls } from "./Field";
+import { PhoneNationalField } from "./PhoneNationalField";
 import { formatPrice } from "@/lib/utils";
+import { isValidRussianMobile, validateRussianMobile } from "@/lib/phone";
 import { Sparkles } from "lucide-react";
 
 const CONDITIONS = [
@@ -23,6 +25,8 @@ export function TradeInModal({
   const [step, setStep] = useState<"form" | "result">("form");
   const [device, setDevice] = useState("");
   const [condition, setCondition] = useState(CONDITIONS[0].label);
+  const [phoneNational, setPhoneNational] = useState("");
+  const [forcePhoneError, setForcePhoneError] = useState(false);
   const [target, setTarget] = useState(0);
   const [shown, setShown] = useState(0);
 
@@ -47,18 +51,28 @@ export function TradeInModal({
     setTimeout(() => {
       setStep("form");
       setDevice("");
+      setPhoneNational("");
+      setForcePhoneError(false);
       setShown(0);
     }, 250);
   }
 
   function submit(e: React.FormEvent) {
     e.preventDefault();
+    const phoneCheck = validateRussianMobile(phoneNational);
+    if (!phoneCheck.ok) {
+      setForcePhoneError(true);
+      return;
+    }
+    setForcePhoneError(false);
     const factor =
       CONDITIONS.find((c) => c.label === condition)?.factor ?? 0.8;
     const base = 18000 + Math.floor(Math.random() * 62000);
     setTarget(Math.round((base * factor) / 100) * 100);
     setStep("result");
   }
+
+  const phoneValid = isValidRussianMobile(phoneNational);
 
   return (
     <Modal open={open} onClose={close} title="Рассчитать трейд-ин">
@@ -91,13 +105,20 @@ export function TradeInModal({
               ))}
             </select>
           </div>
-          <Field
-            label="Телефон"
-            type="tel"
-            required
-            placeholder="+7 (999) 123-45-67"
+          <PhoneNationalField
+            id="tradein-phone"
+            value={phoneNational}
+            onChange={(next) => {
+              setPhoneNational(next);
+              setForcePhoneError(false);
+            }}
+            forceError={forcePhoneError}
           />
-          <button type="submit" className="btn-primary w-full">
+          <button
+            type="submit"
+            className="btn-primary w-full"
+            disabled={!device.trim() || !phoneValid}
+          >
             Получить оценку
           </button>
         </form>

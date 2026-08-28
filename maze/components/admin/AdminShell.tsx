@@ -42,14 +42,14 @@ const NAV: NavItem[] = [
   { href: "/admin/content/cms", label: "CMS", icon: FileText },
   { href: "/admin/stock", label: "Склад", icon: Warehouse },
   { href: "/admin/settings/site", label: "Настройки", icon: Settings },
-  { href: "/admin/settings/editor-choice", label: "Выбор редакции", icon: PanelsTopLeft },
+  {
+    href: "/admin/settings/editor-choice",
+    label: "Выбор редакции",
+    icon: PanelsTopLeft,
+  },
 ];
 
-function AdminNav({
-  onNavigate,
-}: {
-  onNavigate?: () => void;
-}) {
+function AdminNav({ onNavigate }: { onNavigate?: () => void }) {
   const pathname = usePathname();
   const { displayName, staff, logout } = useStaffAuth();
   const router = useRouter();
@@ -70,7 +70,9 @@ function AdminNav({
           className="font-display text-sm tracking-[0.3em] text-ink"
         >
           maze
-          <span className="ml-2 text-[10px] tracking-[0.2em] text-cyan">admin</span>
+          <span className="ml-2 text-[10px] tracking-[0.2em] text-cyan">
+            admin
+          </span>
         </Link>
         <p className="mt-2 truncate text-xs text-muted">{displayName}</p>
         <p className="text-[10px] uppercase tracking-wider text-faint">
