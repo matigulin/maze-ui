@@ -13,7 +13,7 @@
     "lint": "node ./node_modules/eslint/bin/eslint.js src --max-warnings 0",
     "test": "node ./node_modules/vitest/vitest.mjs run",
     "test:watch": "node ./node_modules/vitest/vitest.mjs",
-    "db:migrate": "node ./node_modules/sequelize-cli/lib/sequelize db:migrate",
+    "db:migrate": "node ./node_modules/sequelize-cli/lib/sequelize db:migrate --env production",
     "db:migrate:undo": "node ./node_modules/sequelize-cli/lib/sequelize db:migrate:undo",
     "db:seed": "node ./node_modules/sequelize-cli/lib/sequelize db:seed:all",
     "db:seed:prod-bootstrap": "sequelize-cli db:seed --seed 20250624100001-references && sequelize-cli db:seed --seed 20250624100002-site-settings",

@@ -21,8 +21,8 @@ services:
     plan: free
     rootDir: Server
     branch: dev
-    buildCommand: NPM_CONFIG_PRODUCTION=false npm install && npm run build
-    startCommand: sh -c "npm run db:migrate && (npm run db:seed || true) && exec npm start"
+    buildCommand: NPM_CONFIG_PRODUCTION=false npm install && npm run build && npm run db:migrate && (npm run db:seed || true)
+    startCommand: npm start
     healthCheckPath: /health/live
     envVars:
       - key: NODE_ENV
