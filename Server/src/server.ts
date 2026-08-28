@@ -11,9 +11,14 @@ async function main() {
   const app = await buildApp();
 
   try {
-    startWorkers();
     await app.listen({ port: env.PORT, host: env.HOST });
     app.log.info(`MAZE API listening on http://${env.HOST}:${env.PORT}`);
+
+    try {
+      startWorkers();
+    } catch (err) {
+      app.log.error(err, 'Workers failed to start — API stays up without background jobs');
+    }
   } catch (err) {
     app.log.error(err);
     process.exit(1);
@@ -33,4 +38,7 @@ async function main() {
   process.on('SIGTERM', () => void shutdown('SIGTERM'));
 }
 
-main();
+main().catch((err) => {
+  console.error('Fatal startup error:', err);
+  process.exit(1);
+});

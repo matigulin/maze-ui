@@ -9,6 +9,8 @@ export function getRedis(): Redis {
     redis = new Redis(env.REDIS_URL, {
       maxRetriesPerRequest: null,
       enableReadyCheck: true,
+      connectTimeout: 10_000,
+      retryStrategy: (times) => (times > 3 ? null : Math.min(times * 500, 2_000)),
     });
   }
   return redis;
