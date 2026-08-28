@@ -1,5 +1,9 @@
-const API_BASE_URL =
-  process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:4000/api/v1";
+function getApiBaseUrl(): string {
+  if (typeof window === "undefined" && process.env.API_INTERNAL_URL) {
+    return `${process.env.API_INTERNAL_URL.replace(/\/$/, "")}/api/v1`;
+  }
+  return process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:4000/api/v1";
+}
 
 export type PaginationMeta = {
   page: number;
@@ -41,7 +45,10 @@ async function apiFetch(
   init?: RequestInit,
 ): Promise<Response> {
   try {
-    return await fetch(input, init);
+    return await fetch(input, {
+      ...init,
+      signal: init?.signal ?? AbortSignal.timeout(8_000),
+    });
   } catch {
     throw new ApiError({
       message: "Сервер API недоступен",
@@ -52,7 +59,7 @@ async function apiFetch(
 }
 
 function buildUrl(endpoint: string, query?: Record<string, unknown>) {
-  const base = API_BASE_URL.replace(/\/$/, "");
+  const base = getApiBaseUrl().replace(/\/$/, "");
   const clean = endpoint.startsWith("/") ? endpoint.slice(1) : endpoint;
   const path = `${base}/${clean}`;
 
