@@ -8,22 +8,22 @@ databases:
 
 services:
   - type: keyvalue
-    name: maze-redis
+    name: matigulin-maze-redis
     plan: free
     region: frankfurt
     maxmemoryPolicy: allkeys-lru
+    ipAllowList: []
 
   - type: web
-    name: maze-api
+    name: matigulin-maze-api
     runtime: node
     region: frankfurt
     plan: free
     rootDir: Server
     branch: dev
     buildCommand: npm install --include=dev && npm run build
-    preDeployCommand: npm run db:migrate
     initialDeployHook: npm run db:seed
-    startCommand: npm start
+    startCommand: npm run db:migrate && npm start
     healthCheckPath: /health/live
     envVars:
       - key: NODE_ENV
