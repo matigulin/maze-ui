@@ -2,7 +2,7 @@
 # Dashboard: https://dashboard.render.com/ → New → Blueprint → repo matigulin/maze-ui, branch dev
 
 databases:
-  - name: maze-db
+  - name: matigulin-maze-db
     plan: free
     region: frankfurt
 
@@ -32,12 +32,12 @@ services:
         value: 0.0.0.0
       - key: DATABASE_URL
         fromDatabase:
-          name: maze-db
+          name: matigulin-maze-db
           property: connectionString
       - key: REDIS_URL
         fromService:
           type: keyvalue
-          name: maze-redis
+          name: matigulin-maze-redis
           property: connectionString
       - key: JWT_SECRET
         generateValue: true
@@ -48,11 +48,11 @@ services:
       - key: CORS_ORIGIN
         fromService:
           type: web
-          name: maze-web
+          name: matigulin-maze-web
           envVarKey: RENDER_EXTERNAL_URL
 
   - type: web
-    name: maze-web
+    name: matigulin-maze-web
     runtime: node
     region: frankfurt
     plan: free
@@ -68,5 +68,5 @@ services:
       - key: API_INTERNAL_URL
         fromService:
           type: web
-          name: maze-api
+          name: matigulin-maze-api
           envVarKey: RENDER_EXTERNAL_URL
