@@ -33,6 +33,11 @@ export function isActiveOrderStatus(status: string): boolean {
   return !TERMINAL_ORDER_STATUSES.has(status as OrderStatus);
 }
 
+/** Новый заказ в админке — ещё не принят в работу. */
+export function isNewOrderStatus(status: string): boolean {
+  return status === "pending";
+}
+
 /** Inline color — надёжнее Tailwind-утилит внутри `td.text-ink`. */
 export function orderStatusColor(status: string): string | undefined {
   switch (status) {

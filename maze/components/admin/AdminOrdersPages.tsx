@@ -1,8 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
-import { useParams } from "next/navigation";
+import { useEffect, useRef, useState } from "react";
+import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { useAdminApi } from "@/lib/admin/client";
 import {
   AdminActionsTd,
@@ -17,7 +17,6 @@ import {
   AdminTable,
   AdminTd,
   AdminTh,
-  AdminTextarea,
   errorMessage,
   formatPrice,
 } from "@/lib/admin/ui";
@@ -27,14 +26,18 @@ import type {
   ManagerOrderStatus,
   ManagerStaffRow,
 } from "@/lib/admin/types";
-import { useStaffAuth } from "@/components/staff/StaffAuthProvider";
 import {
   ADMIN_ORDERS_POLL_MS,
   ORDER_STATUS_LABEL,
+  OrderNotesSection,
   OrderStatusText,
+  adminOrdersListHref,
   orderStatusLabel,
+  readLastWorkedOrderId,
   requestPendingOrdersCountRefresh,
 } from "@/features/admin-orders";
+import { useStaffAuth } from "@/components/staff/StaffAuthProvider";
+import { cn } from "@/lib/utils";
 
 const DELIVERY_LABEL: Record<string, string> = {
   pickup: "Самовывоз",
@@ -73,12 +76,29 @@ function formatDate(iso: string) {
 
 export function OrdersListPage() {
   const api = useAdminApi();
+  const searchParams = useSearchParams();
+  const focusFromUrl = searchParams.get("focus");
+  const [focusId, setFocusId] = useState<string | null>(
+    () => focusFromUrl || readLastWorkedOrderId(),
+  );
+  const focusRef = useRef<HTMLElement | null>(null);
   const [items, setItems] = useState<ManagerOrderListItem[]>([]);
   const [page, setPage] = useState(1);
   const [pages, setPages] = useState(1);
   const [status, setStatus] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (focusFromUrl) setFocusId(focusFromUrl);
+  }, [focusFromUrl]);
+
+  useEffect(() => {
+    if (!focusId || loading) return;
+    const el = focusRef.current;
+    if (!el) return;
+    el.scrollIntoView({ behavior: "smooth", block: "center" });
+  }, [focusId, loading, items]);
 
   useEffect(() => {
     let cancelled = false;
@@ -131,7 +151,6 @@ export function OrdersListPage() {
       document.removeEventListener("visibilitychange", onVisible);
       window.removeEventListener("focus", onFocus);
     };
-    // api is memoized; avoid putting the whole object if token refresh recreates it mid-flight
   }, [api, page, status]);
 
   return (
@@ -170,29 +189,62 @@ export function OrdersListPage() {
       ) : (
         <>
           <AdminCardList>
-            {items.map((order) => (
-              <AdminCard key={order.id} href={`/admin/orders/${order.id}`}>
-                <div className="mb-3 flex items-start justify-between gap-3">
-                  <p className="font-medium text-cyan">{order.orderNumber}</p>
-                  <OrderStatusText status={order.status} className="text-right text-xs" />
-                </div>
-                <div className="space-y-2">
-                  <AdminCardRow label="Клиент">
-                    <span className="block">
-                      {order.customer.firstName} {order.customer.lastName}
-                    </span>
-                    <span className="block text-xs text-muted">{order.customer.phone}</span>
-                  </AdminCardRow>
-                  <AdminCardRow label="Позиции">{order.itemsCount}</AdminCardRow>
-                  <AdminCardRow label="Сумма">
-                    <span className="font-medium">{formatPrice(order.totalRub)}</span>
-                  </AdminCardRow>
-                  <AdminCardRow label="Дата">
-                    <span className="text-muted">{formatDate(order.createdAt)}</span>
-                  </AdminCardRow>
-                </div>
-              </AdminCard>
-            ))}
+            {items.map((order) => {
+              const isFocus = order.id === focusId;
+              return (
+                <AdminCard
+                  key={order.id}
+                  href={`/admin/orders/${order.id}`}
+                  className={cn(
+                    isFocus &&
+                      "border-cyan/50 bg-cyan/10 shadow-[0_0_0_1px_rgba(53,228,240,0.35)]",
+                  )}
+                >
+                  <div
+                    ref={
+                      isFocus
+                        ? (node) => {
+                            focusRef.current = node;
+                          }
+                        : undefined
+                    }
+                  >
+                    <div className="mb-3 flex items-start justify-between gap-3">
+                      <div>
+                        <p className="font-medium text-cyan">{order.orderNumber}</p>
+                        {isFocus && (
+                          <p className="mt-0.5 text-[11px] font-medium text-cyan">
+                            Последний в работе
+                          </p>
+                        )}
+                      </div>
+                      <OrderStatusText status={order.status} className="text-right text-xs" />
+                    </div>
+                    <div className="space-y-2">
+                      <AdminCardRow label="Клиент">
+                        <span className="block">
+                          {order.customer.firstName} {order.customer.lastName}
+                        </span>
+                        <span className="block text-xs text-muted">
+                          {order.customer.phone}
+                        </span>
+                      </AdminCardRow>
+                      <AdminCardRow label="Позиции">{order.itemsCount}</AdminCardRow>
+                      <AdminCardRow label="Сумма">
+                        <span className="font-medium">
+                          {formatPrice(order.totalRub)}
+                        </span>
+                      </AdminCardRow>
+                      <AdminCardRow label="Дата">
+                        <span className="text-muted">
+                          {formatDate(order.createdAt)}
+                        </span>
+                      </AdminCardRow>
+                    </div>
+                  </div>
+                </AdminCard>
+              );
+            })}
           </AdminCardList>
 
           <AdminTable desktopOnly>
@@ -208,30 +260,52 @@ export function OrdersListPage() {
               </tr>
             </thead>
             <tbody>
-              {items.map((order) => (
-                <tr key={order.id}>
-                  <AdminTd>
-                    <p className="font-medium text-cyan">{order.orderNumber}</p>
-                  </AdminTd>
-                  <AdminTd>
-                    <p>
-                      {order.customer.firstName} {order.customer.lastName}
-                    </p>
-                    <p className="text-xs text-muted">{order.customer.phone}</p>
-                  </AdminTd>
-                  <AdminTd>
-                    <OrderStatusText status={order.status} />
-                  </AdminTd>
-                  <AdminTd>{order.itemsCount}</AdminTd>
-                  <AdminTd>{formatPrice(order.totalRub)}</AdminTd>
-                  <AdminTd className="text-muted">{formatDate(order.createdAt)}</AdminTd>
-                  <AdminActionsTd>
-                    <Link href={`/admin/orders/${order.id}`}>
-                      <AdminButton variant="ghost">Открыть</AdminButton>
-                    </Link>
-                  </AdminActionsTd>
-                </tr>
-              ))}
+              {items.map((order) => {
+                const isFocus = order.id === focusId;
+                return (
+                  <tr
+                    key={order.id}
+                    ref={
+                      isFocus
+                        ? (node) => {
+                            focusRef.current = node;
+                          }
+                        : undefined
+                    }
+                    className={cn(
+                      isFocus && "bg-cyan/10 outline outline-1 outline-cyan/40",
+                    )}
+                  >
+                    <AdminTd>
+                      <p className="font-medium text-cyan">{order.orderNumber}</p>
+                      {isFocus && (
+                        <p className="text-[11px] font-medium text-cyan">
+                          Последний в работе
+                        </p>
+                      )}
+                    </AdminTd>
+                    <AdminTd>
+                      <p>
+                        {order.customer.firstName} {order.customer.lastName}
+                      </p>
+                      <p className="text-xs text-muted">{order.customer.phone}</p>
+                    </AdminTd>
+                    <AdminTd>
+                      <OrderStatusText status={order.status} />
+                    </AdminTd>
+                    <AdminTd>{order.itemsCount}</AdminTd>
+                    <AdminTd>{formatPrice(order.totalRub)}</AdminTd>
+                    <AdminTd className="text-muted">
+                      {formatDate(order.createdAt)}
+                    </AdminTd>
+                    <AdminActionsTd>
+                      <Link href={`/admin/orders/${order.id}`}>
+                        <AdminButton variant="ghost">Открыть</AdminButton>
+                      </Link>
+                    </AdminActionsTd>
+                  </tr>
+                );
+              })}
             </tbody>
           </AdminTable>
         </>
@@ -264,13 +338,18 @@ export function OrdersListPage() {
 
 export function OrderDetailPage() {
   const { id } = useParams<{ id: string }>();
+  const router = useRouter();
   const api = useAdminApi();
-  const { isAdmin } = useStaffAuth();
+  const { isAdmin, accessToken, refreshSession } = useStaffAuth();
   const [order, setOrder] = useState<ManagerOrderDetail | null>(null);
   const [staff, setStaff] = useState<ManagerStaffRow[]>([]);
   const [error, setError] = useState("");
-  const [note, setNote] = useState("");
   const [saving, setSaving] = useState(false);
+
+  async function ensureAccessToken() {
+    if (accessToken) return accessToken;
+    return refreshSession();
+  }
 
   useEffect(() => {
     if (!id) return;
@@ -315,21 +394,6 @@ export function OrderDetailPage() {
       const next = await api.updateOrderStatus(id, { status });
       setOrder(next);
       requestPendingOrdersCountRefresh();
-    } catch (e) {
-      setError(errorMessage(e));
-    } finally {
-      setSaving(false);
-    }
-  }
-
-  async function saveNote() {
-    if (!id || !note.trim()) return;
-    setSaving(true);
-    setError("");
-    try {
-      await api.addOrderNote(id, note.trim());
-      setNote("");
-      await reload();
     } catch (e) {
       setError(errorMessage(e));
     } finally {
@@ -520,29 +584,16 @@ export function OrderDetailPage() {
         </section>
       )}
 
-      <section className="rounded-2xl border border-line bg-panel/50 p-5">
-        <h3 className="mb-3 font-display text-sm tracking-wide text-cyan">Заметки</h3>
-        <div className="mb-4 space-y-2">
-          {order.notes.length === 0 && (
-            <p className="text-sm text-muted">Заметок пока нет</p>
-          )}
-          {order.notes.map((n) => (
-            <div key={n.id} className="rounded-xl border border-line bg-bg-2/50 px-3 py-2 text-sm">
-              <p className="text-ink">{n.text}</p>
-              <p className="mt-1 text-xs text-faint">{formatDate(n.createdAt)}</p>
-            </div>
-          ))}
-        </div>
-        <AdminTextarea
-          label="Новая заметка"
-          value={note}
-          onChange={setNote}
-          rows={3}
-        />
-        <AdminButton className="mt-3" disabled={saving || !note.trim()} onClick={() => void saveNote()}>
-          Добавить
-        </AdminButton>
-      </section>
+      <OrderNotesSection
+        orderId={order.id}
+        status={order.status}
+        notes={order.notes}
+        ensureAccessToken={ensureAccessToken}
+        formatDate={formatDate}
+        onDone={(orderId) => {
+          router.push(adminOrdersListHref(orderId));
+        }}
+      />
     </div>
   );
 }

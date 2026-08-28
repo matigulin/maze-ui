@@ -334,3 +334,80 @@ export async function assignManagerOrder(orderId: string, managerId: string) {
     assignedManagerId: managerId,
   };
 }
+
+const DEMO_MANAGER_EMAIL = 'manager@maze.ru';
+
+/**
+ * Принять новый (pending) заказ: статус «ждёт оплату» + демо-менеджер.
+ * Комментарий в заметку — опционально.
+ */
+export async function acceptPendingManagerOrder(
+  orderId: string,
+  staffId: string,
+  noteText?: string,
+) {
+  const demoManager = await StaffUser.findOne({
+    where: {
+      email: DEMO_MANAGER_EMAIL,
+      is_active: true,
+      role: { [Op.in]: ['manager', 'admin'] },
+    },
+  });
+
+  if (!demoManager) {
+    throw new NotFoundError('Демо-менеджер не найден (manager@maze.ru)');
+  }
+
+  const trimmedNote = noteText?.trim() ?? '';
+
+  await runInTransaction(async (transaction) => {
+    const order = await Order.findByPk(orderId, {
+      lock: transaction.LOCK.UPDATE,
+      transaction,
+    });
+
+    if (!order) {
+      throw new NotFoundError('Order not found');
+    }
+
+    if (order.status !== 'pending') {
+      throw new ValidationError('Принять можно только новый заказ (pending)');
+    }
+
+    const previousStatus = order.status;
+
+    await order.update(
+      {
+        status: 'awaiting_payment',
+        assigned_manager_id: demoManager.id,
+      },
+      { transaction },
+    );
+
+    await OrderStatusHistory.create(
+      {
+        id: randomUUID(),
+        order_id: order.id,
+        from_status: previousStatus,
+        to_status: 'awaiting_payment',
+        staff_user_id: staffId,
+        note: trimmedNote || 'Заказ принят',
+      },
+      { transaction },
+    );
+
+    if (trimmedNote) {
+      await ManagerNote.create(
+        {
+          id: randomUUID(),
+          order_id: orderId,
+          staff_user_id: staffId,
+          text: trimmedNote,
+        },
+        { transaction },
+      );
+    }
+  });
+
+  return getManagerOrderById(orderId);
+}

@@ -5,6 +5,7 @@ import { success } from '../../lib/envelope.js';
 import { StaffUser } from '../../models/user.js';
 import {
   MANAGER_ORDER_STATUSES,
+  acceptPendingManagerOrder,
   addManagerOrderNote,
   assignManagerOrder,
   countOrdersByStatus,
@@ -19,7 +20,12 @@ const statusSchema = z.object({
 });
 
 const noteSchema = z.object({
-  text: z.string().min(1).max(5000),
+  /** Пустая строка допустима — заметка опциональна после принятия заказа. */
+  text: z.string().max(5000),
+});
+
+const acceptSchema = z.object({
+  note: z.string().max(5000).optional(),
 });
 
 const assignSchema = z.object({
@@ -58,6 +64,16 @@ const managerRoutes: FastifyPluginAsync = async (fastify) => {
     z.string().uuid().parse(id);
     const body = statusSchema.parse(request.body);
     const data = await updateManagerOrderStatus(id, request.auth!.id, body);
+    return success(data, request.requestId);
+  });
+
+  /** Принять новый заказ → awaiting_payment + демо-менеджер. */
+  fastify.post('/orders/:id/accept', async (request) => {
+    await fastify.authenticateStaff(request);
+    const { id } = request.params as { id: string };
+    z.string().uuid().parse(id);
+    const body = acceptSchema.parse(request.body ?? {});
+    const data = await acceptPendingManagerOrder(id, request.auth!.id, body.note);
     return success(data, request.requestId);
   });
 

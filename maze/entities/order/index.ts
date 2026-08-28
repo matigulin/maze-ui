@@ -7,4 +7,5 @@ export {
   orderStatusStyle,
   orderStatusClassName,
   isActiveOrderStatus,
+  isNewOrderStatus,
 } from "./lib/order-status";
