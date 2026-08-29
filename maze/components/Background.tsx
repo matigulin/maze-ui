@@ -20,6 +20,10 @@ export function Background() {
     const reduce = window.matchMedia(
       "(prefers-reduced-motion: reduce)",
     ).matches;
+    /** Тач / Telegram WebView: один статичный кадр — RAF + scroll-pause дают дёрганья. */
+    const isTouchUi = window.matchMedia(
+      "(hover: none), (pointer: coarse), (max-width: 768px)",
+    ).matches;
 
     let w = 0;
     let h = 0;
@@ -155,7 +159,7 @@ export function Background() {
     };
 
     init();
-    if (reduce) {
+    if (reduce || isTouchUi) {
       draw(); // один статичный кадр
     } else {
       window.addEventListener("mousemove", onMove);
