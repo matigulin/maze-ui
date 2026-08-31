@@ -1,0 +1,115 @@
+.shell {
+  perspective: 720px;
+}
+
+.card {
+  position: relative;
+  display: flex;
+  width: 20.5rem;
+  height: 12.75rem;
+  overflow: hidden;
+  border-radius: 0.85rem;
+  background: #1a1210;
+  transform-style: preserve-3d;
+  transition: transform 0.35s var(--ease-fluid, cubic-bezier(0.22, 1, 0.36, 1)),
+    box-shadow 0.35s var(--ease-fluid, cubic-bezier(0.22, 1, 0.36, 1));
+  box-shadow:
+    0 18px 40px -18px rgba(0, 0, 0, 0.7),
+    0 0 0 1px rgba(201, 170, 120, 0.12);
+}
+
+.card:hover,
+.card:focus-within {
+  box-shadow:
+    0 22px 48px -16px rgba(0, 0, 0, 0.75),
+    0 0 28px -6px rgba(201, 170, 120, 0.45);
+}
+
+/* Uiverse rotating bar → bronze/bordo, not cyan/magenta */
+.card::before {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 9rem;
+  height: 160%;
+  background-image: linear-gradient(
+    180deg,
+    #e0c48c,
+    #c9aa78 42%,
+    #5c3838 78%,
+    #c9aa78
+  );
+  animation: rot-edge 3.6s linear infinite;
+}
+
+.card::after {
+  content: "";
+  position: absolute;
+  inset: 2px;
+  z-index: 0;
+  border-radius: 0.72rem;
+  background: #1a1210;
+}
+
+.face {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  height: 100%;
+  width: 100%;
+  flex-direction: column;
+  overflow: hidden;
+  border-radius: 0.72rem;
+  margin: 2px;
+}
+
+.mark {
+  position: absolute;
+  inset: auto -18% -42% auto;
+  width: 78%;
+  height: auto;
+  color: #c9aa78;
+  opacity: 0.07;
+  pointer-events: none;
+}
+
+.glare {
+  pointer-events: none;
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    115deg,
+    rgba(224, 196, 140, 0.14) 0%,
+    transparent 42%,
+    transparent 100%
+  );
+  opacity: 0.55;
+}
+
+@keyframes rot-edge {
+  from {
+    transform: translate(-50%, -50%) rotate(0deg);
+  }
+  to {
+    transform: translate(-50%, -50%) rotate(360deg);
+  }
+}
+
+@media (max-width: 639px) {
+  .card {
+    width: 17.5rem;
+    height: 11rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .card::before {
+    animation: none;
+    transform: translate(-50%, -50%) rotate(28deg);
+  }
+
+  .card {
+    transition: none;
+  }
+}
