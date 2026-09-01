@@ -1,5 +1,5 @@
-# Root Directory for this service should be `maze` (set in Railway UI),
-# or deploy with: railway up ./maze --path-as-root
+# Root Directory for this service should be `Client` (set in Railway UI),
+# or deploy with: railway up ./Client --path-as-root
 
 [build]
 builder = "NIXPACKS"

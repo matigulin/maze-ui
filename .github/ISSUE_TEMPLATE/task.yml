@@ -19,7 +19,7 @@ body:
     attributes:
       label: Область
       options:
-        - Фронт (maze)
+        - Фронт (Client)
         - Бэкенд (Server)
         - Инфра / DevOps
         - Документация

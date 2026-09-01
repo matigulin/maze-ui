@@ -52,7 +52,7 @@ services:
     runtime: node
     region: frankfurt
     plan: free
-    rootDir: maze
+    rootDir: Client
     branch: dev
     buildCommand: NPM_CONFIG_PRODUCTION=false npm install && API_INTERNAL_URL=https://matigulin-maze-api.onrender.com npm run build
     startCommand: npx next start -H 0.0.0.0 -p $PORT

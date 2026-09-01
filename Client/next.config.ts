@@ -10,6 +10,7 @@ const apiInternalUrl = (
 ).replace(/\/$/, "");
 
 const nextConfig: NextConfig = {
+  output: "standalone",
   // Доступ с телефона в той же Wi‑Fi (dev HMR)
   allowedDevOrigins: ["192.168.0.63"],
   images: {

@@ -1,0 +1,97 @@
+# Полный стек: Postgres, Redis, API, Next, nginx.
+# Запуск из корня репозитория: docker compose up --build
+# Локальная разработка без контейнеров приложений: cd Server && npm run infra:up
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: maze-postgres
+    environment:
+      POSTGRES_USER: maze
+      POSTGRES_PASSWORD: maze
+      POSTGRES_DB: maze
+    ports:
+      - '5432:5432'
+    volumes:
+      - maze_pg_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U maze -d maze']
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  redis:
+    image: redis:7-alpine
+    container_name: maze-redis
+    ports:
+      - '6379:6379'
+    healthcheck:
+      test: ['CMD', 'redis-cli', 'ping']
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  api:
+    build:
+      context: ./Server
+    container_name: maze-api
+    environment:
+      NODE_ENV: production
+      HOST: 0.0.0.0
+      PORT: 4000
+      DATABASE_URL: postgres://maze:maze@postgres:5432/maze
+      DATABASE_SSL: 'false'
+      REDIS_URL: redis://redis:6379
+      JWT_SECRET: ${JWT_SECRET:-dev-jwt-secret-change-me-32chars!!}
+      JWT_REFRESH_SECRET: ${JWT_REFRESH_SECRET:-dev-refresh-secret-change-32chars!!}
+      CORS_ORIGIN: ${CORS_ORIGIN:-http://localhost,http://localhost:3000}
+      AUTH_DEV_OTP: ${AUTH_DEV_OTP:-true}
+      UPLOAD_DIR: /app/uploads
+      UPLOAD_PUBLIC_URL: ${UPLOAD_PUBLIC_URL:-/uploads}
+      RUN_MIGRATIONS: ${RUN_MIGRATIONS:-true}
+    ports:
+      - '4000:4000'
+    volumes:
+      - maze_uploads:/app/uploads
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ['CMD-SHELL', 'wget -qO- http://127.0.0.1:4000/health/live || exit 1']
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 20s
+
+  client:
+    build:
+      context: ./Client
+      args:
+        API_INTERNAL_URL: http://api:4000
+    container_name: maze-client
+    environment:
+      NODE_ENV: production
+      HOSTNAME: 0.0.0.0
+      PORT: 3000
+      API_INTERNAL_URL: http://api:4000
+    ports:
+      - '3000:3000'
+    depends_on:
+      api:
+        condition: service_healthy
+
+  nginx:
+    image: nginx:stable-alpine
+    container_name: maze-nginx
+    ports:
+      - '80:80'
+    volumes:
+      - ./deploy/nginx.conf:/etc/nginx/conf.d/default.conf:ro
+    depends_on:
+      - client
+      - api
+
+volumes:
+  maze_pg_data:
+  maze_uploads:

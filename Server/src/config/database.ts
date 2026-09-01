@@ -4,6 +4,11 @@ import { loadEnv } from './env.js';
 let sequelize: Sequelize | null = null;
 
 function postgresDialectOptions(nodeEnv: string) {
+  const flag = process.env.DATABASE_SSL;
+  if (flag === 'false' || flag === '0') return undefined;
+  if (flag === 'true' || flag === '1') {
+    return { ssl: { require: true, rejectUnauthorized: false } };
+  }
   // Railway / managed Postgres: TLS required; local docker/dev usually plain.
   if (nodeEnv !== 'production') return undefined;
   return {
