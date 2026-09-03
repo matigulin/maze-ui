@@ -17,15 +17,8 @@ import { useCart } from "./store";
 import { cn, formatPrice } from "@/lib/utils";
 import { formatStockLabel } from "@/lib/stock";
 
-const BADGE_STYLE: Record<string, string> = {
-  NEW: "bg-cyan/15 text-cyan border-cyan/30",
-  HIT: "bg-violet/15 text-violet border-violet/30",
-  SALE: "bg-magenta/15 text-magenta border-magenta/30",
-};
-
 /**
- * Паттерн витрины (catalog / home / account / PDP).
- * Адаптив по ширине сетки (2 колонки), без сжатия типографики.
+ * Premium product showcase — cinematic, minimal chrome.
  */
 export function ProductCard({ product }: { product: Product }) {
   const reduce = useReducedMotion();
@@ -34,13 +27,13 @@ export function ProductCard({ product }: { product: Product }) {
 
   const mx = useMotionValue(0);
   const my = useMotionValue(0);
-  const rx = useSpring(useTransform(my, [-0.5, 0.5], [6, -6]), {
+  const rx = useSpring(useTransform(my, [-0.5, 0.5], [4, -4]), {
     stiffness: 200,
-    damping: 18,
+    damping: 20,
   });
-  const ry = useSpring(useTransform(mx, [-0.5, 0.5], [-6, 6]), {
+  const ry = useSpring(useTransform(mx, [-0.5, 0.5], [-4, 4]), {
     stiffness: 200,
-    damping: 18,
+    damping: 20,
   });
 
   useEffect(() => {
@@ -91,17 +84,14 @@ export function ProductCard({ product }: { product: Product }) {
     >
       <Link
         href={`/product/${product.slug}`}
-        className="glass flex h-full min-w-0 flex-col overflow-hidden rounded-2xl p-2 transition-[border-color,box-shadow] duration-300 hover:border-bg-warm/35 hover:shadow-[0_20px_60px_-24px_rgba(92,56,56,0.4)] sm:rounded-3xl sm:p-3"
+        className="product-showcase flex h-full min-w-0 flex-col overflow-hidden transition-transform duration-500"
       >
-        <div className="relative shrink-0">
-          <ProductThumb product={product} className="aspect-square w-full" />
-          {product.badge ? (
-            <span
-              className={cn(
-                "absolute left-2 top-2 max-w-[calc(100%-3.25rem)] truncate rounded-full border px-1.5 py-0.5 text-[10px] font-semibold backdrop-blur-md sm:left-3 sm:top-3 sm:max-w-none sm:px-2.5 sm:py-1 sm:text-[11px]",
-                BADGE_STYLE[product.badge],
-              )}
-            >
+        <div className="relative shrink-0 overflow-hidden">
+          <div className="transition-transform duration-500 ease-out group-hover:scale-[1.04]">
+            <ProductThumb product={product} className="aspect-[4/5] w-full sm:aspect-square" />
+          </div>
+          {product.badge || salePct != null ? (
+            <span className="absolute left-3 top-3 text-[10px] font-medium uppercase tracking-[0.18em] text-ink">
               {salePct != null ? `−${salePct}%` : product.badge}
             </span>
           ) : null}
@@ -112,42 +102,37 @@ export function ProductCard({ product }: { product: Product }) {
               e.preventDefault();
               toggleWishlist(product.id);
             }}
-            className="absolute right-2 top-2 grid h-8 w-8 place-items-center rounded-full bg-black/35 text-white backdrop-blur-md transition-colors hover:bg-black/50 cursor-pointer sm:right-3 sm:top-3 sm:h-9 sm:w-9"
+            className="absolute right-2 top-2 grid h-9 w-9 place-items-center rounded-full bg-bg-2 text-ink transition-colors hover:bg-panel cursor-pointer"
           >
             <Heart
               size={15}
-              className={cn(
-                "transition-colors sm:size-4",
-                wished && "fill-magenta text-magenta",
-              )}
+              strokeWidth={1.5}
+              className={cn(wished && "fill-ink text-ink")}
             />
           </button>
         </div>
 
-        <div className="flex min-w-0 flex-1 flex-col space-y-1.5 p-1.5 pt-3 sm:space-y-2 sm:p-2 sm:pt-4">
+        <div className="flex min-w-0 flex-1 flex-col gap-2 p-4 sm:p-5">
           <p
-            className="min-w-0 truncate text-[10px] leading-tight text-faint sm:text-xs"
+            className="truncate text-[10px] uppercase tracking-[0.2em] text-faint"
             title={meta}
           >
             {meta}
           </p>
-          <h3 className="line-clamp-2 min-h-[2.4rem] break-words text-[13px] font-medium leading-snug text-ink sm:min-h-[2.6rem] sm:text-sm">
+          <h3 className="line-clamp-2 min-h-[2.75rem] font-display text-base font-semibold uppercase leading-snug tracking-[0.04em] text-ink sm:text-lg">
             {product.name}
           </h3>
-          <div className="flex min-w-0 items-center gap-1.5 text-[11px] sm:gap-2 sm:text-xs">
-            <span className="inline-flex shrink-0 items-center gap-0.5 text-muted">
-              <Star
-                size={12}
-                className="shrink-0 fill-gold text-gold sm:size-[13px]"
-              />
-              <span className="text-ink">{product.rating.toFixed(1)}</span>
+          <div className="flex min-w-0 items-center gap-2 text-[11px] text-muted">
+            <span className="inline-flex items-center gap-1">
+              <Star size={11} className="fill-accent text-accent" />
+              {product.rating.toFixed(1)}
             </span>
+            <span className="text-line">|</span>
             <span
               className={cn(
                 "min-w-0 truncate",
-                (product.quantityAvailable ?? 0) > 0 ? "text-cyan" : "text-faint",
+                (product.quantityAvailable ?? 0) > 0 ? "text-muted" : "text-faint",
               )}
-              title={formatStockLabel(product.quantityAvailable)}
             >
               <span className="sm:hidden">
                 {formatStockCompact(product.quantityAvailable)}
@@ -158,13 +143,13 @@ export function ProductCard({ product }: { product: Product }) {
             </span>
           </div>
 
-          <div className="mt-auto flex min-w-0 items-end justify-between gap-2 pt-1">
-            <div className="min-w-0 flex-1 overflow-hidden">
-              <div className="font-display text-[15px] font-semibold leading-tight tabular-nums text-ink [overflow-wrap:anywhere] sm:text-lg">
+          <div className="mt-auto flex min-w-0 items-end justify-between gap-3 pt-4">
+            <div className="min-w-0">
+              <div className="font-display text-xl font-semibold tabular-nums tracking-tight text-ink sm:text-2xl">
                 {formatPrice(product.price)}
               </div>
               {product.oldPrice ? (
-                <div className="truncate text-[10px] text-faint line-through sm:text-xs">
+                <div className="text-xs text-faint line-through">
                   {formatPrice(product.oldPrice)}
                 </div>
               ) : null}
@@ -185,13 +170,13 @@ export function ProductCard({ product }: { product: Product }) {
                 void addItem(product);
               }}
               className={cn(
-                "grid h-9 w-9 shrink-0 place-items-center rounded-full transition-transform sm:h-10 sm:w-10",
+                "grid h-10 w-10 shrink-0 place-items-center rounded-full transition-all duration-300",
                 canAdd
-                  ? "cursor-pointer bg-gradient-to-br from-accent to-bg-warm text-[#1a1814] shadow-[0_8px_24px_-8px_rgba(92,56,56,0.55)] hover:scale-105 active:scale-95"
-                  : "cursor-not-allowed border border-line bg-white/[0.06] text-faint",
+                  ? "cursor-pointer border-[1.5px] border-[#1a221f] bg-accent text-bg opacity-95 hover:opacity-100 group-hover:opacity-100"
+                  : "cursor-not-allowed border border-line text-faint opacity-40",
               )}
             >
-              <Plus size={17} strokeWidth={2.5} className="sm:size-[18px]" />
+              <Plus size={16} strokeWidth={2.25} />
             </button>
           </div>
         </div>

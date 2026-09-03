@@ -126,7 +126,7 @@ function LinkList({ links }: { links: FooterLink[] }) {
         <li key={l.href + l.label}>
           <Link
             href={l.href}
-            className="inline-flex min-h-11 items-center text-sm text-muted transition-colors hover:text-cyan md:min-h-0 md:py-0.5"
+            className="inline-flex min-h-11 items-center text-sm text-muted transition-colors hover:text-accent md:min-h-0 md:py-0.5"
           >
             {l.label}
           </Link>
@@ -152,15 +152,31 @@ export function Footer() {
   const hasEmail = Boolean(STORE.email);
 
   return (
-    <footer className="relative mt-24 border-t border-line">
-      <div className="container-x py-12 md:py-14">
+    <footer className="relative mt-28 overflow-hidden border-t border-line bg-bg-2">
+      <div
+        className="pointer-events-none absolute inset-x-0 bottom-0 select-none text-center font-display text-[clamp(4rem,18vw,12rem)] font-bold leading-none tracking-tighter text-white/[0.03]"
+        aria-hidden
+      >
+        MAZE
+      </div>
+      <div className="container-x relative py-16 md:py-20">
+        <div className="mb-14 flex flex-col gap-6 border-b border-line pb-12 md:flex-row md:items-end md:justify-between">
+          <div className="max-w-xl">
+            <p className="eyebrow mb-3">MAZE</p>
+            <h2 className="font-display text-[clamp(1.75rem,4vw,2.75rem)] font-semibold uppercase tracking-[0.04em] text-ink">
+              Найди свой путь в мире технологий
+            </h2>
+          </div>
+          <Link href="/catalog" className="btn-primary shrink-0">
+            Открыть каталог
+          </Link>
+        </div>
         {/* Primary: бренд + навигация + контакты */}
         <div className="grid min-w-0 gap-8 md:grid-cols-2 md:gap-10 lg:grid-cols-[1.4fr_1fr_1fr_1.2fr] lg:items-start">
           <div className="min-w-0 space-y-5">
             <Logo />
             <p className="max-w-xs text-sm leading-relaxed text-muted">
-              Найди свой путь в мире технологий. Оригинальная техника, трейд-ин
-              и рассрочка 0%.
+              Оригинальная техника, трейд-ин и рассрочка 0%.
             </p>
             <ul className="space-y-2">
               {TRUST.map((t) => (
@@ -168,20 +184,19 @@ export function Footer() {
                   key={t}
                   className="flex items-center gap-2 text-xs text-muted"
                 >
-                  <Check size={14} className="shrink-0 text-cyan" aria-hidden />
+                  <Check size={14} className="shrink-0 text-accent" aria-hidden />
                   {t}
                 </li>
               ))}
             </ul>
             {STORE.hours ? (
               <p className="flex items-center gap-2 text-xs text-faint">
-                <Clock size={14} className="shrink-0 text-cyan" aria-hidden />
+                <Clock size={14} className="shrink-0 text-accent" aria-hidden />
                 Работаем ежедневно · {STORE.hours}
               </p>
             ) : null}
 
-            {/* CTA */}
-            <div className="rounded-2xl border border-line bg-white/[0.02] p-4">
+            <div className="border border-line bg-panel p-5">
               <p className="font-display text-sm font-semibold text-ink">
                 Нужна помощь?
               </p>
@@ -221,9 +236,9 @@ export function Footer() {
               <li>
                 <a
                   href={tel}
-                  className="flex min-h-11 min-w-0 items-center gap-2.5 text-sm font-medium text-ink transition-colors hover:text-cyan md:min-h-0"
+                  className="flex min-h-11 min-w-0 items-center gap-2.5 text-sm font-medium text-ink transition-colors hover:text-accent md:min-h-0"
                 >
-                  <Phone size={15} className="shrink-0 text-cyan" />
+                  <Phone size={15} className="shrink-0 text-accent" />
                   <span className="min-w-0 break-words">
                     Позвонить · {STORE.phone}
                   </span>
@@ -233,9 +248,9 @@ export function Footer() {
                 <li>
                   <a
                     href={`mailto:${STORE.email}`}
-                    className="flex min-h-11 min-w-0 items-center gap-2.5 text-sm text-muted transition-colors hover:text-cyan md:min-h-0"
+                    className="flex min-h-11 min-w-0 items-center gap-2.5 text-sm text-muted transition-colors hover:text-accent md:min-h-0"
                   >
-                    <Mail size={15} className="shrink-0 text-cyan" />
+                    <Mail size={15} className="shrink-0 text-accent" />
                     <span className="min-w-0 break-all">
                       Написать · {STORE.email}
                     </span>
@@ -248,9 +263,9 @@ export function Footer() {
                     href={STORE.telegram}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="flex min-h-11 items-center gap-2.5 text-sm text-muted transition-colors hover:text-cyan md:min-h-0"
+                    className="flex min-h-11 items-center gap-2.5 text-sm text-muted transition-colors hover:text-accent md:min-h-0"
                   >
-                    <MessageCircle size={15} className="shrink-0 text-cyan" />
+                    <MessageCircle size={15} className="shrink-0 text-accent" />
                     Написать в Telegram
                   </a>
                 </li>
@@ -260,9 +275,9 @@ export function Footer() {
                   href={maps}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex min-h-11 items-start gap-2.5 text-sm text-muted transition-colors hover:text-cyan md:min-h-0"
+                  className="flex min-h-11 items-start gap-2.5 text-sm text-muted transition-colors hover:text-accent md:min-h-0"
                 >
-                  <MapPin size={15} className="mt-0.5 shrink-0 text-cyan" />
+                  <MapPin size={15} className="mt-0.5 shrink-0 text-accent" />
                   <span>
                     Открыть карту
                     <span className="mt-0.5 block text-xs text-faint">
@@ -278,7 +293,7 @@ export function Footer() {
               </li>
               {STORE.metro ? (
                 <li className="flex min-h-11 items-center gap-2.5 text-sm text-muted md:min-h-0">
-                  <Train size={15} className="shrink-0 text-cyan" />
+                  <Train size={15} className="shrink-0 text-accent" />
                   {STORE.metro}
                 </li>
               ) : null}
@@ -310,8 +325,8 @@ export function Footer() {
         ) : null}
 
         {/* Secondary: legal + copyright */}
-        <div className="mt-10 flex flex-col items-center gap-3 border-t border-line pt-8 text-center text-xs text-faint sm:flex-row sm:justify-between sm:text-left">
-          <p>© {new Date().getFullYear()} MAZE</p>
+        <div className="mt-10 flex flex-col items-center gap-3 pt-8 text-center text-xs text-faint sm:flex-row sm:justify-between sm:text-left">
+          <p>© MAZE</p>
           {LEGAL_LINKS.length > 0 ? (
             <ul className="flex flex-wrap items-center justify-center gap-x-4 gap-y-2">
               {LEGAL_LINKS.map((l) => (

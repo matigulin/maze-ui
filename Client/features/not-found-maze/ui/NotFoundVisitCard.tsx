@@ -87,7 +87,7 @@ export function NotFoundVisitCard() {
                 className="size-full"
                 draggable={false}
               />
-              <span className="absolute grid size-7 place-items-center rounded-sm bg-[#1a1210] sm:size-8">
+              <span className="absolute grid size-7 place-items-center rounded-sm bg-[#000000] sm:size-8">
                 <svg
                   viewBox="12 8 24 28"
                   className="size-5 text-accent sm:size-6"

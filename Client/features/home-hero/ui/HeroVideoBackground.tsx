@@ -5,9 +5,11 @@ import { HERO_VIDEO_SRC } from "../lib/constants";
 
 /**
  * Видеофон hero: object-cover + object-center — без растягивания пропорций.
+ * Пауза вне viewport — меньше нагрузка на GPU при скролле 120Hz.
  */
 export function HeroVideoBackground() {
   const videoRef = useRef<HTMLVideoElement>(null);
+  const rootRef = useRef<HTMLDivElement>(null);
   const [ready, setReady] = useState(false);
 
   useEffect(() => {
@@ -21,15 +23,36 @@ export function HeroVideoBackground() {
 
     if (video.readyState >= 2) {
       onReady();
-      return;
+    } else {
+      video.addEventListener("loadeddata", onReady);
     }
 
-    video.addEventListener("loadeddata", onReady);
     return () => video.removeEventListener("loadeddata", onReady);
   }, []);
 
+  useEffect(() => {
+    const root = rootRef.current;
+    const video = videoRef.current;
+    if (!root || !video) return;
+
+    const io = new IntersectionObserver(
+      ([entry]) => {
+        if (!entry) return;
+        if (entry.isIntersecting) {
+          void video.play().catch(() => {});
+        } else {
+          video.pause();
+        }
+      },
+      { rootMargin: "10% 0px", threshold: 0.05 },
+    );
+
+    io.observe(root);
+    return () => io.disconnect();
+  }, []);
+
   return (
-    <div className="pointer-events-none absolute inset-0 overflow-hidden">
+    <div ref={rootRef} className="pointer-events-none absolute inset-0 overflow-hidden">
       <video
         key={HERO_VIDEO_SRC}
         ref={videoRef}
@@ -40,21 +63,11 @@ export function HeroVideoBackground() {
         muted
         loop
         playsInline
-        preload="auto"
+        preload="metadata"
         aria-hidden
       >
         <source src={HERO_VIDEO_SRC} type="video/mp4" />
       </video>
-
-      {/* Зелёный тинт поверх видео */}
-      <div
-        className="absolute inset-0 bg-bg/65"
-        aria-hidden
-      />
-      <div
-        className="absolute inset-0 bg-gradient-to-b from-bg/40 via-transparent to-bg/80"
-        aria-hidden
-      />
     </div>
   );
 }

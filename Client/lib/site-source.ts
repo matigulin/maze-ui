@@ -86,7 +86,7 @@ const CATEGORY_ICONS: Record<string, string> = {
   used: "recycle",
 };
 
-const REVIEW_HUES = ["#ad946b", "#5c3838", "#6b9a7a", "#8a7355", "#c4a87a", "#2b1a1a"];
+const REVIEW_HUES = ["#080C0D", "#0D1516", "#122322", "#A8BDB4", "#6D8580", "#E8EEEC"];
 
 function initials(name: string): string {
   return name

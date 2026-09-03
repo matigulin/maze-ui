@@ -1,11 +1,10 @@
 "use client";
 
 import Link from "next/link";
-import { motion, useReducedMotion } from "motion/react";
+import { motion } from "motion/react";
 import { ArrowRight, Repeat } from "lucide-react";
 import { useModal } from "@/components/modals";
 import { FLUID_EASE } from "@/shared/lib/motion";
-import { SplitText } from "@/shared/ui/split-text";
 import { HERO_COPY } from "../lib/constants";
 import { HeroVideoBackground } from "./HeroVideoBackground";
 
@@ -13,72 +12,82 @@ export function HomeHero() {
   const { open } = useModal();
 
   return (
-    <section className="relative min-h-[min(92vh,920px)] w-full overflow-hidden">
+    <section className="relative -mt-[4.75rem] min-h-[min(100svh,920px)] w-full overflow-hidden sm:-mt-[5.5rem] md:-mt-[5.75rem]">
       <HeroVideoBackground />
+      <div
+        className="pointer-events-none absolute inset-0 bg-gradient-to-r from-black via-black/50 to-transparent"
+        aria-hidden
+      />
+      <div
+        className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black via-transparent to-black/50"
+        aria-hidden
+      />
 
-      <div className="container-x relative z-10 flex min-h-[min(92vh,920px)] flex-col justify-center py-20 md:py-24">
+      <div className="container-x relative z-10 flex min-h-[min(100svh,920px)] flex-col justify-end pb-16 pt-28 sm:justify-center sm:pb-24 sm:pt-32 md:pb-28">
+        <motion.p
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, ease: FLUID_EASE }}
+          className="eyebrow mb-6 max-w-md"
+        >
+          {HERO_COPY.badge}
+        </motion.p>
+
+        <motion.h1
+          initial={{ opacity: 0, y: 24 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.65, ease: FLUID_EASE, delay: 0.08 }}
+          className="max-w-4xl"
+        >
+          <span className="block font-display text-[clamp(3.25rem,12vw,7rem)] font-semibold uppercase leading-[0.92] tracking-[0.04em] text-ink">
+            {HERO_COPY.title}
+          </span>
+          <span className="mt-6 block max-w-lg text-sm font-normal uppercase leading-relaxed tracking-[0.14em] text-muted sm:text-base">
+            {HERO_COPY.subtitle}{" "}
+            <span className="text-accent">{HERO_COPY.subtitleAccent}</span>
+          </span>
+        </motion.h1>
+
         <motion.div
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, ease: FLUID_EASE }}
-          className="mb-6 inline-flex w-fit items-center gap-2 rounded-full border border-line/80 bg-panel/40 px-3.5 py-1.5 backdrop-blur-sm"
-        >
-          <span className="relative flex h-2 w-2">
-            <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-accent opacity-60" />
-            <span className="relative inline-flex h-2 w-2 rounded-full bg-accent" />
-          </span>
-          <span className="text-xs tracking-wide text-muted">
-            {HERO_COPY.badge}
-          </span>
-        </motion.div>
-
-        <h1 className="max-w-3xl font-display font-bold leading-[1.08]">
-          <SplitText
-            text={HERO_COPY.title}
-            mode="chars"
-            delay={0.06}
-            className="block text-[clamp(3.25rem,12vw,7.5rem)] tracking-[0.06em] text-accent"
-          />
-          <SplitText
-            text={HERO_COPY.subtitle}
-            mode="words"
-            delay={0.38}
-            className="mt-4 block font-sans text-lg font-normal leading-snug tracking-tight text-ink/90 sm:text-2xl"
-          />
-        </h1>
-
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.65, ease: FLUID_EASE, delay: 1.05 }}
-          className="mt-10 flex flex-wrap gap-3"
+          transition={{ duration: 0.55, ease: FLUID_EASE, delay: 0.28 }}
+          className="mt-10 flex flex-wrap items-center gap-3"
         >
           <Link href="/catalog" className="btn-primary group">
-            Перейти в каталог
+            Каталог
             <ArrowRight
-              size={18}
-              className="transition-transform group-hover:translate-x-1"
+              size={14}
+              className="transition-transform group-hover:translate-x-0.5"
             />
           </Link>
-          <button type="button" onClick={() => open("tradein")} className="btn-ghost group">
-            <Repeat size={17} className="text-accent" />
-            Рассчитать трейд-ин
+          <button
+            type="button"
+            onClick={() => open("tradein")}
+            className="btn-ghost group"
+          >
+            <Repeat size={13} />
+            Трейд-ин
           </button>
         </motion.div>
 
-        <motion.dl
+        <motion.nav
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          transition={{ duration: 0.8, delay: 1.2 }}
-          className="mt-14 flex flex-wrap gap-8 sm:gap-12"
+          transition={{ duration: 0.7, delay: 0.45 }}
+          className="mt-16 flex flex-wrap items-center gap-x-8 gap-y-3 pt-2"
+          aria-label="Быстрые разделы"
         >
-          {HERO_COPY.stats.map(([v, l]) => (
-            <div key={l}>
-              <dt className="font-display text-2xl font-bold text-accent">{v}</dt>
-              <dd className="text-xs text-faint">{l}</dd>
-            </div>
+          {HERO_COPY.quickLinks.map((item) => (
+            <Link
+              key={item.href}
+              href={item.href}
+              className="text-[10px] font-medium uppercase tracking-[0.24em] text-muted transition-colors hover:text-accent"
+            >
+              + {item.label}
+            </Link>
           ))}
-        </motion.dl>
+        </motion.nav>
       </div>
     </section>
   );

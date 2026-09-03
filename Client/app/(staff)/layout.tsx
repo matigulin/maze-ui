@@ -13,7 +13,7 @@ export default function StaffLayout({
   return (
     <div
       data-staff-zone
-      className="staff-zone flex min-h-dvh flex-1 flex-col bg-[#07080f] text-ink"
+      className="staff-zone flex min-h-dvh flex-1 flex-col bg-[#080c0d] text-ink"
     >
       {children}
     </div>

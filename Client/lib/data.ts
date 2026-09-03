@@ -224,7 +224,7 @@ export const products: Product[] = [
     badge: null,
     rating: 4.7,
     reviews: 176,
-    tint: ["#1c1c1c", "#c9962f"],
+    tint: ["#1a2b23", "#c9962f"],
     glyph: "Major V",
     colors: [
       { name: "Black", hex: "#171717" },
@@ -394,7 +394,7 @@ export const products: Product[] = [
     tint: ["#1a1a1a", "#b98a2e"],
     glyph: "Stanmore III",
     colors: [
-      { name: "Black", hex: "#161616" },
+      { name: "Black", hex: "#0e1f16" },
       { name: "Cream", hex: "#e7dcc3" },
     ],
     specs: [

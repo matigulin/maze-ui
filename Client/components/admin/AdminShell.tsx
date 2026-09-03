@@ -161,7 +161,7 @@ export function AdminShell({ children }: { children: ReactNode }) {
             className="absolute inset-0 bg-black/60 backdrop-blur-sm"
             onClick={() => setMenuOpen(false)}
           />
-          <aside className="absolute inset-y-0 left-0 flex w-[min(18rem,88vw)] flex-col border-r border-line bg-[#07080f] shadow-2xl">
+          <aside className="absolute inset-y-0 left-0 flex w-[min(18rem,88vw)] flex-col border-r border-line bg-[#080c0d] shadow-2xl">
             <div className="flex items-center justify-end border-b border-line px-3 py-2">
               <button
                 type="button"
@@ -178,7 +178,7 @@ export function AdminShell({ children }: { children: ReactNode }) {
       )}
 
       <div className="flex min-w-0 flex-1 flex-col">
-        <header className="sticky top-0 z-10 flex items-center gap-3 border-b border-line bg-[#07080f]/90 px-4 py-3 backdrop-blur md:px-6 md:py-4">
+        <header className="sticky top-0 z-10 flex items-center gap-3 border-b border-line bg-[#080c0d]/90 px-4 py-3 backdrop-blur md:px-6 md:py-4">
           <button
             type="button"
             aria-label="Открыть меню"

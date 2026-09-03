@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { Minus, Plus, ShoppingBag, Trash2, X } from "lucide-react";
+import { CardIcon } from "@/shared/ui/card-icon";
 import { useCart } from "./store";
 import { ProductThumb } from "./ProductThumb";
 import { formatPrice, plural, cn } from "@/lib/utils";
@@ -42,9 +43,9 @@ export function MiniCart() {
 
       {items.length === 0 ? (
         <div className="flex flex-1 flex-col items-center justify-center gap-4 p-8 text-center">
-          <div className="grid h-16 w-16 place-items-center rounded-2xl bg-white/5 text-muted">
-            <ShoppingBag size={26} />
-          </div>
+          <CardIcon size="lg">
+            <ShoppingBag size={26} strokeWidth={1.5} />
+          </CardIcon>
           <p className="text-muted">Корзина пуста</p>
           <Link
             href="/catalog"

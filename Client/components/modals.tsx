@@ -166,7 +166,7 @@ export function Modal({
           transition={{ duration: 0.2 }}
         >
           <div
-            className="absolute inset-0 bg-black/60 backdrop-blur-md"
+            className="absolute inset-0 bg-[#0a1815]/75 backdrop-blur-md"
             onClick={onClose}
           />
           <motion.div
@@ -181,14 +181,14 @@ export function Modal({
             transition={{ duration: 0.32, ease: [0.22, 1, 0.36, 1] }}
           >
             <div className="mb-5 flex items-start justify-between gap-3">
-              <h2 className="font-display text-lg font-semibold tracking-wide">
+              <h2 className="font-display text-lg font-semibold tracking-wide text-ink">
                 {title}
               </h2>
               <button
                 type="button"
                 onClick={onClose}
                 aria-label="Закрыть"
-                className="grid h-10 w-10 shrink-0 place-items-center rounded-full text-muted transition-colors hover:bg-white/10 hover:text-ink cursor-pointer"
+                className="grid h-10 w-10 shrink-0 place-items-center rounded-full text-muted transition-colors hover:bg-panel hover:text-ink cursor-pointer"
               >
                 <X size={18} />
               </button>

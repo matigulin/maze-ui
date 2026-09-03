@@ -1,5 +1,4 @@
 import { Suspense } from "react";
-import { Background } from "@/components/Background";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { StorefrontModals } from "@/components/StorefrontModals";
@@ -14,9 +13,8 @@ export default function StorefrontLayout({
 }) {
   return (
     <SmoothScroll>
-      <Background />
       <Header />
-      <main className="flex-1">{children}</main>
+      <main className="flex-1 pt-[4.75rem] sm:pt-[5.5rem] md:pt-[5.75rem]">{children}</main>
       <Footer />
       <StorefrontModals />
       <Suspense fallback={null}>

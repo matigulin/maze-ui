@@ -1,24 +1,28 @@
 import { Reveal } from "@/components/Reveal";
 import { Icon } from "@/components/Icon";
+import { CardIcon } from "@/shared/ui/card-icon";
 import type { UiFeature } from "@/lib/site-source";
 
 export function Features({ features }: { features: UiFeature[] }) {
   return (
     <div className="container-x">
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-3 sm:grid-cols-2 sm:gap-4 lg:grid-cols-4">
         {features.map((f, i) => (
-          <Reveal key={f.title} delay={i * 0.08}>
-            <div className="glass group h-full rounded-3xl p-6 transition-colors duration-300 hover:border-bg-warm/35">
-              <div className="mb-4 inline-grid h-12 w-12 place-items-center rounded-2xl bg-gradient-to-br from-accent/20 to-bg-warm/30 text-accent transition-transform duration-300 group-hover:scale-110">
+          <Reveal key={f.title} delay={i * 0.06}>
+            <div className="group h-full rounded-[1.75rem] bg-panel px-5 py-8 transition-colors duration-300 hover:bg-bg-warm sm:px-6">
+              <CardIcon className="mb-5">
                 {f.emoji ? (
-                  <span className="text-2xl" aria-hidden>
+                  <span className="text-xl leading-none" aria-hidden>
                     {f.emoji}
                   </span>
                 ) : (
-                  <Icon name={f.icon} size={22} />
+                  <Icon name={f.icon} size={22} strokeWidth={1.5} />
                 )}
-              </div>
-              <h3 className="mb-1.5 font-display text-base font-semibold text-ink">
+              </CardIcon>
+              <p className="mb-2 text-[10px] uppercase tracking-[0.22em] text-faint">
+                0{i + 1}
+              </p>
+              <h3 className="mb-2 font-display text-xl font-semibold uppercase tracking-[0.04em] text-ink">
                 {f.title}
               </h3>
               <p className="text-sm leading-relaxed text-muted">{f.text}</p>

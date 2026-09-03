@@ -24,7 +24,8 @@ export function ScrollToTop() {
       0;
 
     const update = () => {
-      setVisible(readY() > SHOW_AFTER_PX);
+      const next = readY() > SHOW_AFTER_PX;
+      setVisible((prev) => (prev === next ? prev : next));
     };
 
     update();

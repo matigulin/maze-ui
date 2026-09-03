@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import { Background } from "@/components/Background";
 import { Footer } from "@/components/Footer";
 import { Header } from "@/components/Header";
 import { ScrollToTop } from "@/components/ScrollToTop";
@@ -15,7 +14,6 @@ export const metadata: Metadata = {
 export default function NotFound() {
   return (
     <SmoothScroll>
-      <Background />
       <Header />
       <main className="flex-1">
         <NotFoundMaze />

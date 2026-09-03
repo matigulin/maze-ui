@@ -1,11 +1,11 @@
-/** Подсветка недавно посещённого заказа — палитра логотипа MAZE (#211917 / #2c211f). */
+/** Подсветка недавно посещённого заказа. */
 
 export const lastVisitedOrderCardClass =
-  "border-[#4a3835] bg-[#2c211f] shadow-[0_0_0_1px_rgba(33,25,23,0.5)]";
+  "border-accent/40 bg-panel";
 
 export const lastVisitedOrderRowClass =
-  "bg-[#2c211f] outline outline-1 outline-[#4a3835]";
+  "bg-panel outline outline-1 outline-accent/35";
 
-export const lastVisitedOrderNumberClass = "text-[#d4c4b0]";
+export const lastVisitedOrderNumberClass = "text-ink";
 
-export const lastVisitedOrderBadgeClass = "text-[#a89880]";
+export const lastVisitedOrderBadgeClass = "text-accent";

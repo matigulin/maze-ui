@@ -61,7 +61,7 @@ export function NotFoundMaze() {
           restY={rest.y}
           fit="cover"
           focusY={42}
-          veilColor="#070b0a"
+          veilColor="#000000"
           size={560}
           visibility={4}
           rounded={0}
