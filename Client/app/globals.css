@@ -1,37 +1,39 @@
 @import "tailwindcss";
 
 /* ============================================================
-   MAZE — brand palette (визитка: зелёный · бordo · бронза)
+   MAZE — forest + silver text + Pumpkin Spice accent
+   #0A1815 · #F0EDE6 · #E3792F
    ============================================================ */
 
 @theme {
-  /* — Surfaces — */
-  --color-bg: #1a2421;
-  --color-bg-2: #151d1a;
-  --color-panel: #1e2a26;
-  --color-panel-2: #243530;
-  --color-bg-warm: #2b1a1a;
+  /* — Surfaces —
+     bg = страница; panel = карточки чуть темнее (мягкий шаг, не почти-чёрный) */
+  --color-bg: #0e1d1a;
+  --color-bg-2: #0b1815;
+  --color-panel: #0a1613;
+  --color-panel-2: #101f1c;
+  --color-bg-warm: #091411;
 
   /* — Text — */
-  --color-ink: #e8dcc8;
-  --color-muted: #a89880;
-  --color-faint: #6b5f52;
-  --color-line: #2d3a35;
+  --color-ink: #f0ede6;
+  --color-muted: #9a9588;
+  --color-faint: #6b675c;
+  --color-line: #1f3330;
 
-  /* — Brand accent (бронза, чуть ярче) — */
-  --color-accent: #c9aa78;
-  --color-cyan: #c9aa78;
-  --color-blue: #9a8058;
-  --color-violet: #3d4a44;
-  --color-magenta: #5c3838;
-  --color-gold: #c9aa78;
-  --color-success: #6b9a7a;
-  --color-warning: #c4a060;
-  --color-danger: #b85c5c;
+  /* — Accent: Pumpkin Spice — */
+  --color-accent: #e3792f;
+  --color-cyan: #e3792f;
+  --color-blue: #9a9588;
+  --color-violet: #152623;
+  --color-magenta: #2a3f3b;
+  --color-gold: #e3792f;
+  --color-success: #7a9b8e;
+  --color-warning: #e3792f;
+  --color-danger: #c45c5c;
 
   /* — Fonts — */
-  --font-sans: var(--font-exo);
-  --font-display: var(--font-orbitron);
+  --font-sans: var(--font-outfit);
+  --font-display: var(--font-barlow);
 
   /* — Motion easing — */
   --ease-fluid: cubic-bezier(0.22, 1, 0.36, 1);
@@ -94,288 +96,327 @@
 /* ---------------- Base ---------------- */
 
 html {
-  scroll-behavior: smooth;
+  scroll-behavior: auto;
   -webkit-tap-highlight-color: transparent;
-  /* Убрать double-tap zoom; pinch режется viewport maximumScale */
   touch-action: manipulation;
-  overflow-x: clip;
+}
+
+html,
+body {
   max-width: 100%;
-}
-
-html.lenis,
-html.lenis body {
-  height: auto;
-}
-
-html.lenis.lenis-smooth {
-  scroll-behavior: auto !important;
-}
-
-.lenis.lenis-smooth [data-lenis-prevent] {
-  overscroll-behavior: contain;
+  overflow-x: clip;
 }
 
 body {
-  background-color: var(--color-bg);
+  background-color: #0e1d1a;
   color: var(--color-ink);
   touch-action: manipulation;
-  /* contain: меньше конфликта с Telegram WebView / rubber-band при реверсе */
   overscroll-behavior-y: contain;
   overflow-x: clip;
   max-width: 100%;
-  /* Только зелёная гамма — лёгкая глубина без других оттенков */
-  background-image: linear-gradient(
-    180deg,
-    #1e2a26 0%,
-    #1a2421 45%,
-    #151d1a 100%
-  );
-  /* scroll на мобилке: fixed даёт дёрганья при резком вниз↔вверх */
+  background-image:
+    radial-gradient(
+      ellipse 110% 75% at 50% -5%,
+      #1a2f2c 0%,
+      transparent 55%
+    ),
+    linear-gradient(
+      180deg,
+      #132623 0%,
+      #0e1d1a 50%,
+      #0c1a17 100%
+    );
   background-attachment: scroll;
+  font-feature-settings: "ss01" on, "kern" on;
 }
 
 @media (hover: hover) and (pointer: fine) and (min-width: 769px) {
   body {
-    background-attachment: fixed;
     overscroll-behavior-y: none;
   }
 }
 
-/* Staff / admin: без зелёного градиента витрины (fixed bg просвечивал снизу) */
 html:has([data-staff-zone]),
 body:has([data-staff-zone]) {
-  background-color: #07080f;
+  background-color: #000000;
   background-image: none;
   background-attachment: scroll;
 }
 
 ::selection {
-  background: rgba(173, 148, 107, 0.35);
-  color: #fff;
+  background: rgba(227, 121, 47, 0.35);
+  color: #0a1815;
 }
 
 /* Custom scrollbar */
 * {
   scrollbar-width: thin;
-  scrollbar-color: #3d4a44 transparent;
+  scrollbar-color: #3d5250 transparent;
 }
 *::-webkit-scrollbar {
   width: 10px;
   height: 10px;
 }
 *::-webkit-scrollbar-thumb {
-  background: var(--color-accent);
+  background: var(--color-line);
   border-radius: 999px;
   border: 3px solid var(--color-bg);
 }
 
-/* Focus ring — visible for a11y (кнопки, ссылки; не поля ввода).
-   Не задаём border-radius здесь: иначе на карточках с rounded-3xl
-   при :focus-visible углы схлопываются в «квадратик» outline. */
 :focus-visible:not(input):not(textarea):not(select) {
   outline: 2px solid var(--color-accent);
   outline-offset: 2px;
 }
 
-/* Поля ввода — одна рамка через border на самом input / обёртке */
 input:focus-visible,
 textarea:focus-visible,
 select:focus-visible {
   outline: none;
 }
 
-/* Вложенный input в составном поле — рамка только на обёртке */
 .input-inset:focus,
 .input-inset:focus-visible {
   outline: none;
 }
 
-/* ---------------- Components / utilities ---------------- */
+/* Product showcase — крупный radius как у Yamaha tiles (~24–28px) */
+.card-beige,
+.product-showcase {
+  background: #0a1613 !important;
+  background-image: none !important;
+  border: none !important;
+  border-radius: 1.75rem !important;
+  box-shadow: none;
+}
 
 @layer components {
-  /* Frosted glass surface */
+  /* Иконки / «+» на карточках — Pumpkin Spice + тёмная обводка */
+  .card-icon {
+    display: grid;
+    place-items: center;
+    width: 2.75rem;
+    height: 2.75rem;
+    flex-shrink: 0;
+    border-radius: 9999px;
+    color: #0a1815;
+    background: #e3792f;
+    border: 1.5px solid #1a221f;
+    box-shadow: none;
+  }
+  .card-icon--sm {
+    width: 2.25rem;
+    height: 2.25rem;
+  }
+  .card-icon--lg {
+    width: 3.25rem;
+    height: 3.25rem;
+  }
+  .card-icon svg {
+    stroke-width: 1.75;
+    color: #0a1815;
+  }
+
   .glass {
-    background: rgba(255, 255, 255, 0.03);
-    backdrop-filter: blur(16px) saturate(120%);
-    -webkit-backdrop-filter: blur(16px) saturate(120%);
-    border: 1px solid rgba(173, 148, 107, 0.12);
+    background: #0a1613;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 1.75rem;
   }
   .glass-strong {
-    background: rgba(26, 36, 33, 0.78);
-    backdrop-filter: blur(22px) saturate(130%);
-    -webkit-backdrop-filter: blur(22px) saturate(130%);
-    border: 1px solid rgba(173, 148, 107, 0.14);
+    background: #0a1613;
+    border: 1px solid rgba(227, 121, 47, 0.22);
+    border-radius: 1.75rem;
   }
 
-  /*
-   * Sticky chrome: без сильного blur + без transition «всего».
-   * backdrop-filter поверх canvas-фона давал ~200ms+ paint при 0ms React.
-   */
+  .nav-pill {
+    border-radius: 9999px;
+    background: #0b1815;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 18px 50px -18px rgba(0, 0, 0, 0.8);
+  }
+  .nav-pill-scrolled {
+    background: #0a1613;
+    border-color: rgba(255, 255, 255, 0.14);
+  }
+
   .chrome-sticky {
-    background: rgba(21, 29, 26, 0.94);
-    border-bottom: 1px solid var(--color-line);
-    transition:
-      background-color 200ms ease,
-      border-color 200ms ease;
-  }
-  @supports (
-    (-webkit-backdrop-filter: blur(1px)) or (backdrop-filter: blur(1px))
-  ) {
-    .chrome-sticky {
-      background: rgba(21, 29, 26, 0.82);
-      backdrop-filter: blur(10px) saturate(120%);
-      -webkit-backdrop-filter: blur(10px) saturate(120%);
-    }
+    background: #000000;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
   }
 
-  /* Mobile drawers — плотный непрозрачный фон */
   .drawer-scrim {
-    background: rgba(21, 29, 26, 0.92);
+    background: #000000;
   }
   .drawer-panel-right,
   .drawer-panel-left {
-    background-color: var(--color-panel);
+    background-color: var(--color-bg-2);
     isolation: isolate;
   }
   .drawer-panel-right {
     border-left: 1px solid var(--color-line);
-    box-shadow: -24px 0 64px -16px rgba(0, 0, 0, 0.72);
+    box-shadow: -28px 0 70px -12px rgba(0, 0, 0, 0.88);
   }
   .drawer-panel-left {
     border-right: 1px solid var(--color-line);
-    box-shadow: 24px 0 64px -16px rgba(0, 0, 0, 0.72);
+    box-shadow: 28px 0 70px -12px rgba(0, 0, 0, 0.88);
   }
 
-  /* Iridescent gradient text (animated sweep) */
   .text-iri {
-    background: linear-gradient(
-      100deg,
-      #c4a87a,
-      var(--color-accent),
-      #8a7355,
-      var(--color-accent),
-      #c4a87a
-    );
-    background-size: 200% auto;
-    -webkit-background-clip: text;
-    background-clip: text;
-    color: transparent;
-    animation: var(--animate-iri);
+    color: var(--color-ink);
+    background: none;
+    -webkit-background-clip: unset;
+    background-clip: unset;
+    animation: none;
+    filter: none;
   }
 
-  /* Iridescent border via double-background trick */
-  .iri-border {
-    border: 1px solid transparent;
-    background:
-      linear-gradient(var(--color-panel), var(--color-panel)) padding-box,
-      linear-gradient(120deg, var(--color-accent), #8a7355, #5c3838) border-box;
+  .text-premium {
+    color: var(--color-ink);
+    text-shadow: 0 12px 40px rgba(0, 0, 0, 0.45);
   }
-  /* Iridescent glowing ring for glass elements (uses ::before) */
-  .iri-ring {
-    position: relative;
-    isolation: isolate;
+
+  .iri-border {
+    border: 1px solid var(--color-line);
+    background: var(--color-panel);
   }
   .iri-ring::before {
-    content: "";
-    position: absolute;
-    inset: 0;
-    border-radius: inherit;
-    padding: 1px;
-    background: linear-gradient(
-      130deg,
-      rgba(173, 148, 107, 0.85),
-      rgba(138, 115, 85, 0.35) 40%,
-      rgba(92, 56, 56, 0.55)
-    );
-    -webkit-mask:
-      linear-gradient(#000 0 0) content-box,
-      linear-gradient(#000 0 0);
-    -webkit-mask-composite: xor;
-    mask-composite: exclude;
-    pointer-events: none;
+    display: none;
   }
 
-  /* Neon glows */
-  .glow-cyan {
-    box-shadow:
-      0 0 40px -8px rgba(173, 148, 107, 0.45),
-      0 0 0 1px rgba(173, 148, 107, 0.12) inset;
-  }
+  .glow-cyan,
   .glow-violet {
-    box-shadow: 0 0 48px -10px rgba(92, 56, 56, 0.4);
+    box-shadow: none;
   }
 
-  /* Primary CTA — бронзовая pill */
+  /* Yamaha: CTA — champagne gold outline */
   .btn-primary {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    gap: 0.5rem;
-    border-radius: 999px;
-    padding: 0.85rem 1.6rem;
+    gap: 0.55rem;
+    border-radius: 0.75rem;
+    padding: 0.85rem 1.75rem;
+    font-family: var(--font-sans);
+    font-size: 0.6875rem;
     font-weight: 600;
-    color: #1a1814;
-    background: linear-gradient(
-      120deg,
-      #dcc498,
-      var(--color-accent) 55%,
-      #9a8058
-    );
-    box-shadow:
-      0 8px 30px -8px rgba(201, 170, 120, 0.5),
-      0 1px 0 0 rgba(255, 255, 255, 0.25) inset;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--color-accent);
+    background: transparent;
+    border: 1px solid var(--color-accent);
+    box-shadow: none;
     transition:
-      transform 0.25s var(--ease-fluid),
-      box-shadow 0.25s var(--ease-fluid),
-      filter 0.25s var(--ease-fluid);
+      background 0.3s var(--ease-fluid),
+      border-color 0.3s var(--ease-fluid),
+      color 0.3s var(--ease-fluid),
+      transform 0.3s var(--ease-fluid);
     cursor: pointer;
   }
   .btn-primary:hover {
-    transform: translateY(-2px);
-    box-shadow:
-      0 14px 40px -8px rgba(173, 148, 107, 0.55),
-      0 1px 0 0 rgba(255, 255, 255, 0.35) inset;
-    filter: saturate(1.1);
+    background: rgba(227, 121, 47, 0.12);
+    border-color: #f08a45;
+    color: #f08a45;
+    transform: translateY(-1px);
+    filter: none;
+    box-shadow: none;
   }
   .btn-primary:active {
     transform: translateY(0);
   }
 
-  /* Secondary — glass outline pill */
   .btn-ghost {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    gap: 0.5rem;
-    border-radius: 999px;
-    padding: 0.85rem 1.6rem;
+    gap: 0.55rem;
+    border-radius: 0.75rem;
+    padding: 0.85rem 1.75rem;
+    font-family: var(--font-sans);
+    font-size: 0.6875rem;
     font-weight: 600;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
     color: var(--color-ink);
-    background: rgba(255, 255, 255, 0.03);
-    border: 1px solid rgba(173, 148, 107, 0.28);
-    backdrop-filter: blur(8px);
+    background: transparent;
+    border: 1px solid rgba(240, 237, 230, 0.35);
+    box-shadow: none;
+    backdrop-filter: none;
     transition:
-      transform 0.25s var(--ease-fluid),
-      border-color 0.25s var(--ease-fluid),
-      background 0.25s var(--ease-fluid);
+      border-color 0.3s var(--ease-fluid),
+      background 0.3s var(--ease-fluid),
+      color 0.3s var(--ease-fluid),
+      transform 0.3s var(--ease-fluid);
     cursor: pointer;
   }
   .btn-ghost:hover {
-    transform: translateY(-2px);
-    border-color: rgba(173, 148, 107, 0.55);
-    background: rgba(173, 148, 107, 0.08);
+    border-color: var(--color-accent);
+    color: var(--color-accent);
+    background: rgba(227, 121, 47, 0.08);
+    transform: translateY(-1px);
+    box-shadow: none;
   }
 
-  /* Eyebrow label — mono-ish spaced caption */
+  /* Заливка — gold fill где нужен сильный акцент */
+  .btn-solid {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.55rem;
+    border-radius: 0.75rem;
+    padding: 0.85rem 1.75rem;
+    font-family: var(--font-sans);
+    font-size: 0.6875rem;
+    font-weight: 600;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: #0a1815;
+    background: var(--color-accent);
+    border: 1px solid var(--color-accent);
+    cursor: pointer;
+    transition:
+      opacity 0.3s var(--ease-fluid),
+      transform 0.3s var(--ease-fluid);
+  }
+  .btn-solid:hover {
+    opacity: 0.92;
+    transform: translateY(-1px);
+  }
+
   .eyebrow {
-    font-family: var(--font-display);
-    font-size: 0.72rem;
+    font-family: var(--font-sans);
+    font-size: 0.6875rem;
+    font-weight: 500;
     letter-spacing: 0.28em;
     text-transform: uppercase;
-    color: var(--color-accent);
+    color: var(--color-muted);
   }
 
-  /* Fades on marquee edges */
+  .nav-link {
+    position: relative;
+    font-size: 0.6875rem;
+    font-weight: 500;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--color-muted);
+    transition: color 0.25s var(--ease-fluid);
+  }
+  .nav-link:hover {
+    color: var(--color-ink);
+  }
+  .nav-link-active {
+    color: var(--color-ink);
+    font-weight: 600;
+  }
+  .nav-link-active::after {
+    content: "";
+    position: absolute;
+    left: 0.75rem;
+    right: 0.75rem;
+    bottom: 0.35rem;
+    height: 2px;
+    background: var(--color-accent);
+    border-radius: 1px;
+  }
+
   .edge-fade {
     -webkit-mask-image: linear-gradient(
       90deg,
@@ -394,10 +435,9 @@ select:focus-visible {
   }
 }
 
-/* Section container helper — единый ограничитель витрины (≤1280px) */
 .container-x {
   width: 100%;
-  max-width: 80rem; /* 1280px */
+  max-width: 80rem;
   margin-inline: auto;
   padding-inline: 1.25rem;
   box-sizing: border-box;
@@ -418,38 +458,19 @@ select:focus-visible {
   }
 }
 
-/* Checkbox с фирменным акцентом */
-.maze-check {
-  width: 16px;
-  height: 16px;
-  accent-color: var(--color-cyan);
-  cursor: pointer;
-}
-
-/* Range slider: только thumb; заливку трека рисует PriceRangeSlider */
 .maze-range-input {
   --maze-range-thumb: 18px;
-  -webkit-appearance: none !important;
-  appearance: none !important;
-  width: 100%;
+  -webkit-appearance: none;
+  appearance: none;
+  background: transparent;
   height: var(--maze-range-thumb);
-  margin: 0;
-  padding: 0;
-  background: transparent;
-  border: none;
-  outline: none;
   cursor: pointer;
-  /* не давать Safari рисовать системный accent-track */
-  color: transparent;
-}
-.maze-range-input::-webkit-slider-container {
-  background: transparent;
 }
 .maze-range-input::-webkit-slider-runnable-track {
   -webkit-appearance: none;
   appearance: none;
-  height: 6px;
-  background: transparent;
+  height: 2px;
+  background: var(--color-line);
   border: none;
   box-shadow: none;
 }
@@ -458,16 +479,16 @@ select:focus-visible {
   appearance: none !important;
   width: var(--maze-range-thumb);
   height: var(--maze-range-thumb);
-  margin-top: calc((6px - var(--maze-range-thumb)) / 2);
+  margin-top: calc((2px - var(--maze-range-thumb)) / 2);
   border-radius: 50%;
-  background: #fff;
-  border: 3px solid var(--color-cyan);
-  box-shadow: 0 0 10px rgba(53, 228, 240, 0.55);
+  background: #e8eeec;
+  border: 2px solid var(--color-accent);
+  box-shadow: none;
   cursor: pointer;
 }
 .maze-range-input::-moz-range-track {
-  height: 6px;
-  background: transparent;
+  height: 2px;
+  background: var(--color-line);
   border: none;
 }
 .maze-range-input::-moz-range-progress {
@@ -477,14 +498,13 @@ select:focus-visible {
 .maze-range-input::-moz-range-thumb {
   width: var(--maze-range-thumb);
   height: var(--maze-range-thumb);
-  border: 3px solid var(--color-cyan);
+  border: 2px solid var(--color-accent);
   border-radius: 50%;
-  background: #fff;
-  box-shadow: 0 0 10px rgba(53, 228, 240, 0.55);
+  background: #e8eeec;
+  box-shadow: none;
   cursor: pointer;
 }
 
-/* ---------------- Reduced motion ---------------- */
 @media (prefers-reduced-motion: reduce) {
   html {
     scroll-behavior: auto;

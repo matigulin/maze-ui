@@ -8,7 +8,6 @@ import {
   ChevronDown,
   Heart,
   Menu,
-  Phone,
   ShoppingCart,
   X,
 } from "lucide-react";
@@ -19,15 +18,30 @@ import { MobileDrawer } from "@/shared/ui/mobile-drawer";
 import { resetWindowScroll } from "@/lib/scroll";
 import { Logo } from "./Logo";
 import { Icon } from "./Icon";
+import { CardIcon } from "@/shared/ui/card-icon";
 import { useCart } from "./store";
 import { useSiteData } from "./site-data";
 import { cn } from "@/lib/utils";
+
+const NAV = [
+  {
+    href: "/catalog",
+    label: "Каталог",
+    match: (p: string) => p.startsWith("/catalog") || p.startsWith("/product"),
+  },
+  { href: "/#reviews", label: "Отзывы", match: () => false },
+  {
+    href: "/account",
+    label: "Кабинет",
+    match: (p: string) => p.startsWith("/account"),
+  },
+] as const;
 
 export function Header() {
   const router = useRouter();
   const pathname = usePathname();
   const { count, wishlist, setMiniOpen } = useCart();
-  const { categories, store: STORE, partnerBrands } = useSiteData();
+  const { categories, partnerBrands } = useSiteData();
   const [scrolled, setScrolled] = useState(false);
   const [catOpen, setCatOpen] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -36,7 +50,10 @@ export function Header() {
   const closeMobile = useCallback(() => setMobileOpen(false), []);
 
   useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 12);
+    const onScroll = () => {
+      const next = window.scrollY > 8;
+      setScrolled((prev) => (prev === next ? prev : next));
+    };
     onScroll();
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
@@ -53,132 +70,146 @@ export function Header() {
 
   function search(e: React.FormEvent) {
     e.preventDefault();
-    router.push(q.trim() ? `/catalog?q=${encodeURIComponent(q.trim())}` : "/catalog");
+    router.push(
+      q.trim() ? `/catalog?q=${encodeURIComponent(q.trim())}` : "/catalog",
+    );
     closeMobile();
   }
 
   return (
     <>
-      <header
-        className={cn(
-          "sticky top-0 z-50",
-          scrolled || mobileOpen
-            ? "chrome-sticky"
-            : "border-b border-transparent bg-transparent transition-[background-color,border-color] duration-200",
-        )}
-      >
-        <div className="container-x flex h-14 min-w-0 shrink-0 flex-nowrap items-center gap-1.5 sm:h-16 sm:gap-3 md:h-[4.5rem] md:gap-5">
-          <Logo compact="mobile" className="min-w-0 shrink" />
-
-          {/* Каталог dropdown */}
-          <div ref={catRef} className="relative hidden md:block">
-            <button
-              onClick={() => setCatOpen((v) => !v)}
-              className="flex items-center gap-1.5 rounded-full px-3 py-2 text-sm font-medium text-muted transition-colors hover:text-ink cursor-pointer"
-              aria-expanded={catOpen}
-            >
-              Каталог
-              <ChevronDown
-                size={15}
-                className={cn("transition-transform", catOpen && "rotate-180")}
-              />
-            </button>
-            <AnimatePresence>
-              {catOpen && (
-                <motion.div
-                  initial={{ opacity: 0, y: 8, scale: 0.98 }}
-                  animate={{ opacity: 1, y: 0, scale: 1 }}
-                  exit={{ opacity: 0, y: 8, scale: 0.98 }}
-                  transition={{ duration: 0.18 }}
-                  className="absolute left-0 top-full mt-2 grid w-[30rem] grid-cols-2 gap-1 rounded-2xl border border-line bg-[#0e1126] p-2 shadow-[0_18px_50px_-20px_rgba(0,0,0,0.75)]"
-                >
-                  {categories.map((c) => (
-                    <Link
-                      key={c.slug}
-                      href={`/catalog?cat=${c.slug}`}
-                      onClick={() => setCatOpen(false)}
-                      className="group flex items-center gap-3 rounded-xl px-3 py-2.5 transition-colors hover:bg-white/5"
-                    >
-                      <span
-                        className="grid h-9 w-9 place-items-center rounded-lg text-white"
-                        style={{
-                          background: `linear-gradient(135deg, ${c.tint[0]}, ${c.tint[1]})`,
-                        }}
-                      >
-                        <Icon name={c.icon} size={17} />
-                      </span>
-                      <span className="min-w-0">
-                        <span className="block truncate text-sm font-medium text-ink">
-                          {c.name}
-                        </span>
-                        <span className="text-xs text-faint">
-                          {c.count} товаров
-                        </span>
-                      </span>
-                    </Link>
-                  ))}
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </div>
-
-          {/* Поиск */}
-          <form
-            onSubmit={search}
-            className="hidden flex-1 lg:block"
+      <header className="pointer-events-none fixed inset-x-0 top-0 z-50">
+        <div className="pointer-events-auto px-3 pt-3 sm:px-4 sm:pt-4 md:px-6">
+          <div
+            className={cn(
+              "nav-pill mx-auto flex h-14 max-w-7xl min-w-0 flex-nowrap items-center gap-1.5 px-3 transition-[background-color,border-color] duration-300 sm:h-16 sm:gap-3 sm:px-5 md:h-[4.25rem] md:gap-5 md:px-6",
+              (scrolled || mobileOpen) && "nav-pill-scrolled",
+            )}
           >
-            <CatalogSearchInput
-              value={q}
-              onChange={setQ}
-              brands={partnerBrands}
-            />
-          </form>
-
-          <div className="ml-auto flex shrink-0 flex-nowrap items-center gap-0.5 sm:gap-1 md:gap-1.5">
-            <IconButton
-              label="Избранное"
-              badge={wishlist.length}
-              href="/account?tab=wishlist"
-              onClick={(e) => {
-                if (pathname === "/account") {
-                  e.preventDefault();
-                  window.dispatchEvent(
-                    new CustomEvent(ACCOUNT_TAB_EVENT, { detail: "wishlist" }),
-                  );
-                  router.replace("/account?tab=wishlist");
-                  resetWindowScroll();
-                }
-              }}
-            >
-              <Heart size={19} />
-            </IconButton>
-            <IconButton
-              label="Корзина"
-              badge={count}
-              onClick={() => setMiniOpen(true)}
-            >
-              <ShoppingCart size={19} />
-            </IconButton>
-            <div className="hidden md:block">
-              <HeaderAuthActions />
-            </div>
-            <a
-              href={`tel:${STORE.phone.replace(/[^+\d]/g, "")}`}
-              className="ml-1 hidden items-center gap-2 rounded-full border border-line px-3 py-2 text-sm text-muted transition-colors hover:border-cyan/50 hover:text-ink xl:flex"
-            >
-              <Phone size={15} className="text-cyan" />
-              {STORE.phone}
-            </a>
-
             <button
               type="button"
-              onClick={() => setMobileOpen((v) => !v)}
-              aria-label={mobileOpen ? "Закрыть меню" : "Открыть меню"}
-              aria-expanded={mobileOpen}
-              className="grid h-9 w-9 shrink-0 place-items-center rounded-full text-muted hover:text-ink sm:h-10 sm:w-10 md:hidden cursor-pointer"
+              onClick={() => setMobileOpen(true)}
+              aria-label="Открыть меню"
+              className="grid h-10 w-10 shrink-0 place-items-center rounded-full text-ink transition-colors hover:bg-panel hover:text-white md:hidden cursor-pointer"
             >
-              {mobileOpen ? <X size={20} /> : <Menu size={20} />}
+              <Menu size={20} strokeWidth={1.5} />
             </button>
+
+            <div className="hidden items-center gap-1 md:flex">
+              <div ref={catRef} className="relative">
+                <button
+                  type="button"
+                  onClick={() => setCatOpen((v) => !v)}
+                  className={cn(
+                    "nav-link inline-flex items-center gap-1.5 px-3 py-2 cursor-pointer",
+                    catOpen && "nav-link-active",
+                  )}
+                  aria-expanded={catOpen}
+                >
+                  Меню
+                  <ChevronDown
+                    size={14}
+                    className={cn(
+                      "transition-transform",
+                      catOpen && "rotate-180",
+                    )}
+                  />
+                </button>
+                <AnimatePresence>
+                  {catOpen && (
+                    <motion.div
+                      initial={{ opacity: 0, y: 8 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: 8 }}
+                      transition={{ duration: 0.22 }}
+                      className="absolute left-0 top-full z-50 mt-3 grid w-[28rem] grid-cols-2 gap-0.5 rounded-2xl border border-line bg-bg-2 p-2 shadow-[0_24px_60px_-24px_rgba(0,0,0,0.85)]"
+                    >
+                      {categories.map((c) => (
+                        <Link
+                          key={c.slug}
+                          href={`/catalog?cat=${c.slug}`}
+                          onClick={() => setCatOpen(false)}
+                          className="flex items-center gap-3 rounded-xl px-3 py-2.5 transition-colors hover:bg-panel"
+                        >
+                          <CardIcon size="sm">
+                            <Icon name={c.icon} size={15} strokeWidth={1.5} />
+                          </CardIcon>
+                          <span className="min-w-0">
+                            <span className="block truncate text-xs font-medium tracking-wide text-ink">
+                              {c.name}
+                            </span>
+                            <span className="text-[10px] uppercase tracking-wider text-faint">
+                              {c.count} моделей
+                            </span>
+                          </span>
+                        </Link>
+                      ))}
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
+            </div>
+
+            <Logo compact="mobile" className="min-w-0 shrink" />
+
+            <form onSubmit={search} className="hidden min-w-0 flex-1 lg:block">
+              <CatalogSearchInput
+                value={q}
+                onChange={setQ}
+                brands={partnerBrands}
+                inputClassName="border-white/12 bg-black/20 focus:border-white/35 focus:bg-black/30"
+              />
+            </form>
+
+            <nav className="hidden items-center gap-1 xl:flex">
+              {NAV.map((item) => {
+                const active = item.match(pathname);
+                return (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    className={cn(
+                      "nav-link px-3 py-2",
+                      active && "nav-link-active",
+                    )}
+                  >
+                    {item.label}
+                  </Link>
+                );
+              })}
+            </nav>
+
+            <div className="ml-auto flex shrink-0 items-center gap-0.5 sm:gap-1 lg:ml-0">
+              <IconButton
+                label="Избранное"
+                badge={wishlist.length}
+                href="/account?tab=wishlist"
+                onClick={(e) => {
+                  if (pathname === "/account") {
+                    e.preventDefault();
+                    window.dispatchEvent(
+                      new CustomEvent(ACCOUNT_TAB_EVENT, {
+                        detail: "wishlist",
+                      }),
+                    );
+                    router.replace("/account?tab=wishlist");
+                    resetWindowScroll();
+                  }
+                }}
+              >
+                <Heart size={18} strokeWidth={1.5} />
+              </IconButton>
+              <IconButton
+                label="Корзина"
+                badge={count}
+                onClick={() => setMiniOpen(true)}
+              >
+                <ShoppingCart size={18} strokeWidth={1.5} />
+              </IconButton>
+              <div className="hidden md:block">
+                <HeaderAuthActions />
+              </div>
+            </div>
           </div>
         </div>
       </header>
@@ -187,50 +218,59 @@ export function Header() {
         open={mobileOpen}
         onClose={closeMobile}
         rootClassName="md:hidden"
-        /* Ширина по самой длинной категории («Игровые приставки»), не на весь экран */
-        panelClassName="w-[min(100vw-2.75rem,18rem)] max-w-[18rem]"
+        panelClassName="w-[min(100vw-2.5rem,20rem)] max-w-[20rem] rounded-l-3xl"
       >
-        <div className="shrink-0 border-b border-line p-5">
+        <div className="shrink-0 border-b border-line px-5 py-5">
           <div className="flex items-center justify-between">
             <Logo compact />
             <button
               type="button"
               onClick={closeMobile}
               aria-label="Закрыть меню"
-              className="grid h-9 w-9 place-items-center rounded-full text-muted hover:text-ink cursor-pointer"
+              className="grid h-10 w-10 place-items-center rounded-full text-muted hover:bg-panel hover:text-ink cursor-pointer"
             >
-              <X size={18} />
+              <X size={18} strokeWidth={1.5} />
             </button>
           </div>
         </div>
-        <div className="flex-1 overflow-y-auto p-5 pt-4">
-          <div className="mb-4">
+        <div className="flex-1 overflow-y-auto px-5 py-5">
+          <div className="mb-6">
             <MobileAuthActions onNavigate={closeMobile} />
           </div>
-          <form onSubmit={search} className="mb-5">
+          <form onSubmit={search} className="mb-8">
             <CatalogSearchInput
               value={q}
               onChange={setQ}
               brands={partnerBrands}
+              inputClassName="rounded-full"
             />
           </form>
+          <p className="eyebrow mb-3">Навигация</p>
+          <nav className="mb-8 space-y-1">
+            {NAV.map((item) => (
+              <Link
+                key={item.href}
+                href={item.href}
+                onClick={closeMobile}
+                className="block rounded-xl border-b border-line/50 py-3 text-sm tracking-wide text-ink"
+              >
+                {item.label}
+              </Link>
+            ))}
+          </nav>
+          <p className="eyebrow mb-3">Категории</p>
           <nav className="space-y-1">
             {categories.map((c) => (
               <Link
                 key={c.slug}
                 href={`/catalog?cat=${c.slug}`}
                 onClick={closeMobile}
-                className="flex items-center gap-3 rounded-xl px-3 py-3 transition-colors hover:bg-white/5"
+                className="flex items-center gap-3 rounded-xl py-3 transition-colors hover:bg-panel hover:text-accent"
               >
-                <span
-                  className="grid h-8 w-8 shrink-0 place-items-center rounded-lg text-white"
-                  style={{
-                    background: `linear-gradient(135deg, ${c.tint[0]}, ${c.tint[1]})`,
-                  }}
-                >
-                  <Icon name={c.icon} size={15} />
-                </span>
-                <span className="whitespace-nowrap text-sm font-medium">
+                <CardIcon size="sm">
+                  <Icon name={c.icon} size={14} strokeWidth={1.5} />
+                </CardIcon>
+                <span className="text-sm font-medium tracking-wide">
                   {c.name}
                 </span>
               </Link>
@@ -252,16 +292,18 @@ function IconButton({
   children: React.ReactNode;
   label: string;
   badge?: number;
-  onClick?: (e: React.MouseEvent<HTMLAnchorElement | HTMLButtonElement>) => void;
+  onClick?: (
+    e: React.MouseEvent<HTMLAnchorElement | HTMLButtonElement>,
+  ) => void;
   href?: string;
 }) {
   const cls =
-    "relative grid h-9 w-9 shrink-0 place-items-center rounded-full text-muted transition-colors hover:bg-white/5 hover:text-ink sm:h-10 sm:w-10 cursor-pointer";
+    "relative grid h-10 w-10 shrink-0 place-items-center rounded-full text-muted transition-colors hover:bg-panel hover:text-ink cursor-pointer";
   const inner = (
     <>
       {children}
       {badge != null && badge > 0 && (
-        <span className="pointer-events-none absolute -right-0.5 -top-0.5 grid h-[18px] min-w-[18px] place-items-center rounded-full bg-gradient-to-br from-cyan to-blue px-1 text-[10px] font-bold text-[#04121a]">
+        <span className="pointer-events-none absolute right-0.5 top-0.5 grid h-4 min-w-4 place-items-center rounded-full bg-accent px-1 text-[9px] font-semibold tabular-nums text-bg">
           {badge}
         </span>
       )}
@@ -269,12 +311,7 @@ function IconButton({
   );
   if (href)
     return (
-      <Link
-        href={href}
-        aria-label={label}
-        className={cls}
-        onClick={onClick}
-      >
+      <Link href={href} aria-label={label} className={cls} onClick={onClick}>
         {inner}
       </Link>
     );

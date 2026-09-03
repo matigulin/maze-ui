@@ -1,19 +1,20 @@
 import type { Metadata, Viewport } from "next";
 import Script from "next/script";
-import { Exo_2, Orbitron } from "next/font/google";
+import { Manrope, Montserrat } from "next/font/google";
 import "./globals.css";
 import { Providers } from "@/components/Providers";
 import { fetchSiteChrome } from "@/lib/site-source";
 
-const exo = Exo_2({
-  variable: "--font-exo",
+const manrope = Manrope({
+  variable: "--font-outfit",
   subsets: ["latin", "cyrillic"],
   display: "swap",
 });
 
-const orbitron = Orbitron({
-  variable: "--font-orbitron",
-  subsets: ["latin"],
+const montserrat = Montserrat({
+  variable: "--font-barlow",
+  subsets: ["latin", "cyrillic"],
+  weight: ["400", "500", "600", "700"],
   display: "swap",
 });
 
@@ -42,9 +43,9 @@ export default async function RootLayout({
   return (
     <html
       lang="ru"
-      className={`${exo.variable} ${orbitron.variable} h-full antialiased`}
+      className={`${manrope.variable} ${montserrat.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex max-w-full flex-col overflow-x-hidden bg-bg text-ink font-sans selection:bg-cyan/25 selection:text-white">
+      <body className="flex min-h-full max-w-full flex-col overflow-x-hidden bg-bg font-sans text-ink selection:bg-accent/30 selection:text-bg">
         {process.env.NODE_ENV === "development" && (
           <Script
             src="https://unpkg.com/react-scan/dist/auto.global.js"

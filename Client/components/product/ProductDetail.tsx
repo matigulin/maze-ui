@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 import type { Product } from "@/lib/data";
 import { ProductThumb } from "@/components/ProductThumb";
+import { CardIcon } from "@/shared/ui/card-icon";
 import { useCart } from "@/components/store";
 import { formatPrice, cn } from "@/lib/utils";
 import { formatStockLabel } from "@/lib/stock";
@@ -116,7 +117,7 @@ export function ProductDetail({ product }: { product: Product }) {
               />
             )}
             {product.badge && (
-              <span className="absolute left-3 top-3 rounded-full border border-white/20 bg-black/30 px-2.5 py-1 text-[11px] font-semibold backdrop-blur-md sm:left-4 sm:top-4 sm:px-3 sm:text-xs">
+              <span className="absolute left-3 top-3 rounded-2xl border border-white/20 bg-black/30 px-2.5 py-1 text-[11px] font-semibold  sm:left-4 sm:top-4 sm:px-3 sm:text-xs">
                 {product.badge}
               </span>
             )}
@@ -129,7 +130,7 @@ export function ProductDetail({ product }: { product: Product }) {
                 onClick={() => setView(i)}
                 aria-label={`Вид ${i + 1}`}
                 className={cn(
-                  "overflow-hidden rounded-xl border-2 transition-colors cursor-pointer sm:rounded-2xl",
+                  "overflow-hidden rounded-2xl border-2 transition-colors cursor-pointer sm:rounded-2xl",
                   view === i ? "border-cyan" : "border-transparent",
                 )}
               >
@@ -163,7 +164,7 @@ export function ProductDetail({ product }: { product: Product }) {
             <span className="shrink-0">·</span>
             <span className="truncate">{product.category}</span>
           </div>
-          <h1 className="font-display text-[1.65rem] font-bold leading-tight sm:text-4xl">
+          <h1 className="font-display text-[1.65rem] font-semibold uppercase leading-tight tracking-[0.04em] sm:text-4xl">
             {product.name}
           </h1>
 
@@ -175,7 +176,7 @@ export function ProductDetail({ product }: { product: Product }) {
                   size={15}
                   className={cn(
                     k < Math.round(product.rating)
-                      ? "fill-gold text-gold"
+                      ? "fill-ink text-ink"
                       : "text-line",
                   )}
                 />
@@ -200,7 +201,7 @@ export function ProductDetail({ product }: { product: Product }) {
                 <span className="text-base text-faint line-through sm:text-lg">
                   {formatPrice(unitOldPrice)}
                 </span>
-                <span className="rounded-full bg-magenta/15 px-2 py-0.5 text-xs font-semibold text-magenta">
+                <span className="rounded-2xl bg-magenta/15 px-2 py-0.5 text-xs font-semibold text-magenta">
                   −{discount}%
                 </span>
               </span>
@@ -255,7 +256,7 @@ export function ProductDetail({ product }: { product: Product }) {
                     type="button"
                     onClick={() => setMemory(m)}
                     className={cn(
-                      "rounded-xl border px-3.5 py-2 text-sm transition-colors cursor-pointer sm:px-4",
+                      "rounded-2xl border px-3.5 py-2 text-sm transition-colors cursor-pointer sm:px-4",
                       memory === m
                         ? "border-cyan bg-cyan/10 text-ink"
                         : "border-line text-muted hover:border-white/25",
@@ -270,13 +271,13 @@ export function ProductDetail({ product }: { product: Product }) {
 
           {/* Desktop / tablet CTA */}
           <div className="mt-7 hidden items-center gap-3 sm:mt-8 lg:flex lg:flex-wrap">
-            <div className="flex items-center gap-1 rounded-full border border-line p-1">
+            <div className="flex items-center gap-1 rounded-2xl border border-line p-1">
               <button
                 type="button"
                 onClick={decQty}
                 aria-label="Меньше"
                 disabled={!canBuy || qty <= 1}
-                className="grid h-10 w-10 place-items-center rounded-full text-muted transition-colors hover:bg-white/5 hover:text-ink cursor-pointer disabled:cursor-not-allowed disabled:opacity-40"
+                className="grid h-10 w-10 place-items-center rounded-2xl text-muted transition-colors hover:bg-white/5 hover:text-ink cursor-pointer disabled:cursor-not-allowed disabled:opacity-40"
               >
                 <Minus size={16} />
               </button>
@@ -293,7 +294,7 @@ export function ProductDetail({ product }: { product: Product }) {
                     ? `На складе только ${maxQty} шт.`
                     : undefined
                 }
-                className="grid h-10 w-10 place-items-center rounded-full text-muted transition-colors hover:bg-white/5 hover:text-ink cursor-pointer disabled:cursor-not-allowed disabled:opacity-40"
+                className="grid h-10 w-10 place-items-center rounded-2xl text-muted transition-colors hover:bg-white/5 hover:text-ink cursor-pointer disabled:cursor-not-allowed disabled:opacity-40"
               >
                 <Plus size={16} />
               </button>
@@ -313,7 +314,7 @@ export function ProductDetail({ product }: { product: Product }) {
               onClick={() => toggleWishlist(product.id)}
               aria-label="В избранное"
               className={cn(
-                "grid h-[52px] w-[52px] place-items-center rounded-full border transition-colors cursor-pointer",
+                "grid h-[52px] w-[52px] place-items-center rounded-2xl border transition-colors cursor-pointer",
                 wished
                   ? "border-magenta/50 bg-magenta/10"
                   : "border-line hover:border-white/25",
@@ -334,9 +335,11 @@ export function ProductDetail({ product }: { product: Product }) {
             ].map(({ icon: I, t, s }) => (
               <div
                 key={t}
-                className="glass flex flex-col items-center gap-1 rounded-2xl px-1.5 py-3 text-center sm:px-2 sm:py-4"
+                className="bg-panel flex flex-col items-center gap-2 rounded-[1.75rem] px-1.5 py-3 text-center sm:px-2 sm:py-4"
               >
-                <I size={16} className="text-cyan sm:size-[18px]" />
+                <CardIcon size="sm">
+                  <I size={16} strokeWidth={1.5} />
+                </CardIcon>
                 <span className="text-[11px] font-medium leading-tight sm:text-sm">
                   {t}
                 </span>
@@ -355,10 +358,10 @@ export function ProductDetail({ product }: { product: Product }) {
         </h2>
         <div className="grid gap-3 sm:grid-cols-2 sm:gap-4 lg:grid-cols-4">
           {product.specs.map((s) => (
-            <div key={s.label} className="glass rounded-2xl p-4 sm:p-5">
-              <div className="mb-2 flex h-8 w-8 items-center justify-center rounded-lg bg-cyan/15 text-cyan">
-                <Check size={16} strokeWidth={2.5} />
-              </div>
+            <div key={s.label} className="bg-panel rounded-[1.75rem] p-4 sm:p-5">
+              <CardIcon size="sm" className="mb-2">
+                <Check size={16} strokeWidth={1.5} />
+              </CardIcon>
               <p className="text-[10px] uppercase tracking-wider text-faint sm:text-xs">
                 {s.label}
               </p>
@@ -371,15 +374,15 @@ export function ProductDetail({ product }: { product: Product }) {
       </div>
 
       {/* Sticky mobile buy bar */}
-      <div className="fixed inset-x-0 bottom-0 z-40 border-t border-line bg-[#07080f]/95 px-4 py-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] backdrop-blur-xl lg:hidden">
+      <div className="fixed inset-x-0 bottom-0 z-40 border-t border-line bg-[#000000]/95 px-4 py-3 pb-[max(0.75rem,env(safe-area-inset-bottom))]  lg:hidden">
         <div className="mx-auto flex max-w-lg items-center gap-2">
-          <div className="flex shrink-0 items-center gap-0.5 rounded-full border border-line p-0.5">
+          <div className="flex shrink-0 items-center gap-0.5 rounded-2xl border border-line p-0.5">
             <button
               type="button"
               onClick={decQty}
               aria-label="Меньше"
               disabled={!canBuy || qty <= 1}
-              className="grid h-10 w-10 place-items-center rounded-full text-muted cursor-pointer disabled:cursor-not-allowed disabled:opacity-40"
+              className="grid h-10 w-10 place-items-center rounded-2xl text-muted cursor-pointer disabled:cursor-not-allowed disabled:opacity-40"
             >
               <Minus size={16} />
             </button>
@@ -391,7 +394,7 @@ export function ProductDetail({ product }: { product: Product }) {
               onClick={incQty}
               aria-label="Больше"
               disabled={!canBuy || qty >= maxQty}
-              className="grid h-10 w-10 place-items-center rounded-full text-muted cursor-pointer disabled:cursor-not-allowed disabled:opacity-40"
+              className="grid h-10 w-10 place-items-center rounded-2xl text-muted cursor-pointer disabled:cursor-not-allowed disabled:opacity-40"
             >
               <Plus size={16} />
             </button>
@@ -409,7 +412,7 @@ export function ProductDetail({ product }: { product: Product }) {
             onClick={() => toggleWishlist(product.id)}
             aria-label="В избранное"
             className={cn(
-              "grid h-12 w-12 shrink-0 place-items-center rounded-full border cursor-pointer",
+              "grid h-12 w-12 shrink-0 place-items-center rounded-2xl border cursor-pointer",
               wished
                 ? "border-magenta/50 bg-magenta/10"
                 : "border-line",

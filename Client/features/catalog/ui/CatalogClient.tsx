@@ -195,7 +195,7 @@ export function CatalogClient({
   return (
     <div className="mx-auto grid w-full min-w-0 max-w-7xl gap-8 lg:grid-cols-[15rem_minmax(0,1fr)]">
       <aside className="hidden min-w-0 lg:block lg:w-[15rem] lg:shrink-0">
-        <div className="glass sticky top-24 flex max-h-[calc(100dvh-7rem)] flex-col overflow-hidden rounded-3xl">
+        <div className="border border-line bg-bg-2 sticky top-24 flex max-h-[calc(100dvh-7rem)] flex-col overflow-hidden rounded-2xl">
           {hasActiveFilters && (
             <div className="shrink-0 border-b border-line px-5 pb-4 pt-5">
               <ResetFiltersButton onClick={reset} />
@@ -284,7 +284,7 @@ export function CatalogClient({
             </AnimatePresence>
           </div>
         ) : (
-          <div className="glass grid place-items-center rounded-3xl py-20 text-center">
+          <div className="border border-line bg-panel grid place-items-center rounded-2xl py-20 text-center">
             <p className="text-lg font-medium">Ничего не найдено</p>
             <p className="mt-1 text-sm text-muted">
               Попробуйте изменить фильтры или сбросить их.

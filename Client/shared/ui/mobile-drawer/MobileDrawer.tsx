@@ -11,8 +11,8 @@ import {
 } from "@/shared/lib/client-mounted";
 import { cn } from "@/lib/utils";
 
-const PANEL_BG = "#1e2a26";
-const SCRIM_BG = "rgba(21, 29, 26, 0.92)";
+const PANEL_BG = "#0d1e1b";
+const SCRIM_BG = "#000000";
 
 export type MobileDrawerProps = {
   open: boolean;

@@ -42,17 +42,17 @@ export function isNewOrderStatus(status: string): boolean {
 export function orderStatusColor(status: string): string | undefined {
   switch (status) {
     case "pending":
-      return "#6b9a7a";
+      return "#e6d5b8";
     case "confirmed":
     case "awaiting_payment":
     case "paid":
-      return "#ad946b";
+      return "#e3792f";
     case "shipping":
-      return "#c4a060";
+      return "#c2a373";
     case "delivered":
-      return "#a89880";
+      return "#8A9A96";
     case "cancelled":
-      return "#b85c5c";
+      return "#c45c5c";
     default:
       return undefined;
   }

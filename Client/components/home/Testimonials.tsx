@@ -29,10 +29,10 @@ export function Testimonials({ reviews }: { reviews: Review[] }) {
 
   return (
     <div className="grid items-stretch gap-6 lg:grid-cols-[0.85fr_1.15fr]">
-      <Reveal className="glass flex flex-col justify-between rounded-3xl p-8">
+      <Reveal className="flex flex-col justify-between rounded-[1.75rem] bg-panel p-8">
         <div>
           <p className="eyebrow mb-3">Отзывы</p>
-          <h2 className="font-display text-3xl font-bold tracking-tight sm:text-4xl">
+          <h2 className="font-display text-3xl font-semibold uppercase tracking-[0.04em] sm:text-4xl">
             Нам доверяют
           </h2>
           <p className="mt-3 max-w-sm text-sm leading-relaxed text-muted">
@@ -44,14 +44,14 @@ export function Testimonials({ reviews }: { reviews: Review[] }) {
           <button
             onClick={() => go(-1)}
             aria-label="Предыдущий отзыв"
-            className="grid h-10 w-10 place-items-center rounded-full border border-line text-muted transition-colors hover:border-bg-warm/50 hover:text-accent cursor-pointer"
+            className="grid h-10 w-10 place-items-center rounded-full border border-white/20 text-muted transition-colors hover:border-white/50 hover:text-ink cursor-pointer"
           >
             <ChevronLeft size={18} />
           </button>
           <button
             onClick={() => go(1)}
             aria-label="Следующий отзыв"
-            className="grid h-10 w-10 place-items-center rounded-full border border-line text-muted transition-colors hover:border-bg-warm/50 hover:text-accent cursor-pointer"
+            className="grid h-10 w-10 place-items-center rounded-full border border-white/20 text-muted transition-colors hover:border-white/50 hover:text-ink cursor-pointer"
           >
             <ChevronRight size={18} />
           </button>
@@ -77,7 +77,7 @@ export function Testimonials({ reviews }: { reviews: Review[] }) {
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: dir * -40 }}
             transition={{ duration: 0.35 }}
-            className="glass relative flex h-full min-h-[18rem] flex-col justify-between rounded-3xl p-8"
+            className="relative flex h-full min-h-[18rem] flex-col justify-between rounded-[1.75rem] bg-panel p-8"
           >
             <Quote
               size={32}

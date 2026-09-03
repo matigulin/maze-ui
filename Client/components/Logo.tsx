@@ -10,7 +10,6 @@ export function Logo({
   compact = false,
 }: {
   className?: string;
-  /** true — всегда компактный; "mobile" — только до md */
   compact?: boolean | "mobile";
 }) {
   const pathname = usePathname();
@@ -35,32 +34,31 @@ export function Logo({
         xmlns="http://www.w3.org/2000/svg"
         className={cn(
           "w-auto",
-          compact === true && "h-8 max-w-[6.75rem]",
-          compact === "mobile" && "h-8 max-w-[6.75rem] md:h-9 md:max-w-none",
-          !compact && "h-9",
+          compact === true && "h-7 max-w-[6.5rem]",
+          compact === "mobile" && "h-7 max-w-[6.5rem] md:h-8 md:max-w-none",
+          !compact && "h-8",
         )}
         aria-hidden
       >
         <path
           d="M23.65 33 H35 L23.65 9.5 L12.3 33 H16.85 L23.65 19.5 L30.45 33"
-          stroke="#c9aa78"
-          strokeWidth="3"
+          stroke="#F0EDE6"
+          strokeWidth="2.5"
           strokeLinecap="round"
           strokeLinejoin="round"
         />
-
         <text
           x="48"
-          y="29"
-          fill="#c9aa78"
+          y="28"
+          fill="#F0EDE6"
           style={{
-            fontFamily: "var(--font-orbitron), sans-serif",
-            fontSize: 24,
-            fontWeight: 700,
-            letterSpacing: "0.28em",
+            fontFamily: "var(--font-barlow), sans-serif",
+            fontSize: 22,
+            fontWeight: 600,
+            letterSpacing: "0.32em",
           }}
         >
-          maze
+          MAZE
         </text>
       </svg>
     </Link>
