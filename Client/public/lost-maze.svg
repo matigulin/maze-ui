@@ -1,0 +1,38 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 900" preserveAspectRatio="xMidYMid slice" shape-rendering="geometricPrecision">
+  <defs>
+    <radialGradient id="fog" cx="50%" cy="42%" r="74%">
+      <stop offset="0%" stop-color="#1c2824"/>
+      <stop offset="42%" stop-color="#101714"/>
+      <stop offset="100%" stop-color="#050807"/>
+    </radialGradient>
+    <linearGradient id="bronze" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#e0c48c"/>
+      <stop offset="50%" stop-color="#c9aa78"/>
+      <stop offset="100%" stop-color="#8a7355"/>
+    </linearGradient>
+  </defs>
+  <rect width="1200" height="900" fill="url(#fog)"/>
+  <!-- Сдвиг, чтобы ни один вертикальный штрих не совпал с оптическим центром (цифры 404). -->
+  <g fill="none" stroke="url(#bronze)" stroke-linecap="square" stroke-linejoin="miter" transform="translate(22 0)">
+    <path stroke-width="2.2" opacity="0.45" d="M40 40h1120v820H40z"/>
+    <path stroke-width="3.4" opacity="0.95" d="
+      M548 70v70h220v90H328v-90h140V70
+      M160 140h180v120H160z
+      M860 140h180v90H860z
+      M160 320h90v200H160z
+      M950 290h90v160H950z
+      M250 320h180v70H380v130h220V250h140v210H520
+      M250 460h70v180H160v90h280v-90H320V460
+      M720 390h140v90H720z
+      M860 450h180v70H860v140h-90
+      M430 590h340v90H680v80H520v-80H430z
+      M160 730h280v40H160z
+      M760 730h280v40H760z
+      M648 680v150"/>
+    <rect x="300" y="200" width="600" height="500" rx="4" stroke-width="2.6" opacity="0.7"/>
+    <rect x="360" y="250" width="480" height="400" stroke-width="2.4" opacity="0.65"/>
+    <rect x="430" y="310" width="340" height="280" stroke-width="2.2" opacity="0.6"/>
+    <rect x="500" y="370" width="200" height="160" stroke-width="2" opacity="0.85"/>
+  </g>
+  <circle cx="670" cy="830" r="18" fill="none" stroke="#c9aa78" stroke-width="2.5" opacity="0.8"/>
+</svg>

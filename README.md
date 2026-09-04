@@ -4,7 +4,7 @@ Next.js фронтенд + Fastify API в одном репозитории.
 
 | Часть | Папка |
 |-------|-------|
-| Сайт (Next.js) | `maze/` |
+| Сайт (Next.js) | `Client/` |
 | API (Fastify) | `Server/` |
 | Документация | `docs/` |
 
@@ -17,7 +17,7 @@ cd Server && npm install && npm run dev
 
 **Клиент:**
 ```bash
-cd maze && npm install && cp .env.example .env.local && npm run dev
+cd Client && npm install && cp .env.example .env.local && npm run dev
 ```
 
 - Сайт: http://localhost:3000
@@ -26,7 +26,7 @@ cd maze && npm install && cp .env.example .env.local && npm run dev
 ## Vercel (публичная ссылка)
 
 1. Import `matigulin/maze-ui` на vercel.com
-2. **Root Directory → `maze`**
+2. **Root Directory → `Client`**
 3. **Settings → Deployment Protection** → выключи **Vercel Authentication** для Production
 4. Deploy
 
