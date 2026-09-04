@@ -31,6 +31,22 @@ const nextConfig: NextConfig = {
       { protocol: "https", hostname: "*.onrender.com", pathname: "/uploads/**" },
     ],
   },
+  async headers() {
+    // Safari агрессивно кэширует HTML/CSS в dev → «старый» дизайн рядом с Chrome
+    if (process.env.NODE_ENV !== "development") return [];
+    return [
+      {
+        source: "/:path*",
+        headers: [
+          {
+            key: "Cache-Control",
+            value: "no-store, no-cache, must-revalidate, max-age=0",
+          },
+          { key: "Pragma", value: "no-cache" },
+        ],
+      },
+    ];
+  },
   async rewrites() {
     return [
       {
