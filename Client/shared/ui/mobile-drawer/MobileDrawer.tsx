@@ -125,7 +125,7 @@ export function MobileDrawer({
       {open && (
         <div
           className={cn(
-            "fixed inset-0 isolate touch-none",
+            "fixed inset-0 isolate",
             zIndexClassName,
             rootClassName,
           )}
@@ -134,7 +134,7 @@ export function MobileDrawer({
           <motion.button
             type="button"
             aria-label="Закрыть"
-            className="absolute inset-0 z-0 bg-bg/92 backdrop-blur-md"
+            className="absolute inset-0 z-0 touch-none bg-bg/92 backdrop-blur-md"
             style={{ backgroundColor: SCRIM_BG }}
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -150,7 +150,7 @@ export function MobileDrawer({
             aria-label={ariaLabel ?? (ariaLabelledBy ? undefined : "Меню")}
             aria-labelledby={ariaLabelledBy}
             className={cn(
-              "absolute top-0 z-10 flex h-dvh min-h-dvh flex-col overflow-hidden bg-panel outline-none",
+              "absolute top-0 z-10 flex h-dvh min-h-0 max-h-dvh flex-col overflow-hidden overscroll-contain bg-panel outline-none touch-pan-y",
               panelWidthClass,
               panelPositionClass,
               panelClassName,

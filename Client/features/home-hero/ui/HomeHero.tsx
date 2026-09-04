@@ -5,14 +5,17 @@ import { motion } from "motion/react";
 import { ArrowRight, Repeat } from "lucide-react";
 import { useModal } from "@/components/modals";
 import { FLUID_EASE } from "@/shared/lib/motion";
-import { HERO_COPY } from "../lib/constants";
+import { HERO_COPY, HERO_SECTION_ID } from "../lib/constants";
 import { HeroVideoBackground } from "./HeroVideoBackground";
 
 export function HomeHero() {
   const { open } = useModal();
 
   return (
-    <section className="relative -mt-[4.75rem] min-h-[min(100svh,920px)] w-full overflow-hidden sm:-mt-[5.5rem] md:-mt-[5.75rem]">
+    <section
+      id={HERO_SECTION_ID}
+      className="relative -mt-[4.75rem] min-h-[min(100svh,920px)] w-full overflow-hidden sm:-mt-[5.5rem] md:-mt-[5.75rem]"
+    >
       <HeroVideoBackground />
       <div
         className="pointer-events-none absolute inset-0 bg-gradient-to-r from-black via-black/50 to-transparent"

@@ -5,9 +5,12 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
-/** Форматирует цену в рублях: 129990 → «129 990 ₽» */
+/** Форматирует цену в рублях: 129990 → «129 990 ₽» (неразрывные пробелы — ₽ не переносится) */
 export function formatPrice(value: number) {
-  return new Intl.NumberFormat("ru-RU").format(value) + " ₽";
+  const amount = new Intl.NumberFormat("ru-RU")
+    .format(value)
+    .replace(/\s/g, "\u00A0");
+  return `${amount}\u00A0₽`;
 }
 
 /** Склонение: plural(2, ['товар','товара','товаров']) → 'товара' */

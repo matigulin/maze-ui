@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useRef, useState } from "react";
+import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "motion/react";
 import { SlidersHorizontal, X } from "lucide-react";
@@ -61,7 +61,6 @@ export function CatalogClient({
   initialCat?: string;
 }) {
   const router = useRouter();
-  const resultsRef = useRef<HTMLDivElement>(null);
   const routeSelections = useMemo(
     () => resolveRouteFilterSelections(initialCat),
     [initialCat],
@@ -89,7 +88,8 @@ export function CatalogClient({
     if (initialCategory) return [initialCategory];
     return routeSelections.cats;
   });
-  const [price, setPrice] = useState(maxPrice);
+  const [priceMin, setPriceMin] = useState(0);
+  const [priceMax, setPriceMax] = useState(maxPrice);
   const [sort, setSort] = useState<Sort>("pop");
   const [mobileFilters, setMobileFilters] = useState(false);
 
@@ -104,7 +104,8 @@ export function CatalogClient({
         return false;
       if (selBrands.length && !selBrands.includes(p.brand)) return false;
       if (selCats.length && !selCats.includes(p.category)) return false;
-      if (maxPrice > 0 && p.price > price) return false;
+      if (p.price < priceMin) return false;
+      if (maxPrice > 0 && p.price > priceMax) return false;
       return true;
     });
     list = [...list].sort((a, b) => {
@@ -115,9 +116,10 @@ export function CatalogClient({
       return b.reviews - a.reviews;
     });
     return list;
-  }, [products, query, selBrands, selCats, price, sort, maxPrice]);
+  }, [products, query, selBrands, selCats, priceMin, priceMax, sort, maxPrice]);
 
-  const priceFilterActive = maxPrice > 0 && price < maxPrice;
+  const priceFilterActive =
+    priceMin > 0 || (maxPrice > 0 && priceMax < maxPrice);
   const activeCount =
     selBrands.length +
     selCats.length +
@@ -127,32 +129,25 @@ export function CatalogClient({
 
   const hasActiveFilters = activeCount > 0;
 
-  function scrollResultsToTop() {
-    resultsRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
-  }
-
   function reset() {
     setSelBrands([]);
     setSelCats([]);
-    setPrice(maxPrice);
+    setPriceMin(0);
+    setPriceMax(maxPrice);
     setQuery("");
     setMobileFilters(false);
     router.push("/catalog");
-    scrollResultsToTop();
-  }
-
-  function onPriceChange(next: number) {
-    setPrice(next);
-    scrollResultsToTop();
   }
 
   const FilterPanel = (
     <div className="space-y-7">
       <div className="sticky top-0 z-10 -mx-5 bg-[var(--color-panel)]/95 px-5 pb-4 pt-1 backdrop-blur-md">
         <PriceFilter
-          price={price}
-          maxPrice={maxPrice}
-          onChange={onPriceChange}
+          min={priceMin}
+          max={priceMax}
+          ceiling={maxPrice}
+          onMinChange={setPriceMin}
+          onMaxChange={setPriceMax}
         />
       </div>
 
@@ -193,21 +188,21 @@ export function CatalogClient({
   );
 
   return (
-    <div className="mx-auto grid w-full min-w-0 max-w-7xl gap-8 lg:grid-cols-[15rem_minmax(0,1fr)]">
-      <aside className="hidden min-w-0 lg:block lg:w-[15rem] lg:shrink-0">
+    <div className="mx-auto grid w-full min-w-0 gap-8 lg:grid-cols-[16rem_minmax(0,1fr)]">
+      <aside className="hidden min-w-0 lg:block lg:w-[16rem] lg:shrink-0">
         <div className="border border-line bg-bg-2 sticky top-24 flex max-h-[calc(100dvh-7rem)] flex-col overflow-hidden rounded-2xl">
-          {hasActiveFilters && (
+          {hasActiveFilters ? (
             <div className="shrink-0 border-b border-line px-5 pb-4 pt-5">
               <ResetFiltersButton onClick={reset} />
             </div>
-          )}
+          ) : null}
           <div className="min-h-0 flex-1 overflow-y-auto px-5 pb-5 pt-4">
             {FilterPanel}
           </div>
         </div>
       </aside>
 
-      <div ref={resultsRef} className="min-w-0 w-full max-w-full scroll-mt-28">
+      <div className="min-w-0 w-full max-w-full">
         <div className="mb-5 flex min-w-0 flex-col gap-3 sm:mb-6 sm:flex-row sm:flex-wrap sm:items-center">
           <div className="flex min-w-0 flex-1 items-center justify-between gap-3">
             <div className="text-sm text-muted">
@@ -267,7 +262,7 @@ export function CatalogClient({
         </div>
 
         {filtered.length ? (
-          <div className="grid w-full grid-cols-2 gap-2 sm:gap-4 lg:grid-cols-3 [grid-template-columns:minmax(0,1fr)_minmax(0,1fr)] lg:[grid-template-columns:repeat(3,minmax(0,1fr))]">
+          <div className="grid w-full grid-cols-2 gap-2 sm:gap-3 lg:grid-cols-5 [grid-template-columns:minmax(0,1fr)_minmax(0,1fr)] lg:[grid-template-columns:repeat(5,minmax(0,1fr))]">
             <AnimatePresence mode="popLayout">
               {filtered.map((p) => (
                 <motion.div
@@ -317,9 +312,9 @@ export function CatalogClient({
               <X size={18} />
             </button>
           </div>
-          {hasActiveFilters && (
+          {hasActiveFilters ? (
             <ResetFiltersButton onClick={reset} className="mt-4" />
-          )}
+          ) : null}
         </div>
         <div className="flex-1 overflow-y-auto p-6 pt-4">
           {FilterPanel}

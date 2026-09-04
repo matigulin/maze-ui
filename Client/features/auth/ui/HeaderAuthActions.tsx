@@ -20,7 +20,7 @@ function AuthIconButton({
   className?: string;
 }) {
   const cls = cn(
-    "relative grid h-10 w-10 shrink-0 place-items-center rounded-full text-muted transition-colors hover:bg-panel hover:text-ink cursor-pointer",
+    "relative grid h-11 w-11 shrink-0 place-items-center rounded-full text-muted transition-colors hover:bg-panel hover:text-ink cursor-pointer",
     className,
   );
 

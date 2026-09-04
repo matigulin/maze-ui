@@ -14,6 +14,7 @@ import {
 import { HeaderAuthActions, MobileAuthActions } from "@/features/auth";
 import { ACCOUNT_TAB_EVENT } from "@/features/account";
 import { CatalogSearchInput } from "@/features/catalog-search";
+import { useNavOverHero } from "@/features/home-hero";
 import { MobileDrawer } from "@/shared/ui/mobile-drawer";
 import { resetWindowScroll } from "@/lib/scroll";
 import { Logo } from "./Logo";
@@ -41,23 +42,15 @@ export function Header() {
   const router = useRouter();
   const pathname = usePathname();
   const { count, wishlist, setMiniOpen } = useCart();
-  const { categories, partnerBrands } = useSiteData();
-  const [scrolled, setScrolled] = useState(false);
+  const { categories, partnerBrands, store } = useSiteData();
   const [catOpen, setCatOpen] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [q, setQ] = useState("");
   const catRef = useRef<HTMLDivElement>(null);
   const closeMobile = useCallback(() => setMobileOpen(false), []);
-
-  useEffect(() => {
-    const onScroll = () => {
-      const next = window.scrollY > 8;
-      setScrolled((prev) => (prev === next ? prev : next));
-    };
-    onScroll();
-    window.addEventListener("scroll", onScroll, { passive: true });
-    return () => window.removeEventListener("scroll", onScroll);
-  }, []);
+  const solid = useNavOverHero({ forceSolid: mobileOpen });
+  const phone = store.phone?.trim() ?? "";
+  const telHref = phone ? `tel:${phone.replace(/[^\d+]/g, "")}` : null;
 
   useEffect(() => {
     const onClick = (e: MouseEvent) => {
@@ -70,116 +63,95 @@ export function Header() {
 
   function search(e: React.FormEvent) {
     e.preventDefault();
-    router.push(
-      q.trim() ? `/catalog?q=${encodeURIComponent(q.trim())}` : "/catalog",
-    );
+    const query = q.trim();
+    router.push(query ? `/catalog?q=${encodeURIComponent(query)}` : "/catalog");
+    setQ("");
     closeMobile();
   }
 
   return (
     <>
       <header className="pointer-events-none fixed inset-x-0 top-0 z-50">
-        <div className="pointer-events-auto px-3 pt-3 sm:px-4 sm:pt-4 md:px-6">
+        <div className="pointer-events-auto container-x pt-3 sm:pt-4">
           <div
             className={cn(
-              "nav-pill mx-auto flex h-14 max-w-7xl min-w-0 flex-nowrap items-center gap-1.5 px-3 transition-[background-color,border-color] duration-300 sm:h-16 sm:gap-3 sm:px-5 md:h-[4.25rem] md:gap-5 md:px-6",
-              (scrolled || mobileOpen) && "nav-pill-scrolled",
+              "nav-pill flex h-14 w-full min-w-0 flex-nowrap items-center gap-1.5 px-3 sm:h-16 sm:gap-3 sm:px-5 md:h-[4.25rem] md:gap-4 md:px-6",
+              solid ? "nav-pill-solid" : "nav-pill-over-hero",
             )}
           >
-            <button
-              type="button"
-              onClick={() => setMobileOpen(true)}
-              aria-label="Открыть меню"
-              className="grid h-10 w-10 shrink-0 place-items-center rounded-full text-ink transition-colors hover:bg-panel hover:text-white md:hidden cursor-pointer"
-            >
-              <Menu size={20} strokeWidth={1.5} />
-            </button>
-
-            <div className="hidden items-center gap-1 md:flex">
-              <div ref={catRef} className="relative">
-                <button
-                  type="button"
-                  onClick={() => setCatOpen((v) => !v)}
-                  className={cn(
-                    "nav-link inline-flex items-center gap-1.5 px-3 py-2 cursor-pointer",
-                    catOpen && "nav-link-active",
-                  )}
-                  aria-expanded={catOpen}
-                >
-                  Меню
-                  <ChevronDown
-                    size={14}
-                    className={cn(
-                      "transition-transform",
-                      catOpen && "rotate-180",
-                    )}
-                  />
-                </button>
-                <AnimatePresence>
-                  {catOpen && (
-                    <motion.div
-                      initial={{ opacity: 0, y: 8 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: 8 }}
-                      transition={{ duration: 0.22 }}
-                      className="absolute left-0 top-full z-50 mt-3 grid w-[28rem] grid-cols-2 gap-0.5 rounded-2xl border border-line bg-bg-2 p-2 shadow-[0_24px_60px_-24px_rgba(0,0,0,0.85)]"
-                    >
-                      {categories.map((c) => (
-                        <Link
-                          key={c.slug}
-                          href={`/catalog?cat=${c.slug}`}
-                          onClick={() => setCatOpen(false)}
-                          className="flex items-center gap-3 rounded-xl px-3 py-2.5 transition-colors hover:bg-panel"
-                        >
-                          <CardIcon size="sm">
-                            <Icon name={c.icon} size={15} strokeWidth={1.5} />
-                          </CardIcon>
-                          <span className="min-w-0">
-                            <span className="block truncate text-xs font-medium tracking-wide text-ink">
-                              {c.name}
-                            </span>
-                            <span className="text-[10px] uppercase tracking-wider text-faint">
-                              {c.count} моделей
-                            </span>
-                          </span>
-                        </Link>
-                      ))}
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-              </div>
-            </div>
-
+            {/* 1. Логотип */}
             <Logo compact="mobile" className="min-w-0 shrink" />
 
+            {/* 2. Меню (desktop) */}
+            <div className="relative hidden shrink-0 md:block" ref={catRef}>
+              <button
+                type="button"
+                onClick={() => setCatOpen((v) => !v)}
+                className={cn(
+                  "nav-link inline-flex min-h-11 items-center gap-1.5 px-3 py-2 cursor-pointer",
+                  catOpen && "nav-link-active",
+                )}
+                aria-expanded={catOpen}
+              >
+                Меню
+                <ChevronDown
+                  size={16}
+                  className={cn(
+                    "transition-transform",
+                    catOpen && "rotate-180",
+                  )}
+                />
+              </button>
+              <AnimatePresence>
+                {catOpen && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 8 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: 8 }}
+                    transition={{ duration: 0.22 }}
+                    className="absolute left-0 top-full z-50 mt-3 grid w-[28rem] grid-cols-2 gap-0.5 rounded-2xl border border-line bg-bg-2 p-2 shadow-[0_24px_60px_-24px_rgba(0,0,0,0.85)]"
+                  >
+                    {categories.map((c) => (
+                      <Link
+                        key={c.slug}
+                        href={`/catalog?cat=${c.slug}`}
+                        onClick={() => setCatOpen(false)}
+                        className="flex items-center gap-3 rounded-xl px-3 py-2.5 transition-colors hover:bg-panel"
+                      >
+                        <CardIcon size="sm">
+                          <Icon name={c.icon} size={15} strokeWidth={1.5} />
+                        </CardIcon>
+                        <span className="min-w-0">
+                          <span className="block truncate text-xs font-medium tracking-wide text-ink">
+                            {c.name}
+                          </span>
+                          <span className="text-[10px] uppercase tracking-wider text-faint">
+                            {c.count} моделей
+                          </span>
+                        </span>
+                      </Link>
+                    ))}
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+
+            {/* 3. Поиск с вращающимися брендами */}
             <form onSubmit={search} className="hidden min-w-0 flex-1 lg:block">
               <CatalogSearchInput
                 value={q}
                 onChange={setQ}
                 brands={partnerBrands}
-                inputClassName="border-white/12 bg-black/20 focus:border-white/35 focus:bg-black/30"
+                inputClassName={
+                  solid
+                    ? "border-white/12 bg-black/20 focus:border-white/35 focus:bg-black/30"
+                    : "border-white/20 bg-transparent focus:border-white/40 focus:bg-black/15"
+                }
               />
             </form>
 
-            <nav className="hidden items-center gap-1 xl:flex">
-              {NAV.map((item) => {
-                const active = item.match(pathname);
-                return (
-                  <Link
-                    key={item.href}
-                    href={item.href}
-                    className={cn(
-                      "nav-link px-3 py-2",
-                      active && "nav-link-active",
-                    )}
-                  >
-                    {item.label}
-                  </Link>
-                );
-              })}
-            </nav>
-
-            <div className="ml-auto flex shrink-0 items-center gap-0.5 sm:gap-1 lg:ml-0">
+            {/* 4. Действия сгруппированы (Proximity) · телефон справа (desktop) */}
+            <div className="ml-auto flex shrink-0 items-center gap-1 sm:gap-1.5">
               <IconButton
                 label="Избранное"
                 badge={wishlist.length}
@@ -197,18 +169,35 @@ export function Header() {
                   }
                 }}
               >
-                <Heart size={18} strokeWidth={1.5} />
+                <Heart size={19} strokeWidth={1.5} />
               </IconButton>
               <IconButton
                 label="Корзина"
                 badge={count}
                 onClick={() => setMiniOpen(true)}
               >
-                <ShoppingCart size={18} strokeWidth={1.5} />
+                <ShoppingCart size={19} strokeWidth={1.5} />
               </IconButton>
               <div className="hidden md:block">
                 <HeaderAuthActions />
               </div>
+              {telHref ? (
+                <a
+                  href={telHref}
+                  className="nav-phone ml-1 hidden min-h-11 items-center whitespace-nowrap px-2 py-2 tabular-nums md:inline-flex"
+                  aria-label={`Позвонить ${phone}`}
+                >
+                  {phone}
+                </a>
+              ) : null}
+              <button
+                type="button"
+                onClick={() => setMobileOpen(true)}
+                aria-label="Открыть меню"
+                className="grid h-11 w-11 shrink-0 place-items-center rounded-full text-ink transition-colors hover:bg-panel hover:text-white md:hidden cursor-pointer"
+              >
+                <Menu size={22} strokeWidth={1.5} />
+              </button>
             </div>
           </div>
         </div>
@@ -221,20 +210,36 @@ export function Header() {
         panelClassName="w-[min(100vw-2.5rem,20rem)] max-w-[20rem] rounded-l-3xl"
         aria-label="Навигация"
       >
-        <div className="shrink-0 border-b border-line px-5 py-5">
-          <div className="flex items-center justify-between">
-            <Logo compact />
+        <div className="shrink-0 border-b border-line px-4 py-4 sm:px-5">
+          <div className="flex items-center gap-2">
+            <Logo
+              compact
+              className="min-w-0 shrink"
+              onNavigate={closeMobile}
+            />
+            {telHref ? (
+              <a
+                href={telHref}
+                onClick={closeMobile}
+                className="min-w-0 flex-1 truncate text-sm font-medium tabular-nums tracking-normal text-ink"
+                aria-label={`Позвонить ${phone}`}
+              >
+                {phone}
+              </a>
+            ) : (
+              <span className="flex-1" />
+            )}
             <button
               type="button"
               onClick={closeMobile}
               aria-label="Закрыть меню"
-              className="grid h-10 w-10 place-items-center rounded-full text-muted hover:bg-panel hover:text-ink cursor-pointer"
+              className="grid h-10 w-10 shrink-0 place-items-center rounded-full text-muted hover:bg-panel hover:text-ink cursor-pointer"
             >
               <X size={18} strokeWidth={1.5} />
             </button>
           </div>
         </div>
-        <div className="flex-1 overflow-y-auto px-5 py-5">
+        <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-5 py-5 [-webkit-overflow-scrolling:touch]">
           <div className="mb-6">
             <MobileAuthActions onNavigate={closeMobile} />
           </div>
@@ -260,7 +265,7 @@ export function Header() {
             ))}
           </nav>
           <p className="eyebrow mb-3">Категории</p>
-          <nav className="space-y-1">
+          <nav className="space-y-1 pb-6">
             {categories.map((c) => (
               <Link
                 key={c.slug}
@@ -299,12 +304,12 @@ function IconButton({
   href?: string;
 }) {
   const cls =
-    "relative grid h-10 w-10 shrink-0 place-items-center rounded-full text-muted transition-colors hover:bg-panel hover:text-ink cursor-pointer";
+    "relative grid h-11 w-11 shrink-0 place-items-center rounded-full text-muted transition-colors hover:bg-panel hover:text-ink cursor-pointer";
   const inner = (
     <>
       {children}
       {badge != null && badge > 0 && (
-        <span className="pointer-events-none absolute right-0.5 top-0.5 grid h-4 min-w-4 place-items-center rounded-full bg-accent px-1 text-[9px] font-semibold tabular-nums text-bg">
+        <span className="pointer-events-none absolute right-0.5 top-0.5 grid h-5 min-w-5 place-items-center rounded-full bg-accent px-1 text-[10px] font-semibold tabular-nums text-bg">
           {badge}
         </span>
       )}

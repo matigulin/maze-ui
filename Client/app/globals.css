@@ -6,13 +6,13 @@
    ============================================================ */
 
 @theme {
-  /* — Surfaces —
-     bg = страница; panel = карточки чуть темнее (мягкий шаг, не почти-чёрный) */
-  --color-bg: #0e1d1a;
-  --color-bg-2: #0b1815;
-  --color-panel: #0a1613;
-  --color-panel-2: #101f1c;
-  --color-bg-warm: #091411;
+  /* — Surfaces — Yamaha-like charcoal teal
+     bg = страница; panel = карточки чуть плотнее */
+  --color-bg: #121a18;
+  --color-bg-2: #0e1614;
+  --color-panel: #0c1412;
+  --color-panel-2: #182420;
+  --color-bg-warm: #0a100e;
 
   /* — Text — */
   --color-ink: #f0ede6;
@@ -108,25 +108,13 @@ body {
 }
 
 body {
-  background-color: #0e1d1a;
+  background-color: #121a18;
   color: var(--color-ink);
   touch-action: manipulation;
   overscroll-behavior-y: contain;
   overflow-x: clip;
   max-width: 100%;
-  background-image:
-    radial-gradient(
-      ellipse 110% 75% at 50% -5%,
-      #1a2f2c 0%,
-      transparent 55%
-    ),
-    linear-gradient(
-      180deg,
-      #132623 0%,
-      #0e1d1a 50%,
-      #0c1a17 100%
-    );
-  background-attachment: scroll;
+  background-image: none;
   font-feature-settings: "ss01" on, "kern" on;
 }
 
@@ -229,13 +217,31 @@ select:focus-visible {
 
   .nav-pill {
     border-radius: 9999px;
-    background: #0b1815;
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    box-shadow: 0 18px 50px -18px rgba(0, 0, 0, 0.8);
+    transition:
+      background-color 0.55s var(--ease-fluid),
+      border-color 0.55s var(--ease-fluid),
+      box-shadow 0.55s var(--ease-fluid),
+      backdrop-filter 0.55s var(--ease-fluid),
+      -webkit-backdrop-filter 0.55s var(--ease-fluid);
   }
-  .nav-pill-scrolled {
-    background: #0a1613;
-    border-color: rgba(255, 255, 255, 0.14);
+  /* Поверх hero-видео: без фона/обводки */
+  .nav-pill-over-hero {
+    background: transparent !important;
+    background-color: transparent !important;
+    border-color: transparent !important;
+    border-width: 1px;
+    border-style: solid;
+    box-shadow: none !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+  }
+  .nav-pill-solid {
+    background: #0e1614 !important;
+    background-color: #0e1614 !important;
+    border: 1px solid rgba(255, 255, 255, 0.12) !important;
+    box-shadow: 0 18px 50px -18px rgba(0, 0, 0, 0.85) !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
   }
 
   .chrome-sticky {
@@ -383,18 +389,19 @@ select:focus-visible {
 
   .eyebrow {
     font-family: var(--font-sans);
-    font-size: 0.6875rem;
+    font-size: 0.75rem;
     font-weight: 500;
-    letter-spacing: 0.28em;
+    letter-spacing: 0.2em;
     text-transform: uppercase;
     color: var(--color-muted);
   }
 
+  /* Laws of UX: читаемость + Fitts — не микро-капс 11px */
   .nav-link {
     position: relative;
-    font-size: 0.6875rem;
+    font-size: 0.8125rem;
     font-weight: 500;
-    letter-spacing: 0.22em;
+    letter-spacing: 0.12em;
     text-transform: uppercase;
     color: var(--color-muted);
     transition: color 0.25s var(--ease-fluid);
@@ -411,10 +418,22 @@ select:focus-visible {
     position: absolute;
     left: 0.75rem;
     right: 0.75rem;
-    bottom: 0.35rem;
+    bottom: 0.3rem;
     height: 2px;
     background: var(--color-accent);
     border-radius: 1px;
+  }
+
+  .nav-phone {
+    font-size: 0.875rem;
+    font-weight: 500;
+    letter-spacing: 0.02em;
+    text-transform: none;
+    color: var(--color-ink);
+    transition: color 0.25s var(--ease-fluid);
+  }
+  .nav-phone:hover {
+    color: var(--color-accent);
   }
 
   .edge-fade {
@@ -437,7 +456,7 @@ select:focus-visible {
 
 .container-x {
   width: 100%;
-  max-width: 80rem;
+  max-width: 90rem;
   margin-inline: auto;
   padding-inline: 1.25rem;
   box-sizing: border-box;

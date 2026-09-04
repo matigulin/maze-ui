@@ -8,9 +8,12 @@ import { scrollWindowToTop } from "@/lib/scroll";
 export function Logo({
   className,
   compact = false,
+  onNavigate,
 }: {
   className?: string;
   compact?: boolean | "mobile";
+  /** Например закрыть мобильное меню после перехода. */
+  onNavigate?: () => void;
 }) {
   const pathname = usePathname();
   const onHome = pathname === "/";
@@ -21,6 +24,7 @@ export function Logo({
       className={cn("inline-flex min-w-0 shrink items-center", className)}
       aria-label={onHome ? "MAZE — наверх" : "MAZE — на главную"}
       onClick={(e) => {
+        onNavigate?.();
         if (!onHome) return;
         e.preventDefault();
         scrollWindowToTop();

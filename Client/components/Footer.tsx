@@ -199,7 +199,7 @@ export function Footer() {
               </p>
             ) : null}
 
-            <div className="border border-line bg-panel p-5">
+            <div className="rounded-2xl border border-line bg-panel p-5">
               <p className="font-display text-sm font-semibold text-ink">
                 Нужна помощь?
               </p>

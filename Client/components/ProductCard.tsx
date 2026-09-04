@@ -148,11 +148,11 @@ export function ProductCard({ product }: { product: Product }) {
 
           <div className="mt-auto flex min-w-0 items-end justify-between gap-3 pt-4">
             <Link href={href} className="min-w-0">
-              <div className="font-display text-xl font-semibold tabular-nums tracking-tight text-ink sm:text-2xl">
+              <div className="whitespace-nowrap font-display text-xl font-semibold tabular-nums tracking-tight text-ink sm:text-2xl">
                 {formatPrice(product.price)}
               </div>
               {product.oldPrice ? (
-                <div className="text-xs text-faint line-through">
+                <div className="whitespace-nowrap text-xs text-faint line-through">
                   {formatPrice(product.oldPrice)}
                 </div>
               ) : null}

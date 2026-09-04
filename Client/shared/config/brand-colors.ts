@@ -1,17 +1,17 @@
-/** MAZE — forest + Pumpkin Spice */
+/** MAZE — Yamaha-like charcoal teal + Pumpkin Spice */
 export const BRAND = {
   green: {
-    base: "#0E1D1A",
-    panel: "#0A1613",
-    soft: "#0B1815",
-    mid: "#101F1C",
+    base: "#121A18",
+    panel: "#0C1412",
+    soft: "#0E1614",
+    mid: "#182420",
   },
   warm: {
-    base: "#091411",
-    hover: "#0B1815",
-    mid: "#152623",
+    base: "#0A100E",
+    hover: "#0E1614",
+    mid: "#1C2825",
     glow: "rgba(227, 121, 47, 0.14)",
-    shadow: "rgba(0, 0, 0, 0.5)",
+    shadow: "rgba(0, 0, 0, 0.55)",
   },
   gold: {
     base: "#E3792F",

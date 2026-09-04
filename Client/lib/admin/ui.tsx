@@ -747,7 +747,10 @@ export function AdminSelect({
 }
 
 export function formatPrice(n: number) {
-  return new Intl.NumberFormat("ru-RU").format(n) + " ₽";
+  const amount = new Intl.NumberFormat("ru-RU")
+    .format(n)
+    .replace(/\s/g, "\u00A0");
+  return `${amount}\u00A0₽`;
 }
 
 export function errorMessage(err: unknown, fallback = "Ошибка запроса") {

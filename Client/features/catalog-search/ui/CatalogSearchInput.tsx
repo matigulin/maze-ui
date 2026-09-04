@@ -37,7 +37,7 @@ export function CatalogSearchInput({
         placeholder=""
         aria-label={ariaLabel}
         className={cn(
-          "relative z-[1] w-full rounded-full border border-line bg-white/[0.03] py-2.5 pl-11 pr-4 text-sm text-ink outline-none transition-colors focus:border-accent/60 focus:bg-white/[0.05]",
+          "relative z-[1] w-full rounded-full border border-line bg-white/[0.03] py-2.5 pl-11 pr-4 text-[0.9375rem] leading-normal text-ink outline-none transition-colors focus:border-accent/60 focus:bg-white/[0.05]",
           inputClassName,
         )}
       />
