@@ -26,6 +26,7 @@ export default async function CatalogPage({
       </div>
 
       <CatalogClient
+        key={`${sp.q ?? ""}:${sp.cat ?? ""}`}
         products={products}
         initialQuery={sp.q ?? ""}
         initialCat={sp.cat}

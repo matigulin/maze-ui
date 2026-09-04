@@ -85,7 +85,8 @@ export function OrdersListPage() {
   const [focusId, setFocusId] = useState<string | null>(
     () => focusFromUrl || readLastWorkedOrderId(),
   );
-  const focusRef = useRef<HTMLElement | null>(null);
+  const focusCardRef = useRef<HTMLElement | null>(null);
+  const focusRowRef = useRef<HTMLElement | null>(null);
   const [items, setItems] = useState<ManagerOrderListItem[]>([]);
   const [page, setPage] = useState(1);
   const [pages, setPages] = useState(1);
@@ -99,7 +100,10 @@ export function OrdersListPage() {
 
   useEffect(() => {
     if (!focusId || loading) return;
-    const el = focusRef.current;
+    const isDesktop =
+      typeof window !== "undefined" &&
+      window.matchMedia("(min-width: 1024px)").matches;
+    const el = isDesktop ? focusRowRef.current : focusCardRef.current;
     if (!el) return;
     el.scrollIntoView({ behavior: "smooth", block: "center" });
   }, [focusId, loading, items]);
@@ -205,7 +209,7 @@ export function OrdersListPage() {
                     ref={
                       isFocus
                         ? (node) => {
-                            focusRef.current = node;
+                            focusCardRef.current = node;
                           }
                         : undefined
                     }
@@ -288,7 +292,7 @@ export function OrdersListPage() {
                     ref={
                       isFocus
                         ? (node) => {
-                            focusRef.current = node;
+                            focusRowRef.current = node;
                           }
                         : undefined
                     }

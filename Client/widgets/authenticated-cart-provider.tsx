@@ -23,6 +23,7 @@ export function AuthenticatedCartProvider({
         ? {
             userId: user.id,
             firstName: user.firstName,
+            lastName: user.lastName,
             phone: user.phone,
           }
         : null,

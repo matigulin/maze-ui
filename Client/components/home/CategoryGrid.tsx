@@ -4,7 +4,7 @@ import { Reveal } from "@/components/Reveal";
 import { Icon } from "@/components/Icon";
 import { CardIcon } from "@/shared/ui/card-icon";
 import type { NavCategory } from "@/lib/site-source";
-import { cn } from "@/lib/utils";
+import { cn, plural } from "@/lib/utils";
 
 export function CategoryGrid({ categories }: { categories: NavCategory[] }) {
   return (
@@ -42,7 +42,7 @@ export function CategoryGrid({ categories }: { categories: NavCategory[] }) {
                   {c.name}
                 </h3>
                 <p className="mt-1 text-[10px] uppercase tracking-[0.18em] text-faint">
-                  {c.count} моделей
+                  {c.count} {plural(c.count, ["модель", "модели", "моделей"])}
                 </p>
               </div>
             </Link>

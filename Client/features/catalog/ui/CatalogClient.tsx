@@ -303,6 +303,7 @@ export function CatalogClient({
         onClose={() => setMobileFilters(false)}
         side="left"
         rootClassName="lg:hidden"
+        aria-label="Фильтры каталога"
       >
         <div className="shrink-0 border-b border-line p-6 pb-4">
           <div className="flex items-center justify-between gap-3">

@@ -26,6 +26,11 @@ export function RotatingBrandHint({ brands, className }: RotatingBrandHintProps)
     [brands],
   );
   const [index, setIndex] = useState(0);
+  const safeIndex = hints.length === 0 ? 0 : index % hints.length;
+
+  useEffect(() => {
+    setIndex((i) => (hints.length === 0 ? 0 : i % hints.length));
+  }, [hints.length]);
 
   useEffect(() => {
     if (hints.length < 2 || reduce) return;
@@ -42,7 +47,7 @@ export function RotatingBrandHint({ brands, className }: RotatingBrandHintProps)
   if (reduce || hints.length === 1) {
     return (
       <span className={cn("block truncate", className)}>
-        {hints[index] ?? hints[0]}
+        {hints[safeIndex] ?? hints[0]}
       </span>
     );
   }
@@ -53,14 +58,14 @@ export function RotatingBrandHint({ brands, className }: RotatingBrandHintProps)
     >
       <AnimatePresence mode="wait" initial={false}>
         <motion.span
-          key={hints[index]}
+          key={hints[safeIndex]}
           className="absolute inset-x-0 top-0 block truncate whitespace-nowrap leading-[1.125rem]"
           initial={{ y: `-${SLIDE_OFFSET}`, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
           exit={{ y: SLIDE_OFFSET, opacity: 0 }}
           transition={{ duration: SLIDE_DURATION, ease: FLUID_EASE }}
         >
-          {hints[index]}
+          {hints[safeIndex]}
         </motion.span>
       </AnimatePresence>
     </span>

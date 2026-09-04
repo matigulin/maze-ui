@@ -24,12 +24,9 @@ export const metadata: Metadata = {
     "MAZE — премиальный магазин техники. Apple, Samsung, Sony, Marshall, Dyson, Harman Kardon. Трейд-ин, рассрочка, доставка по РФ.",
 };
 
-/** Без pinch / double-tap zoom на мобилке (витрина + админка). */
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
-  maximumScale: 1,
-  userScalable: false,
   viewportFit: "cover",
 };
 
@@ -38,6 +35,7 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  // fetchSiteChrome при недоступном API отдаёт mock chrome
   const siteData = await fetchSiteChrome();
 
   return (

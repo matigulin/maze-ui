@@ -56,7 +56,11 @@ function AdminNav({ onNavigate }: { onNavigate?: () => void }) {
   const { count: pendingOrdersCount } = usePendingOrdersCount();
 
   async function onLogout() {
-    await logout();
+    try {
+      await logout();
+    } catch {
+      // всё равно уходим на логин
+    }
     onNavigate?.();
     router.replace("/staff/login");
   }

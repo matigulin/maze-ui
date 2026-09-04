@@ -93,12 +93,11 @@ export function StockPage() {
         slug: applied.slug.trim() || undefined,
         inStock: applied.inStock || undefined,
       });
-      const details = await Promise.all(list.map((p) => api.getProduct(p.id)));
       setQuantities((prev) => {
         const next = { ...prev };
-        for (const product of details) {
+        for (const product of list) {
           if (!(product.id in next)) {
-            next[product.id] = product.variants[0]?.quantity ?? 0;
+            next[product.id] = product.stockQuantity ?? 0;
           }
         }
         return next;

@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useMemo } from "react";
+import { useCallback, useMemo, useRef } from "react";
 import {
   apiDelete,
   apiGet,
@@ -38,12 +38,22 @@ import type {
 
 export function useAdminApi() {
   const { accessToken, refreshSession } = useStaffAuth();
+  const refreshInFlight = useRef<Promise<string | null> | null>(null);
+
+  const refreshOnce = useCallback(() => {
+    if (!refreshInFlight.current) {
+      refreshInFlight.current = refreshSession().finally(() => {
+        refreshInFlight.current = null;
+      });
+    }
+    return refreshInFlight.current;
+  }, [refreshSession]);
 
   const withAuth = useCallback(
     async <T>(fn: (token: string) => Promise<T>): Promise<T> => {
       let token = accessToken;
       if (!token) {
-        token = await refreshSession();
+        token = await refreshOnce();
       }
       if (!token) throw new ApiError({ message: "Unauthorized", status: 401, code: "UNAUTHORIZED" });
 
@@ -51,14 +61,14 @@ export function useAdminApi() {
         return await fn(token);
       } catch (err) {
         if (err instanceof ApiError && err.status === 401) {
-          const next = await refreshSession();
+          const next = await refreshOnce();
           if (!next) throw err;
           return fn(next);
         }
         throw err;
       }
     },
-    [accessToken, refreshSession],
+    [accessToken, refreshOnce],
   );
 
   return useMemo(

@@ -513,6 +513,10 @@ export function relatedProducts(slug: string, n = 4) {
   const current = products.find((p) => p.slug === slug);
   return products
     .filter((p) => p.slug !== slug)
-    .sort((a) => (a.brand === current?.brand ? -1 : 1))
+    .sort((a, b) => {
+      const aMatch = a.brand === current?.brand ? 0 : 1;
+      const bMatch = b.brand === current?.brand ? 0 : 1;
+      return aMatch - bMatch;
+    })
     .slice(0, n);
 }

@@ -314,6 +314,7 @@ export function SlidesPage() {
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
   async function save(e: FormEvent) {
     e.preventDefault();
+    setError("");
     try {
       if (editing) await api.updateSlide(editing.id, form);
       else await api.createSlide(form);

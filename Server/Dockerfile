@@ -16,7 +16,9 @@ WORKDIR /app
 ENV NODE_ENV=production
 ENV HOST=0.0.0.0
 ENV PORT=4000
-RUN apk add --no-cache wget
+RUN apk add --no-cache wget \
+  && addgroup --system --gid 1001 nodejs \
+  && adduser --system --uid 1001 apiuser
 
 COPY package.json package-lock.json ./
 RUN npm ci --omit=dev && npm cache clean --force
@@ -27,7 +29,10 @@ COPY src/migrations ./src/migrations
 COPY src/seeders ./src/seeders
 COPY scripts ./scripts
 COPY docker-entrypoint.sh ./docker-entrypoint.sh
-RUN chmod +x docker-entrypoint.sh && mkdir -p uploads
+RUN chmod +x docker-entrypoint.sh \
+  && mkdir -p uploads \
+  && chown -R apiuser:nodejs /app
 
+USER apiuser
 EXPOSE 4000
 ENTRYPOINT ["./docker-entrypoint.sh"]

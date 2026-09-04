@@ -9,7 +9,7 @@ import { ProductCard } from "@/components/ProductCard";
 import { AccountProfile } from "./AccountProfile";
 import { ACCOUNT_TAB_EVENT } from "../lib/tab-event";
 import { products, type Product } from "@/lib/data";
-import { apiGet } from "@/lib/api";
+import { apiGetWithMeta } from "@/lib/api";
 import { shouldUseMocks } from "@/lib/mocks";
 import {
   mapProductListItemToUiProduct,
@@ -103,17 +103,35 @@ export function AccountClient({
     if (useMocks || wishlistIds.length === 0) return;
 
     let cancelled = false;
+    const wanted = new Set(wishlistIds);
+
     void (async () => {
       try {
-        const items = await apiGet<ProductListItemDto[]>("/catalog/products", {
-          limit: 48,
-          page: 1,
-        });
-        if (cancelled) return;
-        const mapped = items
-          .map(mapProductListItemToUiProduct)
-          .filter((p) => wishlistIds.includes(p.id));
-        setWished(mapped);
+        const found = new Map<string, Product>();
+        let page = 1;
+        const limit = 48;
+
+        while (!cancelled && found.size < wanted.size) {
+          const { data: items, meta } = await apiGetWithMeta<
+            ProductListItemDto[]
+          >("/catalog/products", { limit, page });
+          if (cancelled) return;
+
+          for (const dto of items) {
+            const p = mapProductListItemToUiProduct(dto);
+            if (wanted.has(p.id)) found.set(p.id, p);
+          }
+
+          const total = meta?.total;
+          const done =
+            found.size >= wanted.size ||
+            items.length < limit ||
+            (total != null && page * limit >= total);
+          if (done) break;
+          page += 1;
+        }
+
+        if (!cancelled) setWished([...found.values()]);
       } catch {
         if (!cancelled) setWished([]);
       }

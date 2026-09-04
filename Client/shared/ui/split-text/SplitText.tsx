@@ -20,6 +20,18 @@ const CLIP_STYLE: CSSProperties = {
   marginBottom: "-0.1em",
 };
 
+const SR_ONLY: CSSProperties = {
+  position: "absolute",
+  width: 1,
+  height: 1,
+  padding: 0,
+  margin: -1,
+  overflow: "hidden",
+  clip: "rect(0, 0, 0, 0)",
+  whiteSpace: "nowrap",
+  border: 0,
+};
+
 type SplitTextProps = {
   text: string;
   mode?: SplitMode;
@@ -66,7 +78,6 @@ export function SplitText({
     <motion.span
       ref={ref}
       className={className}
-      aria-label={text}
       initial="hidden"
       animate={active ? "visible" : "hidden"}
       variants={{
@@ -76,6 +87,7 @@ export function SplitText({
         },
       }}
     >
+      <span style={SR_ONLY}>{text}</span>
       {units.map((unit, i) => (
         <span
           key={`${unit}-${i}`}
@@ -88,7 +100,11 @@ export function SplitText({
               : { verticalAlign: "bottom" }),
           }}
         >
-          <motion.span className="inline-block will-change-transform" variants={unitVariants}>
+          <motion.span
+            className="inline-block will-change-transform"
+            variants={unitVariants}
+            aria-hidden
+          >
             {mode === "chars" && unit === " " ? "\u00A0" : unit}
           </motion.span>
         </span>

@@ -18,6 +18,7 @@ export function MiniCart() {
       open={miniOpen}
       onClose={() => setMiniOpen(false)}
       panelClassName="w-full max-w-md"
+      aria-label="Корзина"
     >
       <header className="flex shrink-0 items-center justify-between border-b border-line px-5 py-4">
         <div className="flex items-center gap-2">

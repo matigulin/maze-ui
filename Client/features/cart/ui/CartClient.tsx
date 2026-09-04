@@ -98,6 +98,7 @@ export function CartClient() {
 
   const contactUserId = checkoutContact?.userId ?? null;
   const contactFirstName = checkoutContact?.firstName ?? null;
+  const contactLastName = checkoutContact?.lastName ?? null;
   const contactPhone = checkoutContact?.phone ?? null;
 
   useEffect(() => {
@@ -135,6 +136,13 @@ export function CartClient() {
   const deliveryLabel =
     DELIVERY.find((d) => d.id === delivery)?.label ?? "Доставка";
 
+  /** Один Idempotency-Key на intent — не менять при retry того же заказа. */
+  const checkoutIntentKeyRef = useRef<string | null>(null);
+
+  useEffect(() => {
+    checkoutIntentKeyRef.current = null;
+  }, [items, delivery, payment, firstName, phoneNational, contactLastName]);
+
   useEffect(() => {
     if (!doneOrder) return;
     scrollWindowToTop();
@@ -152,7 +160,11 @@ export function CartClient() {
     try {
       const lines: Array<{ variantId: string; quantity: number }> = [];
       for (const it of items) {
-        if (!it.variantId) continue;
+        if (!it.variantId) {
+          throw new Error(
+            "В корзине есть товар без варианта. Обновите страницу или удалите позицию.",
+          );
+        }
         lines.push({ variantId: it.variantId, quantity: it.qty });
       }
 
@@ -167,15 +179,27 @@ export function CartClient() {
       const phone = validated.e164;
 
       const accessToken = await ensureAccessToken();
+      const city = delivery === "cdek" ? "Москва" : "Санкт-Петербург";
+      const address =
+        delivery === "pickup"
+          ? undefined
+          : { street: "Невский пр.", house: "1" };
+      if (!checkoutIntentKeyRef.current) {
+        checkoutIntentKeyRef.current = crypto.randomUUID();
+      }
       const order = await checkoutCart({
         deliveryUiId: delivery,
         paymentUiId: payment,
         firstName,
-        lastName: "Клиент",
+        lastName: contactLastName?.trim() ?? "",
         phone,
         items: lines,
         accessToken,
+        city,
+        address,
+        idempotencyKey: checkoutIntentKeyRef.current,
       });
+      checkoutIntentKeyRef.current = null;
       setConfirmOpen(false);
       setDoneOrder(order.orderNumber);
       requestAccountOrdersRefresh();

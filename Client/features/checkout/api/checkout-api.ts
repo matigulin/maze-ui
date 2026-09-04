@@ -112,12 +112,14 @@ export async function createOrder(input: {
   payment: { method: CheckoutPaymentMethod };
   comment?: string;
   accessToken?: string | null;
+  /** Один ключ на intent — передавать тот же при retry. */
+  idempotencyKey: string;
 }): Promise<CreateOrderResponse> {
-  const { accessToken, ...body } = input;
+  const { accessToken, idempotencyKey, ...body } = input;
   return apiPostJson<CreateOrderResponse>("/orders", body, {
     accessToken,
     headers: {
-      "Idempotency-Key": crypto.randomUUID(),
+      "Idempotency-Key": idempotencyKey,
     },
   });
 }
@@ -130,13 +132,31 @@ export async function checkoutCart(opts: {
   phone: string;
   items: Array<{ variantId: string; quantity: number }>;
   accessToken?: string | null;
+  /** Город доставки клиента (для quote). */
+  city?: string;
+  /** Адрес доставки клиента (для quote; не нужен для pickup). */
+  address?: { street?: string; house?: string; flat?: string };
+  /**
+   * Один ключ на checkout intent — создаёт UI и держит между retry.
+   * Не генерировать внутри этой функции.
+   */
+  idempotencyKey: string;
 }): Promise<CreateOrderResponse> {
   const provider = mapUiDeliveryProvider(opts.deliveryUiId);
-  const city = provider === "rf_cdek" ? "Москва" : "Санкт-Петербург";
+  const city =
+    opts.city?.trim() ||
+    (provider === "rf_cdek" || provider === "rf_yandex"
+      ? "Москва"
+      : "Санкт-Петербург");
   const address =
     provider === "pickup"
       ? undefined
-      : { street: "Невский пр.", house: "1" };
+      : (opts.address ?? { street: "Невский пр.", house: "1" });
+
+  const lastName = opts.lastName.trim();
+  if (!lastName) {
+    throw new Error("Укажите фамилию в профиле перед оформлением");
+  }
 
   let quote = await requestDeliveryQuote({
     provider,
@@ -157,11 +177,12 @@ export async function checkoutCart(opts: {
   return createOrder({
     customer: {
       firstName: opts.firstName.trim(),
-      lastName: opts.lastName.trim() || "Клиент",
+      lastName,
       phone: opts.phone.trim(),
     },
     delivery: { quoteId: quote.quoteId },
     payment: { method: mapUiPaymentMethod(opts.paymentUiId) },
     accessToken: opts.accessToken,
+    idempotencyKey: opts.idempotencyKey,
   });
 }

@@ -6,6 +6,7 @@ import {
   useContext,
   useEffect,
   useMemo,
+  useRef,
   useState,
   type ReactNode,
 } from "react";
@@ -73,6 +74,7 @@ export function StaffAuthProvider({ children }: { children: ReactNode }) {
   const [staff, setStaff] = useState<StaffUser | null>(null);
   const [accessToken, setAccessToken] = useState<string | null>(null);
   const [ready, setReady] = useState(false);
+  const refreshInFlight = useRef<Promise<string | null> | null>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -110,7 +112,7 @@ export function StaffAuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const login = useCallback(async (email: string, password: string) => {
-    const result = await staffLogin(email.trim().toLowerCase(), password.trim());
+    const result = await staffLogin(email.trim().toLowerCase(), password);
     const next: StaffUser = {
       id: result.staff.id,
       role: result.staff.role,
@@ -138,24 +140,32 @@ export function StaffAuthProvider({ children }: { children: ReactNode }) {
   const getAccessToken = useCallback(() => accessToken, [accessToken]);
 
   const refreshSession = useCallback(async () => {
-    try {
-      const result = await staffRefresh();
-      const cached = readCachedProfile();
-      setAccessToken(result.accessToken);
-      setStaff({
-        id: result.staff.id,
-        role: result.staff.role,
-        email: cached?.email,
-        firstName: cached?.firstName ?? null,
-        lastName: cached?.lastName ?? null,
-      });
-      return result.accessToken;
-    } catch {
-      clearCachedProfile();
-      setAccessToken(null);
-      setStaff(null);
-      return null;
-    }
+    if (refreshInFlight.current) return refreshInFlight.current;
+
+    refreshInFlight.current = (async () => {
+      try {
+        const result = await staffRefresh();
+        const cached = readCachedProfile();
+        setAccessToken(result.accessToken);
+        setStaff({
+          id: result.staff.id,
+          role: result.staff.role,
+          email: cached?.email,
+          firstName: cached?.firstName ?? null,
+          lastName: cached?.lastName ?? null,
+        });
+        return result.accessToken;
+      } catch {
+        clearCachedProfile();
+        setAccessToken(null);
+        setStaff(null);
+        return null;
+      } finally {
+        refreshInFlight.current = null;
+      }
+    })();
+
+    return refreshInFlight.current;
   }, []);
 
   const value = useMemo<StaffAuthState>(

@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { runAfterCommit } from "@/lib/run-after-commit";
 import { shouldUseMocks } from "@/lib/mocks";
 import {
@@ -26,6 +26,7 @@ export function useUserOrders(
   const [orders, setOrders] = useState<UserOrderListItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const refreshRequestIdRef = useRef(0);
 
   const refresh = useCallback(async () => {
     if (!enabled || useMocks) {
@@ -35,8 +36,10 @@ export function useUserOrders(
       return;
     }
 
+    const requestId = ++refreshRequestIdRef.current;
     try {
       const token = await ensureAccessToken();
+      if (requestId !== refreshRequestIdRef.current) return;
       if (!token) {
         setOrders([]);
         return;
@@ -45,12 +48,16 @@ export function useUserOrders(
         page: 1,
         limit: USER_ORDERS_PAGE_LIMIT,
       });
+      if (requestId !== refreshRequestIdRef.current) return;
       setOrders(next);
       setError(null);
     } catch {
+      if (requestId !== refreshRequestIdRef.current) return;
       setError("Не удалось загрузить заказы");
     } finally {
-      setLoading(false);
+      if (requestId === refreshRequestIdRef.current) {
+        setLoading(false);
+      }
     }
   }, [enabled, useMocks, ensureAccessToken]);
 

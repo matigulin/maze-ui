@@ -15,17 +15,38 @@ function cubicBezierEase(x1: number, y1: number, x2: number, y2: number) {
   const sampleX = (t: number) => ((ax * t + bx) * t + cx) * t;
   const sampleY = (t: number) => ((ay * t + by) * t + cy) * t;
   const dX = (t: number) => (3 * ax * t + 2 * bx) * t + cx;
-  return (p: number) => {
+
+  function solveT(p: number) {
     let t = p;
+    let newtonOk = true;
     for (let i = 0; i < 8; i++) {
       const x = sampleX(t) - p;
       const d = dX(t);
-      if (Math.abs(x) < 1e-4 || Math.abs(d) < 1e-6) break;
+      if (Math.abs(x) < 1e-4) return t;
+      if (Math.abs(d) < 1e-6) {
+        newtonOk = false;
+        break;
+      }
       t -= x / d;
     }
     t = t < 0 ? 0 : t > 1 ? 1 : t;
-    return sampleY(t);
-  };
+    if (newtonOk && Math.abs(sampleX(t) - p) < 1e-3) return t;
+
+    // Bisection fallback when Newton diverges / flat derivative
+    let lo = 0;
+    let hi = 1;
+    t = p;
+    for (let i = 0; i < 16; i++) {
+      const x = sampleX(t) - p;
+      if (Math.abs(x) < 1e-5) return t;
+      if (x > 0) hi = t;
+      else lo = t;
+      t = (lo + hi) / 2;
+    }
+    return t;
+  }
+
+  return (p: number) => sampleY(solveT(p));
 }
 
 export function makeEase(ease: unknown) {

@@ -29,6 +29,7 @@ function filterMockProducts(opts: {
       if (catSlug === "gaming" && p.category !== "Игровые приставки")
         return false;
       if (catSlug === "accessories" && p.category !== "Аудио") return false;
+      if (catSlug === "used") return false;
     }
     return true;
   });

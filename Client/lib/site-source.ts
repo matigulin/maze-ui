@@ -144,9 +144,9 @@ export async function fetchSiteChrome(): Promise<SiteChrome> {
         address: string;
         metro: string;
         workingHours: string;
-        socialLinks: {
-          telegram: string;
-        };
+        socialLinks?: {
+          telegram?: string;
+        } | null;
         mapCoordinates: { lat: number; lng: number };
       }>("/settings/public"),
       apiGet<{ partnerBrands: HomePartnerBrandDto[] }>("/home"),
@@ -163,15 +163,30 @@ export async function fetchSiteChrome(): Promise<SiteChrome> {
         address: addressParts.join(", ") || settings.address,
         metro: settings.metro,
         hours: settings.workingHours,
-        telegram: MAZE_TELEGRAM_URL,
+        telegram: settings.socialLinks?.telegram || MAZE_TELEGRAM_URL,
         mapLat: settings.mapCoordinates?.lat ?? STORE.mapLat,
         mapLng: settings.mapCoordinates?.lng ?? STORE.mapLng,
       },
       partnerBrands: home.partnerBrands.map((b) => b.name),
     };
   } catch {
-    if (!canUseDevMocksFallback()) throw new Error("Site chrome API unavailable");
-    return mockSiteChrome();
+    // Не валим root layout / SSR при недоступном API
+    if (canUseDevMocksFallback()) return mockSiteChrome();
+    return {
+      categories: [],
+      store: {
+        phone: STORE.phone,
+        email: STORE.email,
+        city: STORE.city,
+        address: STORE.address,
+        metro: STORE.metro,
+        hours: STORE.hours,
+        telegram: STORE.telegram,
+        mapLat: STORE.mapLat,
+        mapLng: STORE.mapLng,
+      },
+      partnerBrands: [],
+    };
   }
 }
 

@@ -14,6 +14,7 @@ export function CheckRow({ label, checked, onClick }: CheckRowProps) {
     <button
       type="button"
       onClick={onClick}
+      aria-pressed={checked}
       className="flex w-full items-center gap-2.5 rounded-lg py-1 text-left text-sm text-muted transition-colors hover:text-ink cursor-pointer"
     >
       <span

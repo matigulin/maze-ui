@@ -37,21 +37,21 @@ export function ProductDetail({ product }: { product: Product }) {
   const selectedVariant = useMemo(() => {
     const variants = product.variants ?? [];
     if (variants.length === 0) return undefined;
-    return (
-      variants.find(
-        (v) =>
-          (color == null || v.color === color) &&
-          (memory == null || v.memory == null || v.memory === memory),
-      ) ??
-      variants.find((v) => v.inStock) ??
-      variants[0]
+    return variants.find(
+      (v) =>
+        v.color === color &&
+        (v.memory ?? undefined) === (memory ?? undefined),
     );
   }, [product.variants, color, memory]);
 
-  const stockQty =
-    selectedVariant?.quantityAvailable ?? product.quantityAvailable ?? 0;
+  const hasVariants = (product.variants?.length ?? 0) > 0;
+  // С вариантами — только точный selectedVariant; без fallback на общий остаток товара
+  const stockQty = hasVariants
+    ? (selectedVariant?.quantityAvailable ?? 0)
+    : (product.quantityAvailable ?? 0);
   const maxQty = Math.max(0, stockQty);
-  const canBuy = maxQty > 0;
+  const canBuy =
+    maxQty > 0 && (!hasVariants || Boolean(selectedVariant?.id));
   const qty = maxQty <= 0 ? 1 : Math.min(Math.max(1, qtyRaw), maxQty);
 
   const setQty = (next: number | ((prev: number) => number)) => {
@@ -73,7 +73,13 @@ export function ProductDetail({ product }: { product: Product }) {
 
   function onAdd() {
     if (!canBuy) return;
-    void addItem(product, { color, memory, qty });
+    if (hasVariants && !selectedVariant?.id) return;
+    void addItem(product, {
+      color,
+      memory,
+      qty,
+      variantId: selectedVariant?.id,
+    });
   }
 
   function decQty() {

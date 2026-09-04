@@ -79,8 +79,9 @@ export function ProductThumb({
   glyphClassName?: string;
   angle?: number;
 }) {
-  const [failed, setFailed] = useState(false);
-  const showPhoto = Boolean(product.imageUrl) && !failed;
+  const imageUrl = product.imageUrl ?? null;
+  const [failedUrl, setFailedUrl] = useState<string | null>(null);
+  const showPhoto = Boolean(imageUrl) && failedUrl !== imageUrl;
 
   if (!showPhoto) {
     return (
@@ -101,12 +102,12 @@ export function ProductThumb({
       )}
     >
       <Image
-        src={product.imageUrl!}
+        src={imageUrl!}
         alt={product.name ?? product.glyph}
         fill
         className="object-cover"
         sizes="(max-width: 768px) 50vw, 25vw"
-        onError={() => setFailed(true)}
+        onError={() => setFailedUrl(imageUrl)}
       />
     </div>
   );

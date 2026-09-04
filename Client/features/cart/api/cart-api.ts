@@ -115,19 +115,24 @@ export function resolveVariantId(
   opts?: { color?: string; memory?: string; variantId?: string },
 ): string | undefined {
   if (opts?.variantId) return opts.variantId;
-  if (product.defaultVariantId) return product.defaultVariantId;
 
   const variants = product.variants ?? [];
+  const hasExplicitOptions = Boolean(opts?.color || opts?.memory);
+  if (variants.length > 0 && hasExplicitOptions) {
+    const match = variants.find((v) => {
+      if (opts?.memory && v.memory !== opts.memory) return false;
+      if (opts?.color && v.color !== opts.color) return false;
+      return (v.quantityAvailable ?? 0) > 0 || v.inStock;
+    });
+    // Не подменяем defaultVariant — только точный match по опциям
+    return match?.id;
+  }
+
+  if (product.defaultVariantId) return product.defaultVariantId;
+
   if (variants.length === 0) return undefined;
 
-  const match = variants.find((v) => {
-    if (opts?.memory && v.memory !== opts.memory) return false;
-    if (opts?.color && v.color !== opts.color) return false;
-    return (v.quantityAvailable ?? 0) > 0 || v.inStock;
-  });
-
   return (
-    match?.id ??
     variants.find((v) => (v.quantityAvailable ?? 0) > 0 || v.inStock)?.id ??
     variants[0]?.id
   );

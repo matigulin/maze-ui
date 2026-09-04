@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import { Modal } from "./modals";
 import { Field, fieldCls } from "./Field";
 import { PhoneNationalField } from "./PhoneNationalField";
@@ -22,6 +23,7 @@ export function TradeInModal({
   open: boolean;
   onClose: () => void;
 }) {
+  const router = useRouter();
   const [step, setStep] = useState<"form" | "result">("form");
   const [device, setDevice] = useState("");
   const [condition, setCondition] = useState(CONDITIONS[0].label);
@@ -145,7 +147,14 @@ export function TradeInModal({
             >
               Другое
             </button>
-            <button onClick={close} className="btn-primary flex-1">
+            <button
+              type="button"
+              onClick={() => {
+                close();
+                router.push("/catalog");
+              }}
+              className="btn-primary flex-1"
+            >
               В каталог
             </button>
           </div>

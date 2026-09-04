@@ -116,9 +116,18 @@ async function parseEnvelope<T>(
     });
   }
 
-  const envelope = json as ApiEnvelope<T>;
+  const envelope = json as ApiEnvelope<T> | null;
+  const data = envelope && "data" in envelope ? envelope.data : undefined;
+  if (data === undefined || data === null) {
+    throw new ApiError({
+      message: "Invalid API response: missing data",
+      status: res.status,
+      requestId: envelope?.requestId,
+    });
+  }
+
   return {
-    data: (envelope?.data ?? json) as T,
+    data: data as T,
     meta: envelope?.meta,
   };
 }

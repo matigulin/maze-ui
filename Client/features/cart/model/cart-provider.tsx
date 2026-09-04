@@ -46,6 +46,7 @@ export type CartAuthAdapter = {
   checkoutContact: {
     userId: string;
     firstName: string | null;
+    lastName: string | null;
     phone: string | null;
   } | null;
   ensureAccessToken: () => Promise<string | null>;
@@ -104,6 +105,15 @@ export function CartProvider({
   const [hydrated, setHydrated] = useState(false);
   const [cartLoading, setCartLoading] = useState(false);
   const pendingAddRef = useRef<PendingAddItem | null>(null);
+  /** Инкремент при смене userId / новом refresh — отсекает stale setItems/writeCachedCart. */
+  const cartRequestIdRef = useRef(0);
+  /** userId, которому соответствуют текущие items (null = ещё не загидрировали). */
+  const itemsOwnerUserIdRef = useRef<string | null>(null);
+
+  useEffect(() => {
+    cartRequestIdRef.current += 1;
+    itemsOwnerUserIdRef.current = null;
+  }, [userId]);
 
   const cartAuth = useCallback(async () => {
     const accessToken = await ensureAccessToken();
@@ -116,21 +126,32 @@ export function CartProvider({
       return;
     }
 
+    const requestId = ++cartRequestIdRef.current;
+    const requestUserId = userId;
     setCartLoading(true);
     try {
       const token = await ensureAccessToken();
+      if (requestId !== cartRequestIdRef.current) return;
       if (!token) {
         setItems([]);
         return;
       }
       const next = await fetchCart(token);
+      if (requestId !== cartRequestIdRef.current) return;
+      itemsOwnerUserIdRef.current = requestUserId;
       setItems(next);
-      writeCachedCart(userId, next);
+      writeCachedCart(requestUserId, next);
     } catch {
-      const cached = readCachedCart(userId);
-      if (cached) setItems(cached);
+      if (requestId !== cartRequestIdRef.current) return;
+      const cached = readCachedCart(requestUserId);
+      if (cached) {
+        itemsOwnerUserIdRef.current = requestUserId;
+        setItems(cached);
+      }
     } finally {
-      setCartLoading(false);
+      if (requestId === cartRequestIdRef.current) {
+        setCartLoading(false);
+      }
     }
   }, [useApi, isAuthenticated, userId, ensureAccessToken]);
 
@@ -139,7 +160,12 @@ export function CartProvider({
       setItems([]);
       return;
     }
-    setItems(readCachedCart(userId) ?? []);
+    const requestId = ++cartRequestIdRef.current;
+    const requestUserId = userId;
+    const next = readCachedCart(userId) ?? [];
+    if (requestId !== cartRequestIdRef.current) return;
+    itemsOwnerUserIdRef.current = requestUserId;
+    setItems(next);
   }, [userId]);
 
   /** Реальное добавление — только для уже авторизованного. */
@@ -266,9 +292,15 @@ export function CartProvider({
   ]);
 
   useEffect(() => {
-    if (hydrated && isAuthenticated && userId) {
-      writeCachedCart(userId, items);
+    if (
+      !hydrated ||
+      !isAuthenticated ||
+      !userId ||
+      itemsOwnerUserIdRef.current !== userId
+    ) {
+      return;
     }
+    writeCachedCart(userId, items);
   }, [items, hydrated, isAuthenticated, userId]);
 
   useEffect(() => {

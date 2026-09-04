@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useSyncExternalStore, type ReactNode } from "react";
+import { useEffect, useRef, useSyncExternalStore, type ReactNode } from "react";
 import { createPortal } from "react-dom";
 import { AnimatePresence, motion } from "motion/react";
 import { useBodyScrollLock } from "@/lib/body-scroll-lock";
@@ -14,6 +14,9 @@ import { cn } from "@/lib/utils";
 const PANEL_BG = "#0d1e1b";
 const SCRIM_BG = "#000000";
 
+const FOCUSABLE =
+  'a[href],button:not([disabled]),textarea:not([disabled]),input:not([disabled]),select:not([disabled]),[tabindex]:not([tabindex="-1"])';
+
 export type MobileDrawerProps = {
   open: boolean;
   onClose: () => void;
@@ -23,6 +26,9 @@ export type MobileDrawerProps = {
   panelClassName?: string;
   rootClassName?: string;
   zIndexClassName?: string;
+  /** Подпись диалога; иначе aria-labelledby */
+  "aria-label"?: string;
+  "aria-labelledby"?: string;
   children: ReactNode;
 };
 
@@ -39,6 +45,8 @@ export function MobileDrawer({
   panelClassName,
   rootClassName,
   zIndexClassName = "z-[200]",
+  "aria-label": ariaLabel,
+  "aria-labelledby": ariaLabelledBy,
   children,
 }: MobileDrawerProps) {
   const mounted = useSyncExternalStore(
@@ -46,16 +54,58 @@ export function MobileDrawer({
     getClientSnapshot,
     getServerSnapshot,
   );
+  const panelRef = useRef<HTMLElement>(null);
+  const previousFocusRef = useRef<HTMLElement | null>(null);
 
   useBodyScrollLock(open);
 
   useEffect(() => {
     if (!open) return;
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") onClose();
+
+    previousFocusRef.current =
+      document.activeElement instanceof HTMLElement
+        ? document.activeElement
+        : null;
+
+    const panel = panelRef.current;
+    const focusFirst = () => {
+      const nodes = panel?.querySelectorAll<HTMLElement>(FOCUSABLE);
+      (nodes?.[0] ?? panel)?.focus();
     };
+    const id = window.requestAnimationFrame(focusFirst);
+
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        onClose();
+        return;
+      }
+      if (e.key !== "Tab" || !panel) return;
+      const nodes = [...panel.querySelectorAll<HTMLElement>(FOCUSABLE)].filter(
+        (el) => !el.hasAttribute("disabled") && el.tabIndex !== -1,
+      );
+      if (nodes.length === 0) {
+        e.preventDefault();
+        panel.focus();
+        return;
+      }
+      const first = nodes[0];
+      const last = nodes[nodes.length - 1];
+      if (e.shiftKey && document.activeElement === first) {
+        e.preventDefault();
+        last.focus();
+      } else if (!e.shiftKey && document.activeElement === last) {
+        e.preventDefault();
+        first.focus();
+      }
+    };
+
     document.addEventListener("keydown", onKey);
-    return () => document.removeEventListener("keydown", onKey);
+    return () => {
+      window.cancelAnimationFrame(id);
+      document.removeEventListener("keydown", onKey);
+      previousFocusRef.current?.focus?.();
+      previousFocusRef.current = null;
+    };
   }, [open, onClose]);
 
   if (!mounted) return null;
@@ -93,10 +143,14 @@ export function MobileDrawer({
             onClick={onClose}
           />
           <motion.aside
+            ref={panelRef}
+            tabIndex={-1}
             aria-modal="true"
             role="dialog"
+            aria-label={ariaLabel ?? (ariaLabelledBy ? undefined : "Меню")}
+            aria-labelledby={ariaLabelledBy}
             className={cn(
-              "absolute top-0 z-10 flex h-dvh min-h-dvh flex-col overflow-hidden bg-panel",
+              "absolute top-0 z-10 flex h-dvh min-h-dvh flex-col overflow-hidden bg-panel outline-none",
               panelWidthClass,
               panelPositionClass,
               panelClassName,

@@ -543,6 +543,7 @@ export function AdminSelect({
   className?: string;
 }) {
   const [open, setOpen] = useState(false);
+  const [missing, setMissing] = useState(false);
   const [menuPos, setMenuPos] = useState({ top: 0, left: 0, width: 224 });
   const rootRef = useRef<HTMLDivElement>(null);
   const buttonRef = useRef<HTMLButtonElement>(null);
@@ -597,6 +598,29 @@ export function AdminSelect({
     };
   }, [open]);
 
+  useEffect(() => {
+    if (!required) {
+      setMissing(false);
+      return;
+    }
+    const form = rootRef.current?.closest("form");
+    if (!form) return;
+
+    function onSubmit(e: Event) {
+      if (value) {
+        setMissing(false);
+        return;
+      }
+      e.preventDefault();
+      e.stopImmediatePropagation();
+      setMissing(true);
+      buttonRef.current?.focus();
+    }
+
+    form.addEventListener("submit", onSubmit, true);
+    return () => form.removeEventListener("submit", onSubmit, true);
+  }, [required, value]);
+
   const menu =
     open &&
     typeof document !== "undefined" &&
@@ -632,6 +656,7 @@ export function AdminSelect({
                   type="button"
                   onClick={() => {
                     onChange(option.value);
+                    setMissing(false);
                     setOpen(false);
                   }}
                   className={cn(
@@ -669,7 +694,6 @@ export function AdminSelect({
       </label>
 
       <select
-        required={required}
         value={value}
         onChange={(e) => onChange(e.target.value)}
         tabIndex={-1}
@@ -688,14 +712,18 @@ export function AdminSelect({
         type="button"
         aria-haspopup="listbox"
         aria-expanded={open}
+        aria-required={required || undefined}
+        aria-invalid={missing || undefined}
         aria-labelledby={`${listId}-label`}
         aria-controls={listId}
         onClick={() => setOpen((v) => !v)}
         className={cn(
           "flex w-full items-center gap-3 rounded-xl border bg-bg-2/60 px-3.5 py-3 text-left text-[15px] outline-none transition-colors cursor-pointer",
-          open
-            ? "border-cyan/70 ring-2 ring-cyan/20"
-            : "border-line hover:border-white/20 focus:border-cyan/70 focus:ring-2 focus:ring-cyan/20",
+          missing
+            ? "border-magenta/60 ring-2 ring-magenta/20"
+            : open
+              ? "border-cyan/70 ring-2 ring-cyan/20"
+              : "border-line hover:border-white/20 focus:border-cyan/70 focus:ring-2 focus:ring-cyan/20",
         )}
       >
         <span className="min-w-0 flex-1">

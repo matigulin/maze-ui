@@ -45,6 +45,8 @@ export type AdminProductSummary = {
   inStock: boolean;
   ratingAvg: number;
   reviewsCount: number;
+  /** Остаток из list (без N+1 getProduct). */
+  stockQuantity?: number;
   createdAt: string;
   updatedAt: string;
 };

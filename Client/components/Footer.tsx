@@ -47,7 +47,9 @@ function mapHref(city: string, address: string, lat: number, lng: number) {
 
 function brandCatalogHref(name: string, categories: NavCategory[]): string | null {
   const normalized = name.trim().toLowerCase();
+  if (!normalized) return null;
   const compact = normalized.replace(/[^a-z0-9а-яё]+/gi, "");
+  if (!compact) return null;
   const match = categories.find((c) => {
     const slug = c.slug.toLowerCase();
     const catName = c.name.toLowerCase();
@@ -150,6 +152,7 @@ export function Footer() {
 
   const hasTelegram = Boolean(STORE.telegram);
   const hasEmail = Boolean(STORE.email);
+  const hasPhone = Boolean(STORE.phone?.trim());
 
   return (
     <footer className="relative mt-28 overflow-hidden border-t border-line bg-bg-2">
@@ -204,10 +207,12 @@ export function Footer() {
                 Ответим по телефону или в мессенджере
               </p>
               <div className="mt-3 flex flex-wrap gap-2">
-                <a href={tel} className="btn-primary !px-4 !py-2.5 text-xs">
-                  <Phone size={14} />
-                  Позвонить
-                </a>
+                {hasPhone ? (
+                  <a href={tel} className="btn-primary !px-4 !py-2.5 text-xs">
+                    <Phone size={14} />
+                    Позвонить
+                  </a>
+                ) : null}
                 {hasTelegram ? (
                   <a
                     href={STORE.telegram}
@@ -233,17 +238,19 @@ export function Footer() {
 
           <NavSection title="Контакты" collapsible defaultOpen>
             <ul className="space-y-1">
-              <li>
-                <a
-                  href={tel}
-                  className="flex min-h-11 min-w-0 items-center gap-2.5 text-sm font-medium text-ink transition-colors hover:text-accent md:min-h-0"
-                >
-                  <Phone size={15} className="shrink-0 text-accent" />
-                  <span className="min-w-0 break-words">
-                    Позвонить · {STORE.phone}
-                  </span>
-                </a>
-              </li>
+              {hasPhone ? (
+                <li>
+                  <a
+                    href={tel}
+                    className="flex min-h-11 min-w-0 items-center gap-2.5 text-sm font-medium text-ink transition-colors hover:text-accent md:min-h-0"
+                  >
+                    <Phone size={15} className="shrink-0 text-accent" />
+                    <span className="min-w-0 break-words">
+                      Позвонить · {STORE.phone}
+                    </span>
+                  </a>
+                </li>
+              ) : null}
               {hasEmail ? (
                 <li>
                   <a

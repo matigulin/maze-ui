@@ -16,7 +16,6 @@ import {
   fetchUserProfile,
   type AuthUser,
 } from "@/entities/user";
-import { ApiError } from "@/lib/api";
 
 const USER_PROFILE_KEY = "maze:user-profile";
 /** Обновлять access-токен за минуту до истечения (TTL на бэке — 15 мин). */
@@ -156,16 +155,7 @@ export function UserAuthProvider({ children }: { children: ReactNode }) {
 
     async function restore() {
       try {
-        const result = await authService.refreshSession();
-        if (cancelled) return;
-        applyAccessToken(result.accessToken, result.expiresIn);
-        await hydrateUserFromToken(result.accessToken);
-      } catch (err) {
-        if (cancelled) return;
-        if (!(err instanceof ApiError && err.status === 401)) {
-          console.warn("[user] session restore failed", err);
-        }
-        clearSession();
+        await refreshSession();
       } finally {
         if (!cancelled) setReady(true);
       }
@@ -175,7 +165,7 @@ export function UserAuthProvider({ children }: { children: ReactNode }) {
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [refreshSession]);
 
   /** Проактивный refresh до истечения access-токена. */
   useEffect(() => {

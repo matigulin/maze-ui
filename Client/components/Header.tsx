@@ -219,6 +219,7 @@ export function Header() {
         onClose={closeMobile}
         rootClassName="md:hidden"
         panelClassName="w-[min(100vw-2.5rem,20rem)] max-w-[20rem] rounded-l-3xl"
+        aria-label="Навигация"
       >
         <div className="shrink-0 border-b border-line px-5 py-5">
           <div className="flex items-center justify-between">
