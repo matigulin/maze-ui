@@ -1,0 +1,16 @@
+node_modules
+.next
+.git
+.gitignore
+Dockerfile
+.dockerignore
+*.md
+.env
+.env.*
+!.env.example
+npm-debug.log*
+coverage
+.DS_Store
+*.tsbuildinfo
+next-env.d.ts
+.vercel

@@ -628,7 +628,7 @@ GET /health/ready  → 200 если PG + Redis доступны
 
 1. Scaffold `backend/` по этой структуре  
 2. Sequelize-модели + миграции ([DATABASE_ARCHITECTURE.md](DATABASE_ARCHITECTURE.md))  
-3. Seeders из `src/data/*.json`  
+3. Seeders из `Server/src/seeders/data/*.json`  
 4. Первые эндпоинты по [API_CONTRACT.md](API_CONTRACT.md): `health` → `catalog` → `auth` → `cart` → `orders`
 
 ---

@@ -16,7 +16,7 @@ import {
 } from '../models/catalog.js';
 import { invalidateCatalogAndHomeCache } from './cache-invalidation.service.js';
 
-function mapAdminProductSummary(product: Product) {
+function mapAdminProductSummary(product: Product, stockQuantity?: number) {
   return {
     id: product.id,
     slug: product.slug,
@@ -32,6 +32,8 @@ function mapAdminProductSummary(product: Product) {
     inStock: product.in_stock,
     ratingAvg: toNumber(product.rating_avg),
     reviewsCount: product.reviews_count,
+    /** Остаток (одинаковый на все варианты после PATCH /stock). */
+    stockQuantity: stockQuantity ?? 0,
     createdAt: isoTimestamp(product, 'createdAt'),
     updatedAt: isoTimestamp(product, 'updatedAt'),
   };
@@ -148,8 +150,22 @@ export async function listAdminProducts(query: Record<string, unknown>) {
     offset,
   });
 
+  const productIds = rows.map((row) => row.id);
+  const stockByProduct = new Map<string, number>();
+  if (productIds.length > 0) {
+    const variants = await ProductVariant.findAll({
+      where: { product_id: productIds },
+      attributes: ['product_id'],
+      include: [{ model: Stock, as: 'stock', required: false, attributes: ['quantity'] }],
+    });
+    for (const variant of variants) {
+      if (stockByProduct.has(variant.product_id)) continue;
+      stockByProduct.set(variant.product_id, variant.stock?.quantity ?? 0);
+    }
+  }
+
   return {
-    items: rows.map(mapAdminProductSummary),
+    items: rows.map((row) => mapAdminProductSummary(row, stockByProduct.get(row.id))),
     meta: { page, limit, total: count },
   };
 }

@@ -1,0 +1,759 @@
+"use client";
+
+import Link from "next/link";
+import { cn } from "@/lib/utils";
+import { AnimatePresence, motion } from "motion/react";
+import { Check, ChevronDown, SlidersHorizontal } from "lucide-react";
+import {
+  useEffect,
+  useId,
+  useLayoutEffect,
+  useRef,
+  useState,
+  type ButtonHTMLAttributes,
+  type ReactNode,
+  type RefObject,
+} from "react";
+import { createPortal } from "react-dom";
+
+export function AdminPageHeader({
+  title,
+  description,
+  actions,
+}: {
+  title: string;
+  description?: ReactNode;
+  actions?: ReactNode;
+}) {
+  return (
+    <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:flex-wrap sm:items-start sm:justify-between">
+      <div className="min-w-0 flex-1">
+        <h2 className="font-display text-xl tracking-wide text-ink">{title}</h2>
+        {description && <p className="mt-1 text-sm text-muted">{description}</p>}
+      </div>
+      {actions && (
+        <div className="flex w-full shrink-0 justify-end sm:w-auto">
+          {actions}
+        </div>
+      )}
+    </div>
+  );
+}
+
+export function AdminAlert({
+  tone = "error",
+  children,
+}: {
+  tone?: "error" | "ok" | "info";
+  children: ReactNode;
+}) {
+  const styles =
+    tone === "error"
+      ? "border-magenta/30 bg-magenta/10"
+      : tone === "ok"
+        ? "border-cyan/30 bg-cyan/10"
+        : "border-line bg-bg-2";
+  return (
+    <p role="status" className={cn("rounded-xl border px-3 py-2 text-sm text-ink", styles)}>
+      {children}
+    </p>
+  );
+}
+
+export function AdminButton({
+  variant = "primary",
+  className,
+  ...props
+}: ButtonHTMLAttributes<HTMLButtonElement> & {
+  variant?: "primary" | "ghost" | "danger" | "secondary";
+}) {
+  const styles = {
+    primary: "bg-cyan/90 text-bg hover:bg-cyan disabled:opacity-50",
+    secondary:
+      "border border-line bg-bg-2 text-ink hover:border-cyan/40 disabled:opacity-50",
+    ghost: "text-muted hover:bg-bg-2 hover:text-ink disabled:opacity-50",
+    danger:
+      "border border-magenta/40 bg-magenta/10 text-ink hover:bg-magenta/20 disabled:opacity-50",
+  }[variant];
+
+  return (
+    <button
+      type="button"
+      className={cn(
+        "inline-flex items-center justify-center gap-2 rounded-xl px-3.5 py-2 text-sm font-medium transition disabled:cursor-not-allowed",
+        styles,
+        className,
+      )}
+      {...props}
+    />
+  );
+}
+
+export function AdminTable({
+  children,
+  className,
+  desktopOnly = false,
+}: {
+  children: ReactNode;
+  className?: string;
+  /** Hide below md — use with AdminCardList for mobile cards. */
+  desktopOnly?: boolean;
+}) {
+  return (
+    <div
+      className={cn(
+        "overflow-x-auto rounded-2xl border border-line",
+        desktopOnly && "hidden lg:block",
+        className,
+      )}
+    >
+      <table className="w-full min-w-[640px] text-left text-sm">{children}</table>
+    </div>
+  );
+}
+
+/** Mobile/tablet list of cards; hidden from lg up. */
+export function AdminCardList({
+  children,
+  className,
+}: {
+  children: ReactNode;
+  className?: string;
+}) {
+  return (
+    <div className={cn("space-y-3 lg:hidden", className)}>{children}</div>
+  );
+}
+
+/**
+ * Filter panel: primary search always visible; extra fields behind
+ * «Показать/Скрыть фильтры» on mobile; open grid on lg+.
+ */
+export function AdminFilterPanel({
+  leading,
+  children,
+  activeCount = 0,
+  onApply,
+  onReset,
+}: {
+  leading?: ReactNode;
+  children?: ReactNode;
+  activeCount?: number;
+  onApply: () => void;
+  onReset?: () => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const hasExtra = children != null && children !== false;
+
+  return (
+    <div className="mb-4 rounded-2xl border border-line bg-panel/40 p-3 sm:p-4">
+      {leading && <div className={cn(hasExtra && "mb-3")}>{leading}</div>}
+
+      {hasExtra && (
+        <div
+          className={cn(
+            "grid gap-3 sm:grid-cols-2 lg:grid-cols-3",
+            open ? "mb-3" : "mb-0 hidden lg:mb-3 lg:grid",
+          )}
+        >
+          {children}
+        </div>
+      )}
+
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        {hasExtra && (
+          <button
+            type="button"
+            className="inline-flex items-center gap-2 rounded-xl px-2 py-1.5 text-sm text-muted transition hover:bg-bg-2 hover:text-ink lg:hidden"
+            onClick={() => setOpen((v) => !v)}
+            aria-expanded={open}
+          >
+            <SlidersHorizontal size={15} className="shrink-0 text-faint" />
+            <span>
+              {open ? "Скрыть фильтры" : "Показать фильтры"}
+              {!open && activeCount > 0 ? ` (${activeCount})` : ""}
+            </span>
+            <ChevronDown
+              size={14}
+              className={cn(
+                "shrink-0 text-faint transition-transform",
+                open && "rotate-180",
+              )}
+            />
+          </button>
+        )}
+
+        <div className="ml-auto flex flex-wrap gap-2">
+          {onReset && (
+            <AdminButton
+              type="button"
+              variant="ghost"
+              className="rounded-lg px-2.5 py-1.5 text-xs"
+              onClick={onReset}
+            >
+              Сбросить
+            </AdminButton>
+          )}
+          <AdminButton
+            type="button"
+            className="rounded-lg px-3 py-1.5 text-xs"
+            onClick={onApply}
+          >
+            Найти
+          </AdminButton>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export function AdminCard({
+  children,
+  href,
+  className,
+}: {
+  children: ReactNode;
+  href?: string;
+  className?: string;
+}) {
+  const styles = cn(
+    "block rounded-2xl border border-line bg-panel/50 p-4 transition",
+    href && "active:border-cyan/40 active:bg-panel/80",
+    className,
+  );
+
+  if (href) {
+    return (
+      <Link href={href} className={styles}>
+        {children}
+      </Link>
+    );
+  }
+
+  return <div className={styles}>{children}</div>;
+}
+
+export function AdminCardRow({
+  label,
+  children,
+  stacked = false,
+}: {
+  label: string;
+  children: ReactNode;
+  /** Label above value — closer to mobile list card patterns. */
+  stacked?: boolean;
+}) {
+  if (stacked) {
+    return (
+      <div className="min-w-0">
+        <p className="text-[11px] leading-tight text-faint">{label}</p>
+        <div className="mt-0.5 text-sm leading-snug text-ink">{children}</div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="flex items-start justify-between gap-3 text-sm">
+      <span className="shrink-0 text-faint">{label}</span>
+      <span className="min-w-0 text-right text-ink">{children}</span>
+    </div>
+  );
+}
+
+/** Compact action button sizing used on mobile list cards. */
+export const adminCardActionCls = "rounded-lg px-2.5 py-1.5 text-xs";
+
+/** Standard list card: title/subtitle + actions, stacked fields below. */
+export function AdminListCard({
+  title,
+  subtitle,
+  titleClassName,
+  actions,
+  children,
+  href,
+  className,
+  fieldsClassName,
+}: {
+  title: ReactNode;
+  subtitle?: ReactNode;
+  titleClassName?: string;
+  actions?: ReactNode;
+  children?: ReactNode;
+  href?: string;
+  className?: string;
+  fieldsClassName?: string;
+}) {
+  return (
+    <AdminCard href={href} className={className}>
+      <div className="flex items-start justify-between gap-3">
+        <div className="min-w-0">
+          <div className={cn("font-medium leading-snug text-ink", titleClassName)}>
+            {title}
+          </div>
+          {subtitle != null && subtitle !== "" && (
+            <div className="mt-0.5 break-all text-xs text-muted">{subtitle}</div>
+          )}
+        </div>
+        {actions && <div className="flex shrink-0 flex-wrap justify-end gap-1">{actions}</div>}
+      </div>
+      {children != null && (
+        <div
+          className={cn(
+            "mt-3 grid gap-3 border-t border-line/60 pt-3 sm:grid-cols-3",
+            fieldsClassName,
+          )}
+        >
+          {children}
+        </div>
+      )}
+    </AdminCard>
+  );
+}
+
+export function AdminResultCount({
+  total,
+  loading,
+}: {
+  total: number;
+  loading?: boolean;
+}) {
+  return (
+    <p className="mb-3 text-xs text-muted">
+      Найдено: {total}
+      {loading ? " · загрузка…" : ""}
+    </p>
+  );
+}
+
+export function AdminEmptyState({ children }: { children: ReactNode }) {
+  return (
+    <p className="rounded-2xl border border-line bg-panel/50 p-6 text-sm text-muted lg:hidden">
+      {children}
+    </p>
+  );
+}
+
+/** Mobile infinite-scroll sentinel + optional «Ещё». Hidden on lg+. */
+export function AdminInfiniteFooter({
+  sentinelRef,
+  hasMore,
+  loading,
+  onLoadMore,
+}: {
+  sentinelRef: RefObject<HTMLDivElement | null>;
+  hasMore: boolean;
+  loading?: boolean;
+  onLoadMore: () => void;
+}) {
+  return (
+    <div className="lg:hidden">
+      <div ref={sentinelRef} className="h-4" aria-hidden />
+      {hasMore && (
+        <AdminButton
+          variant="secondary"
+          className="w-full"
+          disabled={loading}
+          onClick={onLoadMore}
+        >
+          {loading ? "Загрузка…" : "Ещё"}
+        </AdminButton>
+      )}
+    </div>
+  );
+}
+
+/** Desktop-only page controls. */
+export function AdminDesktopPager({
+  page,
+  pages,
+  loading,
+  onPrev,
+  onNext,
+}: {
+  page: number;
+  pages: number;
+  loading?: boolean;
+  onPrev: () => void;
+  onNext: () => void;
+}) {
+  if (pages <= 1) return null;
+  return (
+    <div className="mt-4 hidden items-center gap-3 text-sm text-muted lg:flex">
+      <AdminButton
+        variant="secondary"
+        disabled={page <= 1 || loading}
+        onClick={onPrev}
+      >
+        Назад
+      </AdminButton>
+      <span>
+        Страница {page} из {pages}
+      </span>
+      <AdminButton
+        variant="secondary"
+        disabled={page >= pages || loading}
+        onClick={onNext}
+      >
+        Вперёд
+      </AdminButton>
+    </div>
+  );
+}
+
+export function AdminTh({ children, className }: { children?: ReactNode; className?: string }) {
+  return (
+    <th
+      className={cn(
+        "border-b border-line bg-panel/80 px-4 py-3 text-[11px] font-medium uppercase tracking-wider text-faint",
+        className,
+      )}
+    >
+      {children}
+    </th>
+  );
+}
+
+export function AdminTd({ children, className }: { children?: ReactNode; className?: string }) {
+  return (
+    <td className={cn("border-b border-line/70 px-4 py-3 text-sm text-ink", className)}>
+      {children}
+    </td>
+  );
+}
+
+/** Desktop table action column header — keeps the column slim and right-aligned. */
+export function AdminActionsTh({ children }: { children?: ReactNode }) {
+  return <AdminTh className="w-[1%] text-right">{children}</AdminTh>;
+}
+
+/** Desktop table action cell — buttons flush to the right edge of the row. */
+export function AdminActionsTd({ children }: { children: ReactNode }) {
+  return (
+    <AdminTd className="w-[1%] whitespace-nowrap">
+      <div className="flex items-center justify-end gap-2">{children}</div>
+    </AdminTd>
+  );
+}
+
+export function AdminModal({
+  open,
+  title,
+  onClose,
+  children,
+  wide,
+}: {
+  open: boolean;
+  title: string;
+  onClose: () => void;
+  children: ReactNode;
+  wide?: boolean;
+}) {
+  if (!open) return null;
+  return (
+    <div className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-black/60 p-4 backdrop-blur-sm">
+      <div
+        className={cn(
+          "my-8 w-full rounded-2xl border border-line bg-panel shadow-2xl",
+          wide ? "max-w-2xl" : "max-w-lg",
+        )}
+      >
+        <div className="flex items-center justify-between border-b border-line px-5 py-4">
+          <h3 className="font-display text-sm tracking-wide text-ink">{title}</h3>
+          <button
+            type="button"
+            onClick={onClose}
+            className="rounded-lg px-2 py-1 text-muted hover:bg-bg-2 hover:text-ink"
+          >
+            ✕
+          </button>
+        </div>
+        <div className="p-5">{children}</div>
+      </div>
+    </div>
+  );
+}
+
+export function AdminCheckbox({
+  label,
+  checked,
+  onChange,
+}: {
+  label: string;
+  checked: boolean;
+  onChange: (v: boolean) => void;
+}) {
+  return (
+    <label className="flex cursor-pointer items-center gap-2 text-sm text-ink">
+      <input
+        type="checkbox"
+        className="h-4 w-4 rounded border-line accent-cyan"
+        checked={checked}
+        onChange={(e) => onChange(e.target.checked)}
+      />
+      {label}
+    </label>
+  );
+}
+
+export function AdminTextarea({
+  label,
+  value,
+  onChange,
+  rows = 4,
+  required,
+  placeholder,
+}: {
+  label: string;
+  value: string;
+  onChange: (v: string) => void;
+  rows?: number;
+  required?: boolean;
+  placeholder?: string;
+}) {
+  return (
+    <div className="space-y-1.5">
+      <label className="block text-xs font-medium uppercase tracking-wider text-muted">
+        {label}
+      </label>
+      <textarea
+        className="w-full rounded-xl border border-line bg-bg-2/60 px-4 py-3 text-[15px] text-ink placeholder:text-faint outline-none transition-colors focus:border-cyan/70 focus:ring-2 focus:ring-cyan/20"
+        rows={rows}
+        required={required}
+        value={value}
+        placeholder={placeholder}
+        onChange={(e) => onChange(e.target.value)}
+      />
+    </div>
+  );
+}
+
+export function AdminSelect({
+  label,
+  value,
+  onChange,
+  options,
+  required,
+  className,
+}: {
+  label: string;
+  value: string;
+  onChange: (v: string) => void;
+  options: Array<{ value: string; label: string; detail?: string }>;
+  required?: boolean;
+  className?: string;
+}) {
+  const [open, setOpen] = useState(false);
+  const [missing, setMissing] = useState(false);
+  const [menuPos, setMenuPos] = useState({ top: 0, left: 0, width: 224 });
+  const rootRef = useRef<HTMLDivElement>(null);
+  const buttonRef = useRef<HTMLButtonElement>(null);
+  const menuRef = useRef<HTMLUListElement>(null);
+  const listId = useId();
+  const selected =
+    options.find((opt) => opt.value === value) ??
+    options[0] ?? { value: "", label: "—" };
+
+  function updateMenuPosition() {
+    const btn = buttonRef.current;
+    if (!btn) return;
+    const rect = btn.getBoundingClientRect();
+    // Не уже кнопки; чуть шире длинных статусов вроде «Подтверждён»
+    const width = Math.max(rect.width, 184);
+    setMenuPos({
+      top: rect.bottom + 8,
+      left: Math.min(rect.left, window.innerWidth - width - 8),
+      width,
+    });
+  }
+
+  useLayoutEffect(() => {
+    if (!open) return;
+    updateMenuPosition();
+  }, [open]);
+
+  useEffect(() => {
+    if (!open) return;
+
+    function onPointerDown(e: MouseEvent) {
+      const t = e.target as Node;
+      if (rootRef.current?.contains(t) || menuRef.current?.contains(t)) return;
+      setOpen(false);
+    }
+    function onKeyDown(e: KeyboardEvent) {
+      if (e.key === "Escape") setOpen(false);
+    }
+    function onReposition() {
+      updateMenuPosition();
+    }
+
+    document.addEventListener("mousedown", onPointerDown);
+    document.addEventListener("keydown", onKeyDown);
+    window.addEventListener("resize", onReposition);
+    window.addEventListener("scroll", onReposition, true);
+    return () => {
+      document.removeEventListener("mousedown", onPointerDown);
+      document.removeEventListener("keydown", onKeyDown);
+      window.removeEventListener("resize", onReposition);
+      window.removeEventListener("scroll", onReposition, true);
+    };
+  }, [open]);
+
+  useEffect(() => {
+    if (!required) {
+      setMissing(false);
+      return;
+    }
+    const form = rootRef.current?.closest("form");
+    if (!form) return;
+
+    function onSubmit(e: Event) {
+      if (value) {
+        setMissing(false);
+        return;
+      }
+      e.preventDefault();
+      e.stopImmediatePropagation();
+      setMissing(true);
+      buttonRef.current?.focus();
+    }
+
+    form.addEventListener("submit", onSubmit, true);
+    return () => form.removeEventListener("submit", onSubmit, true);
+  }, [required, value]);
+
+  const menu =
+    open &&
+    typeof document !== "undefined" &&
+    createPortal(
+      <AnimatePresence>
+        <motion.ul
+          ref={menuRef}
+          id={listId}
+          role="listbox"
+          aria-labelledby={`${listId}-label`}
+          initial={{ opacity: 0, y: -6, scale: 0.98 }}
+          animate={{ opacity: 1, y: 0, scale: 1 }}
+          exit={{ opacity: 0, y: -4, scale: 0.98 }}
+          transition={{ duration: 0.16, ease: "easeOut" }}
+          style={{
+            position: "fixed",
+            top: menuPos.top,
+            left: menuPos.left,
+            width: menuPos.width,
+            zIndex: 200,
+          }}
+          className="max-h-64 overflow-y-auto rounded-2xl border border-line bg-panel p-1.5 shadow-[0_18px_50px_-20px_rgba(0,0,0,0.85)]"
+        >
+          {options.map((option) => {
+            const active = option.value === value;
+            return (
+              <li
+                key={option.value || "__empty"}
+                role="option"
+                aria-selected={active}
+              >
+                <button
+                  type="button"
+                  onClick={() => {
+                    onChange(option.value);
+                    setMissing(false);
+                    setOpen(false);
+                  }}
+                  className={cn(
+                    "flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left transition-colors cursor-pointer",
+                    active
+                      ? "bg-cyan/10 text-ink"
+                      : "text-ink hover:bg-white/[0.04]",
+                  )}
+                >
+                  <span className="flex-1 text-sm font-medium leading-snug">
+                    {option.label}
+                  </span>
+                  {option.detail && (
+                    <span className="shrink-0 text-xs text-faint">
+                      {option.detail}
+                    </span>
+                  )}
+                  {active && <Check size={15} className="shrink-0 text-cyan" />}
+                </button>
+              </li>
+            );
+          })}
+        </motion.ul>
+      </AnimatePresence>,
+      document.body,
+    );
+
+  return (
+    <div className={cn("relative space-y-1.5", className)} ref={rootRef}>
+      <label
+        id={`${listId}-label`}
+        className="block text-xs font-medium uppercase tracking-wider text-muted"
+      >
+        {label}
+      </label>
+
+      <select
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        tabIndex={-1}
+        aria-hidden
+        className="pointer-events-none absolute h-0 w-0 opacity-0"
+      >
+        {options.map((opt) => (
+          <option key={opt.value || "__empty"} value={opt.value}>
+            {opt.label}
+          </option>
+        ))}
+      </select>
+
+      <button
+        ref={buttonRef}
+        type="button"
+        aria-haspopup="listbox"
+        aria-expanded={open}
+        aria-required={required || undefined}
+        aria-invalid={missing || undefined}
+        aria-labelledby={`${listId}-label`}
+        aria-controls={listId}
+        onClick={() => setOpen((v) => !v)}
+        className={cn(
+          "flex w-full items-center gap-3 rounded-xl border bg-bg-2/60 px-3.5 py-3 text-left text-[15px] outline-none transition-colors cursor-pointer",
+          missing
+            ? "border-magenta/60 ring-2 ring-magenta/20"
+            : open
+              ? "border-cyan/70 ring-2 ring-cyan/20"
+              : "border-line hover:border-white/20 focus:border-cyan/70 focus:ring-2 focus:ring-cyan/20",
+        )}
+      >
+        <span className="min-w-0 flex-1">
+          <span className="block truncate font-medium text-ink">{selected.label}</span>
+          {selected.detail && (
+            <span className="block truncate text-xs text-faint">{selected.detail}</span>
+          )}
+        </span>
+        <ChevronDown
+          size={16}
+          className={cn(
+            "shrink-0 text-faint transition-transform duration-200",
+            open && "rotate-180 text-cyan",
+          )}
+        />
+      </button>
+
+      {menu}
+    </div>
+  );
+}
+
+export function formatPrice(n: number) {
+  const amount = new Intl.NumberFormat("ru-RU")
+    .format(n)
+    .replace(/\s/g, "\u00A0");
+  return `${amount}\u00A0₽`;
+}
+
+export function errorMessage(err: unknown, fallback = "Ошибка запроса") {
+  if (err instanceof Error) return err.message || fallback;
+  return fallback;
+}

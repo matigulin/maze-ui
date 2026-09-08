@@ -291,7 +291,7 @@ Retry/backoff — **только** из `config/retry.ts` (§15). Очереди
 
 | Окружение | Источник | Что сидим |
 |-----------|----------|-----------|
-| **dev / staging** | `src/data/*.json` | categories, products, banners, CMS, settings, payment/delivery справочники |
+| **dev / staging** | `Server/src/seeders/data/*.json` | categories, products, banners, CMS, settings, payment/delivery справочники |
 | **production** | **Только** справочники и site_settings | payment_methods, delivery_providers, delivery_rates, site_settings |
 | **production** | **Не сидим** | demo-товары, demo-заказы, demo-users |
 
@@ -543,7 +543,7 @@ Smoke после каждого шага: `/health/ready` → seed → flows п�
 
 1. Scaffold `backend/` — TypeScript, ESM, Fastify, plugins  
 2. Sequelize models + migrations (36 таблиц)  
-3. Seeders из `src/data/*.json`  
+3. Seeders из `Server/src/seeders/data/*.json`  
 4. Первые маршруты: `health` → `catalog` → `auth` → `cart` → `orders`
 
 ---

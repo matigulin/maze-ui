@@ -1,13 +1,22 @@
 require('dotenv').config({ path: require('path').resolve(__dirname, '.env') });
 
-const productionSsl = {
-  dialectOptions: {
-    ssl: {
-      require: true,
-      rejectUnauthorized: false,
-    },
-  },
-};
+const sslOff = process.env.DATABASE_SSL === 'false' || process.env.DATABASE_SSL === '0';
+const sslOn = process.env.DATABASE_SSL === 'true' || process.env.DATABASE_SSL === '1';
+const sslInsecure = process.env.DATABASE_SSL_INSECURE === 'true';
+
+const productionSsl =
+  sslOff
+    ? {}
+    : sslOn || process.env.NODE_ENV === 'production'
+      ? {
+          dialectOptions: {
+            ssl: {
+              require: true,
+              rejectUnauthorized: !sslInsecure,
+            },
+          },
+        }
+      : {};
 
 module.exports = {
   development: {
