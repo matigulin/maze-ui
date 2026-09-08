@@ -1,0 +1,8 @@
+{
+  "name": "maze-ui",
+  "private": true,
+  "scripts": {
+    "cl": "npm run dev --prefix Client",
+    "sr": "npm run dev --prefix Server"
+  }
+}
