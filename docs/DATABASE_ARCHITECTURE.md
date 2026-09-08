@@ -856,7 +856,7 @@ Order.hasMany(OrderStatusHistory, { as: 'statusHistory' });
 
 ## Маппинг с текущими JSON-файлами (фронт)
 
-| `src/data/*.json` | Таблицы |
+| `Server/src/seeders/data/*.json` | Таблицы |
 |-------------------|---------|
 | `categories.json` | `categories` |
 | `products.json` | `products`, `product_variants`, `product_spec_values`, `stock` |
@@ -872,7 +872,7 @@ Order.hasMany(OrderStatusHistory, { as: 'statusHistory' });
 ## Следующие шаги (когда начнём код)
 
 1. Scaffold `backend/` — Sequelize + миграции
-2. Seeders из `src/data/*.json`
+2. Seeders из `Server/src/seeders/data/*.json`
 3. API-эндпоинты для фронта
 4. Интеграции СДЭК / Яндекс / SMS
 

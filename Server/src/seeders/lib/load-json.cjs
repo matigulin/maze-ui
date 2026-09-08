@@ -3,7 +3,7 @@
 const fs = require('fs');
 const path = require('path');
 
-const DATA_DIR = path.resolve(__dirname, '../../../../src/data');
+const DATA_DIR = path.resolve(__dirname, '../data');
 
 function loadJson(filename) {
   const filePath = path.join(DATA_DIR, filename);

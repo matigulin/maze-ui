@@ -32,7 +32,7 @@ Without Docker: install PostgreSQL 16+ and Redis locally, create DB `maze` / use
 | `npm test` | Vitest |
 | `npm run lint` | ESLint |
 | `npm run db:migrate` | Sequelize migrations |
-| `npm run db:seed` | Dev seeders (catalog + demo data from `src/data/`) |
+| `npm run db:seed` | Dev seeders (catalog + demo data from `src/seeders/data/`) |
 | `npm run db:seed:prod-bootstrap` | Production: payment/delivery refs + site_settings only |
 
 ## API (step 5)

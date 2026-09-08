@@ -32,9 +32,11 @@ yarn-error.log*
 __pycache__/
 *.pyc
 
-# editor
+# editor / AI tooling (local only)
 .vscode/
 .idea/
+.claude/
+.cursor/
 
 # vercel
 .vercel
