@@ -20,15 +20,6 @@ cd Server && npm install && npm run dev
 cd Client && npm install && cp .env.example .env.local && npm run dev
 ```
 
-## Vercel (публичная ссылка)
-
-1. Import `matigulin/maze-ui` на vercel.com
-2. **Root Directory → `Client`**
-3. **Settings → Deployment Protection** → выключи **Vercel Authentication** для Production
-4. Deploy
-
-Ссылка: https://maze-ui.vercel.app
-
 ## GitHub
 
 https://github.com/matigulin/maze-ui
