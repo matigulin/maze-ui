@@ -20,9 +20,6 @@ cd Server && npm install && npm run dev
 cd Client && npm install && cp .env.example .env.local && npm run dev
 ```
 
-- Сайт: http://localhost:3000
-- API: http://localhost:4000/api/v1
-
 ## Vercel (публичная ссылка)
 
 1. Import `matigulin/maze-ui` на vercel.com
